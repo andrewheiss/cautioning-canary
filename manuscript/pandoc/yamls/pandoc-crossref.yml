@@ -1,0 +1,17 @@
+figureTitle: "Figure"
+figPrefix:
+  - "Figure"
+  - "Figures"
+tableTitle: "Table"
+tblPrefix:
+  - "Table"
+  - "Tables"
+secPrefix:
+  - "Section"
+  - "Sections"
+eqnPrefix: 
+  - "" 
+  - ""
+loftitle: "# List of figures"
+lotTitle: "# List of tables"
+autoSectionLabels: yes  # Prepend sec: to section titles

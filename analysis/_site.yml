@@ -1,0 +1,29 @@
+name: canary-ngos
+exclude:
+- options.R
+navbar:
+  title: Canary in the Coal Mine
+  right:
+  - text: Process and merge data
+    icon: fa-table
+    href: 01_get-merge-data.html
+output:
+  html_document:
+    theme: united
+    css: html/fixes.css
+    include:
+      after_body: html/footer.html
+    highlight: pygments
+    code_folding: show
+    code_download: yes
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+    toc_depth: 4
+    fig_height: 4
+    fig_width: 6
+    lib_dir: site_libs
+    self_contained: no
+new_session: yes
+output_dir: _site

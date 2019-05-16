@@ -1,0 +1,34 @@
+# R stuff
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Data (temporarily?)
+data/*
+
+# Site output
+analysis/_site/*
+analysis/site_libs/*
+
+# knitr and caching stuff
+*/*_files/*
+*/*_cache/*
+
+# Manuscript output
+manuscript/*.docx
+manuscript/*.html
+manuscript/*.pdf
+manuscript/*.tex
+manuscript/tex_out/*
+manuscript/vc*
+
+# Other folders
+admin/*
+manuscript/submissions/*
+
+# Miscellaneous
+*.~lock.*
+.DS_Store
+.dropbox
+Icon?
