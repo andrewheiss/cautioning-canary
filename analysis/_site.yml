@@ -11,6 +11,12 @@ navbar:
   - text: Descriptive analysis
     icon: fa-bar-chart
     href: 02_descriptive-analysis.html
+  - text: Models
+    icon: fa-bar-chart
+    href: 03_models.html
+  - text: Predictions
+    icon: fa-bar-chart
+    href: 04_predictions.html
 output:
   html_document:
     theme: united

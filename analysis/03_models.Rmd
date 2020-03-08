@@ -1,0 +1,21 @@
+---
+title: "Models"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+
+canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
+```
+
+TODO:
+
+- Causal model
+- Run actual models
+- Show marginal effects - change in predicted probability of PTS levels as CS restriction changes
+- Use matching (https://cran.r-project.org/web/packages/PanelMatch/vignettes/using_panelmatch.html), IPW (BlackwellGlynn:2018) to isolate effect
+- Careful selection of confounders, following BellemareMasakiPepinsky:2017 and Samii:2016
+- Use MSMs or whatever BlackwellGlynn:2018 suggest?

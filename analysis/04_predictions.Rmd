@@ -1,0 +1,18 @@
+---
+title: "Predictions"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+
+canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
+```
+
+TODO:
+
+- Split into training/test data
+- Generate predictions
+- Compare correctness, AUC, etc. for models with and without CS restrictions
