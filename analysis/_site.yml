@@ -1,6 +1,7 @@
 name: canary-ngos
 exclude:
-- options.R
+  - options.R
+  - cache
 navbar:
   title: Canary in the Coal Mine
   right:

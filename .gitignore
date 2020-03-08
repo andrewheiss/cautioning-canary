@@ -14,6 +14,7 @@ analysis/site_libs/*
 # knitr and caching stuff
 */*_files/*
 */*_cache/*
+analysis/cache/*
 
 # Manuscript output
 manuscript/*.docx
