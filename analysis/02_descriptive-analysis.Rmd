@@ -156,7 +156,7 @@ diff_cs_pts_draws <- diff_cs_pts %>%
 diff_cs_pts_posterior <- canary %>% 
   filter(year == 2010) %>% 
   modelr::data_grid(PTS_factor) %>% 
-  add_fitted_draws(diff_cs_pts, seed = BAYES_SEED)
+  add_predicted_draws(diff_cs_pts, seed = BAYES_SEED)
 ```
 
 ```{r plot-draws-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height}
@@ -169,7 +169,7 @@ ggplot(diff_cs_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) +
 ```
 
 ```{r plot-posterior-preds-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
-ggplot(diff_cs_pts_posterior, aes(x = .value, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
+ggplot(diff_cs_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
   stat_dotsh(quantiles = 100, shape = 19) +
   stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
                           interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
@@ -238,7 +238,7 @@ diff_ngo_pts_draws <- diff_ngo_pts %>%
 diff_ngo_pts_posterior <- canary %>% 
   filter(year == 2010) %>% 
   modelr::data_grid(PTS_factor) %>% 
-  add_fitted_draws(diff_ngo_pts, seed = BAYES_SEED)
+  add_predicted_draws(diff_ngo_pts, seed = BAYES_SEED)
 ```
 
 ```{r plot-draws-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height}
@@ -250,7 +250,7 @@ ggplot(diff_ngo_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) +
 ```
 
 ```{r plot-posterior-preds-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
-ggplot(diff_ngo_pts_posterior, aes(x = .value, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
+ggplot(diff_ngo_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
   stat_dotsh(quantiles = 100, shape = 19) +
   stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
                           interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
@@ -295,7 +295,7 @@ diff_cs_conflict_draws <- diff_cs_conflict %>%
 diff_cs_conflict_posterior <- canary %>% 
   filter(year == 2010) %>% 
   modelr::data_grid(armed_conflict) %>% 
-  add_fitted_draws(diff_cs_conflict, seed = BAYES_SEED) %>% 
+  add_predicted_draws(diff_cs_conflict, seed = BAYES_SEED) %>% 
   ungroup() %>% 
   mutate(armed_conflict = factor(armed_conflict, labels = c("No armed conflict", "Armed conflict")))
 ```
@@ -310,7 +310,7 @@ ggplot(diff_cs_conflict_draws, aes(y = .variable, x = .value, fill = .variable))
 ```
 
 ```{r plot-posterior-preds-conflict-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
-ggplot(diff_cs_conflict_posterior, aes(x = .value, y = fct_rev(armed_conflict), color = fct_rev(armed_conflict))) +
+ggplot(diff_cs_conflict_posterior, aes(x = .prediction, y = fct_rev(armed_conflict), color = fct_rev(armed_conflict))) +
   stat_dotsh(quantiles = 100, shape = 19) +
   stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
                           interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
