@@ -1,0 +1,341 @@
+---
+title: "Descriptive analysis"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+output: 
+  html_document:
+    code_folding: hide
+params:
+  fig_width: 6
+  fig_height: 3.6
+  fig_height_taller: 5
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(canaryNGOs)
+library(brms)
+library(broom)
+library(tidybayes)
+library(sf)
+library(scico)
+library(scales)
+library(patchwork)
+library(ggtext)
+library(here)
+
+CHAINS <- 4
+ITER <- 2000
+WARMUP <- 1000
+BAYES_SEED <- 1234
+options(mc.cores = parallel::detectCores())  # Use all cores
+
+canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
+
+# https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
+country_borders <- read_sf(here("data", "raw_data", "Natural Earth", 
+                                "ne_110m_admin_0_countries", 
+                                "ne_110m_admin_0_countries.shp"))
+```
+
+
+# Civil society restrictions over time
+
+```{r make-map-data}
+things_to_map <- canary %>% 
+  filter(year %in% c(2000, 2014)) %>% 
+  select(country, year, iso3, barriers_total, PTS_factor, v2csreprss) %>% 
+  pivot_wider(names_from = year, values_from = c(barriers_total, PTS_factor, v2csreprss)) %>% 
+  mutate(new_laws = barriers_total_2014 - barriers_total_2000,
+         new_laws = ifelse(new_laws <= 0, 0, new_laws),
+         new_laws = ceiling(new_laws)) %>% 
+  mutate(diff_csrepress = v2csreprss_2014 - v2csreprss_2000,
+         diff_csrepress_trunc = case_when(
+           diff_csrepress >= 2 ~ 2,
+           diff_csrepress <= -2 ~ -2,
+           TRUE ~ diff_csrepress
+         )) %>% 
+  mutate(pct_change_csrepress = diff_csrepress / v2csreprss_2000,
+         pct_change_csrepress_trunc = case_when(
+           pct_change_csrepress >= 5 ~ 5,
+           pct_change_csrepress <= -5 ~ -5,
+           TRUE ~ pct_change_csrepress
+         ))
+
+map_data <- country_borders %>% 
+  left_join(things_to_map, by = c("ADM0_A3_IS" = "iso3")) %>% 
+  filter(ISO_A3 != "ATA")
+```
+
+## Legislation
+
+```{r map-ngo-laws, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+map_ngo_laws <- ggplot() +
+  geom_sf(data = map_data, aes(fill = factor(new_laws)),
+          color = "black", size = 0.1) +
+  coord_sf(crs = 54030, datum = NA, expand = FALSE) + 
+  scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#BF0404")(seq(0, 1, length.out = 7)), 
+                    na.value = "grey80", breaks = 0:6) +
+  # scale_fill_manual(values = scico(7, palette = "devon", direction = -1), 
+  #                   na.value = "grey80", breaks = 0:6) +
+  guides(fill = guide_legend(nrow = 1, label.position = "bottom",
+                             keywidth = unit(1, units = "lines"),
+                             keyheight = unit(0.6, units = "lines"))) +
+  labs(fill = "Restrictive NGO laws passed between 2000 and 2014") +
+  theme_ngo() +
+  theme(panel.border = element_blank(),
+        legend.box.margin = margin(t = 5),
+        legend.spacing.x = unit(0, "pt"),
+        legend.title = element_textbox_simple(halign = 1,
+                                              lineheight = 1.3,
+                                              minwidth = unit(2, "lines"),
+                                              maxwidth = unit(10, "lines"),
+                                              padding = margin(r = 10)))
+map_ngo_laws
+```
+
+## Civil society repression
+
+```{r map-cs-repression, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+map_cs_repression <- ggplot() +
+  geom_sf(data = map_data, aes(fill = diff_csrepress_trunc),
+          color = "black", size = 0.1) +
+  coord_sf(crs = 54030, datum = NA, expand = FALSE) + 
+  scale_fill_scico(palette = "vik", direction = -1,
+                   limits = c(-1, 1) * max(abs(map_data$diff_csrepress_trunc), na.rm = TRUE),
+                   breaks = seq(-4, 4, 1), na.value = "grey80") +
+  guides(fill = guide_colorbar(reverse = TRUE, ticks = FALSE,
+                               barwidth = unit(7, units = "lines"),
+                               barheight = unit(0.5, units = "lines"))) +
+  labs(fill = "Change in V-Dem civil society repression between 2000 and 2014") +
+  theme_ngo() +
+  theme(panel.border = element_blank(),
+        legend.box.margin = margin(t = 5),
+        legend.title = element_textbox_simple(halign = 1,
+                                              lineheight = 1.3,
+                                              minwidth = unit(2, "lines"),
+                                              maxwidth = unit(12, "lines"),
+                                              padding = margin(r = 10)))
+map_cs_repression
+```
+
+
+# PTS and civil society restrictions
+
+## V-Dem civil society repression and the PTS
+
+```{r model-pts-cs, cache=TRUE, message=FALSE, results="hide"}
+diff_cs_pts <- brm(
+  bf(v2csreprss ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
+  family = student,
+  data = filter(canary, year == 2010) %>% select(v2csreprss, PTS_factor),
+  prior = c(
+    # Set group mean prior
+    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
+    # Set group variance priors. We keep the less informative cauchy(0, 1).
+    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
+    set_prior("exponential(1.0/29)", class = "nu")
+  ),
+  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
+  file = here("analysis", "cache", "diff_cs_pts")
+)
+```
+
+```{r draws-pts-cs}
+diff_cs_pts_summary <- diff_cs_pts %>%
+  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
+  median_hdci(.width = 0.95) %>% 
+  to_broom_names()
+
+diff_cs_pts_draws <- diff_cs_pts %>% 
+  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
+  ungroup() %>% 
+  mutate(.variable = str_replace(.variable, "b_PTS_factorLevel", "Level ")) %>% 
+  mutate(pts_level = fct_rev(.variable))
+
+diff_cs_pts_posterior <- canary %>% 
+  filter(year == 2010) %>% 
+  modelr::data_grid(PTS_factor) %>% 
+  add_fitted_draws(diff_cs_pts, seed = BAYES_SEED)
+```
+
+```{r plot-draws-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height}
+ggplot(diff_cs_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
+  geom_halfeyeh() +
+  scale_x_reverse() +
+  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Civil society repression", y = "Political Terror Scale (PTS)") +
+  theme_ngo()
+```
+
+```{r plot-posterior-preds-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+ggplot(diff_cs_pts_posterior, aes(x = .value, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
+  stat_dotsh(quantiles = 100, shape = 19) +
+  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  scale_x_reverse() +
+  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Civil society repression", y = "Political Terror Scale (PTS)",
+       caption = "Each • represents an equally likely outcome from the posterior distribution") +
+  theme_ngo()
+
+# ggsave("~/Desktop/plot1.pdf", device = cairo_pdf, width = 5, height = 3, units = "in")
+# ggsave("~/Desktop/plot1.png", type = "cairo", dpi = 300, width = 6, height = 3.6, units = "in")
+```
+
+
+## Chaudhry NGO regulations and V-Dem's `v2csreprss`
+
+```{r vdem-suparna-plot, warning=FALSE, message=FALSE, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+canary_barriers <- canary %>% 
+  pivot_longer(cols = c(advocacy, entry, funding, barriers_total), 
+               names_to = "barrier", values_to = "count") %>% 
+  mutate(barrier = recode(barrier, advocacy = "Barriers to advocacy",
+                          entry = "Barriers to entry", 
+                          funding = "Barriers to funding",
+                          barriers_total = "Total NGO barriers"))
+
+ggplot(canary_barriers, aes(x = count, y = v2csreprss)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm") +
+  labs(x = "Number of restrictive NGO laws", 
+       y = "V-Dem's civil society repression score") +
+  facet_wrap(vars(barrier), scales = "free_x") +
+  theme_ngo()
+```
+
+## Chaudhry NGO regulations and the PTS
+
+```{r model-pts-restrictions, cache=TRUE, message=FALSE, results="hide"}
+diff_ngo_pts <- brm(
+  bf(barriers_total ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
+  family = student,
+  data = select(canary, barriers_total, PTS_factor),
+  prior = c(
+    # Set group mean prior
+    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
+    # Set group variance priors. We keep the less informative cauchy(0, 1).
+    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
+    set_prior("exponential(1.0/29)", class = "nu")
+  ),
+  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
+  file = here("analysis", "cache", "diff_ngo_pts")
+)
+```
+
+```{r draws-pts-ngo}
+diff_ngo_pts_summary <- diff_ngo_pts %>%
+  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
+  median_hdci(.width = 0.95) %>% 
+  to_broom_names()
+
+diff_ngo_pts_draws <- diff_ngo_pts %>% 
+  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
+  ungroup() %>% 
+  mutate(.variable = str_replace(.variable, "b_PTS_factorLevel", "Level ")) %>% 
+  mutate(pts_level = fct_rev(.variable))
+
+diff_ngo_pts_posterior <- canary %>% 
+  filter(year == 2010) %>% 
+  modelr::data_grid(PTS_factor) %>% 
+  add_fitted_draws(diff_ngo_pts, seed = BAYES_SEED)
+```
+
+```{r plot-draws-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height}
+ggplot(diff_ngo_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
+  geom_halfeyeh() +
+  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)") +
+  theme_ngo()
+```
+
+```{r plot-posterior-preds-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+ggplot(diff_ngo_pts_posterior, aes(x = .value, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
+  stat_dotsh(quantiles = 100, shape = 19) +
+  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)",
+       caption = "Each • represents an equally likely outcome from the posterior distribution") +
+  theme_ngo()
+```
+
+
+# Conflict and civil society restrictions
+
+```{r model-conflict-cs, cache=TRUE, message=FALSE, results="hide"}
+diff_cs_conflict <- brm(
+  bf(v2csreprss ~ 0 + armed_conflict, sigma ~ 0 + armed_conflict),
+  family = student,
+  data = select(canary, v2csreprss, armed_conflict),
+  prior = c(
+    # Set group mean prior
+    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
+    # Set group variance priors. We keep the less informative cauchy(0, 1).
+    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
+    set_prior("exponential(1.0/29)", class = "nu")
+  ),
+  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
+  file = here("analysis", "cache", "diff_cs_conflict")
+)
+```
+
+```{r draws-conflict-cs}
+diff_cs_conflict_summary <- diff_cs_conflict %>%
+  gather_draws(`b_armed.*`, regex = TRUE) %>% 
+  median_hdci(.width = 0.95) %>% 
+  to_broom_names()
+
+diff_cs_conflict_draws <- diff_cs_conflict %>% 
+  gather_draws(`b_armed.*`, regex = TRUE) %>% 
+  ungroup() %>% 
+  mutate(.variable = recode(.variable, `b_armed_conflictFALSE` = "No armed conflict",
+                            `b_armed_conflictTRUE` = "Armed conflict"))
+
+diff_cs_conflict_posterior <- canary %>% 
+  filter(year == 2010) %>% 
+  modelr::data_grid(armed_conflict) %>% 
+  add_fitted_draws(diff_cs_conflict, seed = BAYES_SEED) %>% 
+  ungroup() %>% 
+  mutate(armed_conflict = factor(armed_conflict, labels = c("No armed conflict", "Armed conflict")))
+```
+
+```{r plot-draws-conflict-cs, fig.width=params$fig_width, fig.height=params$fig_height}
+ggplot(diff_cs_conflict_draws, aes(y = .variable, x = .value, fill = .variable)) + 
+  geom_halfeyeh() +
+  scale_x_reverse() +
+  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Civil society repression", y = "Armed conflict") +
+  theme_ngo()
+```
+
+```{r plot-posterior-preds-conflict-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+ggplot(diff_cs_conflict_posterior, aes(x = .value, y = fct_rev(armed_conflict), color = fct_rev(armed_conflict))) +
+  stat_dotsh(quantiles = 100, shape = 19) +
+  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  scale_x_reverse() +
+  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  labs(x = "Civil society repression", y = "Armed conflict",
+       caption = "Each • represents an equally likely outcome from the posterior distribution") +
+  theme_ngo()
+
+# ggsave("~/Desktop/plot1.pdf", device = cairo_pdf, width = 5, height = 3, units = "in")
+# ggsave("~/Desktop/plot1.png", type = "cairo", dpi = 300, width = 6, height = 3.6, units = "in")
+```
+
+
+# Civil society restrictions and other kinds of repression
+
+```{r repression-matrix, fig.width=12, fig.height=12, warning=FALSE, message=FALSE}
+library(GGally)
+repression_only <- canary %>% 
+  filter(year == 2014) %>% 
+  select(barriers_total, PTS, gh_alljourn, 
+         v2clacfree, v2csrlgrep, v2mecenefm, v2mecenefi, v2meharjrn, v2meslfcen,
+         v2x_clphy, v2x_clpol, v2x_clpriv, v2x_freexp, v2csreprss)
+
+ggscatmat(repression_only, alpha = 0.4) + 
+  theme_ngo(base_size = 6)
+```
+

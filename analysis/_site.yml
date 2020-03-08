@@ -8,6 +8,9 @@ navbar:
   - text: Process and merge data
     icon: fa-table
     href: 01_get-merge-data.html
+  - text: Descriptive analysis
+    icon: fa-bar-chart
+    href: 02_descriptive-analysis.html
 output:
   html_document:
     theme: united
