@@ -206,7 +206,7 @@ ggplot(canary_barriers, aes(x = count, y = v2csreprss)) +
 
 ## Chaudhry NGO regulations and the PTS
 
-```{r model-pts-restrictions, cache=TRUE, message=FALSE, results="hide"}
+```{r model-pts-restrictions, cache=TRUE, message=FALSE, warning=FALSE, results="hide"}
 diff_ngo_pts <- brm(
   bf(barriers_total ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
   family = student,
