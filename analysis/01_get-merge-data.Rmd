@@ -4,4 +4,513 @@ author: "Suparna Chaudhry and Andrew Heiss"
 date: "Last run: `r format(Sys.time(), '%F')`"
 ---
 
-TODO: Get and merge all the data here.
+```{r setup, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(fig.retina = 2,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 100))  # For output
+
+library(tidyverse)
+library(canaryNGOs)
+library(readxl)
+library(haven)
+library(countrycode)
+library(states)
+library(WDI)
+library(lubridate)
+library(DT)
+library(naniar)
+library(scales)
+library(here)
+
+# The PTS data and journalist data are saved as .RData files, so they load into
+# R with their original object names. This function lets you load an .RData file
+# directly to a new object instead of bringing in the original name. 
+# (via https://stackoverflow.com/a/25455968/120898)
+load_rdata <- function(filename) {
+  load(filename)
+  get(ls()[ls() != "filename"])
+}
+```
+
+
+# Load raw data
+
+```{r load-raw-data, cache=TRUE, warning=FALSE, message=FALSE}
+# Chaudhry restrictions
+chaudhry_raw <- read_dta(here("data", "raw_data", "Chaudhry restrictions", "SC_Expanded.dta"))
+
+# PTS
+pts_raw <- load_rdata(here("data", "raw_data", "Political Terror Scale", 
+                           "PTS-2019.RData")) %>% as_tibble()
+
+# V-Dem
+vdem_raw <- read_rds(here("data", "raw_data", "Country_Year_V-Dem_Full+others_R_v9", 
+                          "V-Dem-CY-Full+Others-v9.rds")) %>% as_tibble()
+
+# Gohdes Carey journalist killings
+gh_journalists_raw <- load_rdata(here("data", "raw_data", "Gohdes Carey journalists", 
+                                      "journalist-data-incl-pts.RData")) %>% as_tibble()
+
+# gh_analysis_raw <- load_rdata(here("data", "raw_data", "Gohdes Carey journalists", 
+#                                    "analysis-data.RData")) %>% as_tibble()
+
+# World Bank World Development Indicators (WDI)
+# http://data.worldbank.org/data-catalog/world-development-indicators
+wdi_indicators <- c("NY.GDP.PCAP.PP.KD",  # GDP per capita, ppp (constant 2011 international $)
+                    "NY.GDP.MKTP.PP.KD",  # GDP, ppp (constant 2010 international $)
+                    "SP.POP.TOTL")     # Population, total
+
+wdi_raw <- WDI(country = "all", wdi_indicators, extra = TRUE, start = 1990, end = 2018)
+
+# UCDP/PRIO Armed Conflict
+ucdp_prio_raw <- read_csv(here("data", "raw_data", "UCDP PRIO", 
+                               "ucdp-prio-acd-191.csv"))
+```
+
+
+# Create country-year skeleton
+
+We use [Gleditsch-Ward country codes](http://ksgleditsch.com/data-4.html) to identify each country across the different datasets we merge. We omit microstates. 
+
+Importantly, when converting GW codes to COW codes, [following Gleditsch and Ward](https://www.andybeger.com/states/articles/differences-gw-cow.html), we treat post-2006 Serbia as 345 (a continuation of Serbia & Montenegro).
+
+```{r build-skeleton}
+microstates <- gwstates %>% 
+  filter(microstate) %>% distinct(gwcode) %>% pull(gwcode)
+
+# In both COW and GW codes, modern Vietnam is 816, but countrycode() thinks the
+# COW code is 817, which is old South Vietnam (see issue
+# https://github.com/vincentarelbundock/countrycode/issues/16), so we use
+# custom_match to force 816 to recode to 816
+#
+# Also, following Gleditsch and Ward, we treat Serbia after 2006 dissolution of
+# Serbia & Montenegro as 345 in COW codes (see
+# https://www.andybeger.com/states/articles/differences-gw-cow.html)
+#
+# Also, because the World Bank doesn't include it in the WDI, we omit Taiwan
+
+panel_skeleton <- state_panel(1995, 2014, partial = "any") %>% 
+  filter(!(gwcode %in% microstates)) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(cowcode = countrycode(gwcode, origin = "gwn", destination = "cown",
+                               custom_match = c("816" = 816L, "340" = 345L)),
+         country = countrycode(cowcode, origin = "cown", destination = "country.name"),
+         iso2 = countrycode(cowcode, origin = "cown", destination = "iso2c",
+                            custom_match = c("345" = "RS", "347" = "XK", "678" = "YE")),
+         iso3 = countrycode(cowcode, origin = "cown", destination = "iso3c",
+                            custom_match = c("345" = "SRB", "347" = "XKK", "678" = "YEM"))) %>% 
+  # There are two entries for "Yugoslavia" in 2006 after recoding 340 as 345;
+  # get rid of one
+  filter(!(gwcode == 340 & cowcode == 345 & year == 2006)) %>% 
+  # Remove Taiwan
+  filter(gwcode != 713) %>% 
+  # Remove the Bahamas, Belize, and Brunei
+  filter(!(gwcode %in% c(31, 80, 835))) %>% 
+  # Make Serbia 345 in GW codes too, for joining with other datasets
+  mutate(gwcode = recode(gwcode, `340` = 345L)) %>% 
+  select(-date)
+```
+
+Here's a lookup table of all the codes:
+
+```{r show-gw-codes}
+panel_skeleton %>% group_by(gwcode) %>% slice(1) %>% 
+  arrange(country) %>% select(-year) %>% datatable()
+```
+
+
+# Chaudhry NGO restrictions
+
+We create several indexes for each of the categories of regulation, following Christensen and Weinstein’s classification:
+
+- `entry` (Q2b, Q2c, Q2d; 3 points maximum, actual max = 3 points maximum): barriers to entry
+  - Q2c is reversed, so not being allowed to appeal registration status earns 1 point.
+  - Q2a is omitted because it’s benign
+- `funding` (Q3b, Q3c, Q3d, Q3e, Q3f; 5 points maximum, actual max = 4.5): barriers to funding
+  - Q3a is omitted because it’s benign
+  - Scores that range between 0–2 are rescaled to 0–1 (so 1 becomes 0.5)
+- `advocacy` (Q4a, Q4c; 2 points maximum, actual max = 2): barriers to advocacy
+  - Q4b is omitted because it’s not a law
+  - Scores that range between 0–2 are rescaled to 0–1 (so 1 becomes 0.5)
+- `barriers_total` (10 points maximum, actual max = 8.5): sum of all three indexes
+
+These indexes are also standardized by dividing by the maximum, yielding the following variables:
+
+- `entry_std`: 1 point maximum, actual max = 1
+- `funding_std`: 1 point maximum, actual max = 1
+- `advocacy_std`: 1 point maximum, actual max = 1
+- `barriers_total_std`: 3 points maximum, actual max = 2.5
+
+```{r clean-chaudhry-ngos}
+regulation_categories <- tribble(
+  ~question, ~category,
+  "q2a", "omit",
+  "q2b", "entry",
+  "q2c", "entry",
+  "q2d", "entry",
+  "q3a", "omit",
+  "q3b", "funding",
+  "q3c", "funding", 
+  "q3d", "funding",
+  "q3e", "funding",
+  "q3f", "funding",
+  "q4a", "advocacy",
+  "q4c", "advocacy"
+)
+
+# In this data Sudan (625) splits into North Sudan (626) and South Sudan (525)
+# in 2011, but in the other datasets regular Sudan stays 625 and South Sudan
+# becomes 626, so adjust the numbers here
+chaudhry_raw_fixed_sudan <- chaudhry_raw %>% 
+  mutate(ccode = case_when(
+    scode == "SSU" ~ 626,
+    scode == "SDN" ~ 625,
+    TRUE ~ ccode
+  ))
+
+chaudhry_2014 <- expand_grid(ccode = unique(chaudhry_raw_fixed_sudan$ccode), 
+                             year = 2014)
+
+chaudhry_summed <- chaudhry_raw_fixed_sudan %>% 
+  # Bring in 2014 rows
+  bind_rows(chaudhry_2014) %>% 
+  arrange(ccode, year) %>% 
+  # Reverse values for q2c
+  mutate(q2c = 1 - q2c) %>% 
+  # Rescale 2-point questions to 0-1 scale
+  mutate_at(vars(q3e, q3f, q4a), ~rescale(., to = c(0, 1), from = c(0, 2))) %>% 
+  # q2d and q4c use -1 to indicate less restriction/burdensomeness. Since we're
+  # concerned with an index of restriction, we make the negative values zero
+  mutate_at(vars(q2d, q4c), ~ifelse(. == -1, 0, .)) %>% 
+  pivot_longer(cols = starts_with("q"), names_to = "question") %>% 
+  left_join(regulation_categories, by = "question") %>% 
+  filter(category != "omit") %>% 
+  group_by(ccode) %>%
+  mutate(all_missing = all(is.na(value))) %>%
+  group_by(ccode, question) %>% 
+  # Bring most recent legislation forward in time
+  fill(value) %>% 
+  # For older NA legislation that can't be brought forward, set sensible
+  # defaults. Leave countries that are 100% 0 as NA.
+  mutate(value = ifelse(!all_missing & is.na(value), 0, value)) %>% 
+  group_by(ccode, year, category) %>% 
+  summarize(total = sum(value)) %>% 
+  ungroup()
+
+chaudhry_clean <- chaudhry_summed %>% 
+  pivot_wider(names_from = category, values_from = total) %>% 
+  mutate_at(vars(entry, funding, advocacy), 
+            list(std = ~. / max(., na.rm = TRUE))) %>% 
+  mutate(barriers_total = advocacy + entry + funding,
+         barriers_total_std = advocacy_std + entry_std + funding_std) %>% 
+  mutate(gwcode = countrycode(ccode, origin = "cown", destination = "gwn",
+                              custom_match = c("679" = 678L, "818" = 816L,
+                                               "342" = 345L, "341" = 347L,
+                                               "348" = 341L))) %>% 
+  select(gwcode, everything(), -ccode)
+
+glimpse(chaudhry_clean)
+```
+
+
+# Political Terror Scale (PTS)
+
+We use data from the [Political Terror Scale (PTS) project](http://www.politicalterrorscale.org/) to measure state repression. This project uses reports from the US State Department, Amnesty International, and Human Rights Watch and codes political repression on a scale of 1-5:
+
+- **Level 1**: Countries under a secure rule of law, people are not imprisoned for their view, and torture is rare or exceptional. Political murders are extremely rare.
+- **Level 2**: There is a limited amount of imprisonment for nonviolent political activity. However, few persons are affected, torture and beatings are exceptional. Political murder is rare.
+- **Level 3**: There is extensive political imprisonment, or a recent history of such imprisonment. Execution or other political murders and brutality may be common. Unlimited detention, with or without a trial, for political views is accepted.
+- **Level 4**: Civil and political rights violations have expanded to large numbers of the population. Murders, disappearances, and torture are a common part of life. In spite of its generality, on this level terror affects primarily those who interest themselves in politics or ideas.
+- **Level 5**: The terrors of Level 4 have been extended to the whole population. The leaders of these societies place no limits on the means or thoroughness with which they pursue personal or ideological goals.
+
+Following Gohdes and Carey, we use the State Department score, unless it's missing, in which case we use Amnesty's score.
+
+```{r clean-pts}
+# 260: West Germany
+# 678/680: North/South Yemen. COW uses 679 for modern Yemen; GW uses 678
+# 946: Kiribati
+# 947: Tuvalu
+# 955: Tonga
+
+pts_clean <- pts_raw %>% 
+  filter(!(COW_Code_N %in% c(microstates, 260, 678, 680, 946, 947, 955))) %>% 
+  # Get rid of Soviet-era Yugoslavia, combine Yugoslavia/Serbia and Montenegro
+  # (1991-2006) with Serbia (2007-2018)
+  filter(Country_OLD != "Yugoslavia", 
+         !(Country_OLD == "Serbia" & Year <= 2006),
+         !(Country_OLD == "Yugoslavia/Serbia and Montenegro" & Year >= 2007)) %>% 
+  mutate(COW_Code_N = ifelse(Country_OLD == "Serbia", 345, COW_Code_N)) %>% 
+  # Use the State Department score unless it's missing, then use Amnesty's
+  mutate(PTS = coalesce(PTS_S, PTS_A)) %>% 
+  mutate(gwcode = countrycode(COW_Code_N, origin = "cown", destination = "gwn",
+                              custom_match = c("679" = 678L, "816" = 816L))) %>% 
+  select(year = Year, gwcode, PTS) %>%
+  mutate(PTS_factor = factor(PTS, levels = 1:5, labels = paste0("Level ", 1:5)))
+
+glimpse(pts_clean)
+```
+
+
+# Gohdes and Carey journalist deaths
+
+We use data from [Gohdes and Carey (2017)](https://doi.org/10.1177/0022343316680859) for the number of journalists murdered between 2002 and 2014. They provide two `.Rdata` files in their replication materials—one is a list of all journalist deaths, and one is a TSCS dataset they use in their main analysis, with summary values of journalist deaths for each country/year. Their panel data does not include 2002 for some reason, so we ignore the panel data and recreate the summary values by hand here.
+
+```{r clean-gh-journalists}
+gh_journalists <- gh_journalists_raw %>% 
+  select(year = Year, gwno, country = Country, in_rog, in_cpj, in_ipi, date = Date,
+         perpetrator = Perpetrator, foreigner = Foreigner, perp_cat = perp.cat, pts,
+         intra, inter, international, minor, major, armedconf)
+
+# Count of perpetrators
+killings_perp <- gh_journalists %>% 
+  mutate(perp_cat = recode(perp_cat, "non-state" = "polgroup")) %>% 
+  group_by(year, gwno, perp_cat) %>% 
+  summarize(n = n()) %>% 
+  pivot_wider(names_from = perp_cat, values_from = n)
+
+# Count of foreign vs. local journalist
+killings_foreigner <- gh_journalists %>% 
+  mutate(foreigner = recode(foreigner, "no" = "local", "yes" = "foreign")) %>% 
+  group_by(year, gwno, foreigner) %>% 
+  summarize(n = n()) %>% 
+  pivot_wider(names_from = foreigner, values_from = n)
+
+# Combine everything
+killings_all <- gh_journalists %>% 
+  group_by(year, gwno) %>% 
+  summarize(alljourn = n()) %>% 
+  left_join(killings_perp, by = c("year", "gwno")) %>% 
+  left_join(killings_foreigner, by = c("year", "gwno")) %>% 
+  mutate_at(vars(-year, -gwno), ~coalesce(., 0L)) %>%  # Replace all NAs with 0
+  mutate(stateunknown = state + unknown) %>% 
+  rename_at(vars(-year, -gwno), ~paste0("gh_", .)) %>% 
+  rename(gwcode = gwno)
+
+glimpse(killings_all)
+```
+
+
+# Varieties of Democracy (V-Dem)
+
+We use a bunch of variables from the [Varieties of Democracy project](https://www.v-dem.net/en/):
+
+- Freedom of expression and alternative sources of information index: `v2x_freexp_altinf`
+- Freedom of academic and cultural expression: `v2clacfree`
+- CSO consultation: `v2cscnsult`
+- CSO participatory environment: `v2csprtcpt`
+- CSO repression: `v2csreprss`
+- Core civil society index: `v2xcs_ccsi` (`v2cseeorgs` + `v2csreprss` + `v2csprtcpt`)
+- Religious organization repression: `v2csrlgrep`
+- Govt censorship effort - media: `v2mecenefm`
+- Internet censorship effort: `v2mecenefi`
+- Harassment of journalists: `v2meharjrn`
+- Media self-censorship: `v2meslfcen`
+- Physical violence index: `v2x_clphy`
+- Political civil liberties index: `v2x_clpol`
+- Private civil liberties index: `v2x_clpriv`
+- Freedom of expression index: `v2x_freexp`
+- Polity: `e_polity2`
+- Electoral democracy index: `v2x_polyarchy`
+- Population: `e_wb_pop`
+- GDP: `e_migdppc` and `e_migdppcln (logged)`
+
+```{r clean-vdem}
+# 403: Sao Tome and Principe
+# 591: Seychelles
+# 679: Yemen (change to 678 for GW)
+# 935: Vanuatu
+
+vdem_clean <- vdem_raw %>% 
+  filter(year >= 1995) %>% 
+  select(country_name, year, cowcode = COWcode, 
+         e_migdppc,  # Maddison Project Database GDP/capita
+         # Civil society stuff
+         v2xcs_ccsi, v2cscnsult, v2csprtcpt, v2csreprss,
+         # Freedom of expression stuff
+         v2x_freexp, v2x_freexp_altinf, v2clacfree, v2meslfcen,
+         # Repression stuff
+         v2csrlgrep, v2mecenefm, v2mecenefi, v2meharjrn, v2x_clphy,
+         # Rights indexes
+         v2x_clpol, v2x_clpriv, 
+         # Democracy
+         e_polity2, v2x_polyarchy) %>% 
+  mutate(gwcode = countrycode(cowcode, origin = "cown", destination = "gwn",
+                              custom_match = c("403" = 403L, "591" = 591L,
+                                               "679" = 678L, "935" = 935L, 
+                                               "816" = 816L))) %>% 
+  select(-country_name, -cowcode)
+
+glimpse(vdem_clean)
+```
+
+
+# World Bank development indicators
+
+We use data from the [World Bank](http://data.worldbank.org/) for general demographic data: population and GDP.
+
+```{r clean-wdi}
+wdi_clean <- wdi_raw %>%
+  filter(iso2c %in% unique(panel_skeleton$iso2)) %>%
+  mutate_at(vars(income, region), as.character) %>%  # Don't use factors
+  rename(gdpcap = NY.GDP.PCAP.PP.KD, gdp = NY.GDP.MKTP.PP.KD, population = SP.POP.TOTL) %>%
+  mutate(gwcode = countrycode(iso2c, origin = "iso2c", destination = "gwn",
+                              custom_match = c("YE" = 678L, "XK" = 347L, 
+                                               "VN" = 816L, "RS" = 345L))) %>% 
+  mutate(region = ifelse(gwcode == 343, "Europe & Central Asia", region),
+         income = ifelse(gwcode == 343, "Upper middle income", income)) %>% 
+  select(gwcode, year, region, income, wb_gdpcap = gdpcap, starts_with("pop"))
+
+glimpse(wdi_clean)
+```
+
+
+# UCDP/PRIO Armed Conflict
+
+Following [Gohdes and Carey (2017)](https://doi.org/10.1177/0022343316680859), we use [UCDP/PRIO Armed Conflict data](https://ucdp.uu.se/downloads/index.html#armedconflict) to create an indicator marking if a country-year was involved in armed conflict that resulted in at least 25 battle-related deaths.
+
+```{r clean-ucdp-prio}
+ucdp_prio_clean <- ucdp_prio_raw %>% 
+  mutate(gwcode_raw = str_split(gwno_a, pattern = ", ")) %>% 
+  unnest(gwcode_raw) %>% 
+  mutate(gwcode = as.integer(gwcode_raw)) %>% 
+  group_by(gwcode, year) %>% 
+  summarize(armed_conflict = sum(intensity_level) > 0)
+
+glimpse(ucdp_prio_clean)
+```
+
+
+# Final clean combined data
+
+Finally, we join everything together and save the final clean data in `data/derived_data/`.
+
+Most countries have GDP per capita data from the World Bank (2011 international dollars, PPP: `NY.GDP.PCAP.PP.KD`), except four:
+
+- Cuba (40)
+- Djibouti (522)
+- Syria (652)
+- North Korea (731)
+
+We fill these gaps with data from the [Maddison Project Database](https://www.rug.nl/ggdc/historicaldevelopment/maddison/releases/maddison-project-database-2018), which has data for these countries (also 2011 dollars, PPP, but with slight discrepancies from the World Bank). The MPD doesn't include data for all countries, though, and the World Bank seems to have more complete data than the MPD, so we prefer the World Bank over MPD. In cases where data is missing for the whole country, like Cuba, Djibouti, Syria, and North Korea, we use MPD.
+
+Somalia has no GDP/capita data in either MPD or the World Bank; Eritrea is missing GDP/capita data for 2012-2014; Afghanistan is missing 2000-2001.
+
+Also, for whatever reason, V-Dem doesn't include any data for the Bahamas (31), Belize (80), and Brunei (835), so we exclude them.
+
+```{r combine-lag-everything}
+panel_done <- panel_skeleton %>% 
+  left_join(wdi_clean, by = c("gwcode", "year")) %>% 
+  left_join(chaudhry_clean, by = c("gwcode", "year")) %>% 
+  left_join(pts_clean, by = c("gwcode", "year")) %>%
+  left_join(killings_all, by = c("gwcode", "year")) %>% 
+  mutate_at(vars(starts_with("gh")), ~coalesce(., 0L)) %>% 
+  left_join(vdem_clean, by = c("gwcode", "year")) %>% 
+  left_join(ucdp_prio_clean, by = c("gwcode", "year")) %>% 
+  mutate(armed_conflict = coalesce(armed_conflict, FALSE),
+         armed_conflict_num = as.numeric(armed_conflict)) %>% 
+  # Use MPD GDP/capita if needed, otherwise use the World Bank's
+  mutate(gdpcap = ifelse(gwcode %in% c(40, 522, 652, 731), e_migdppc, wb_gdpcap),
+         gdpcap_log = log(gdpcap), population_log = log(population)) %>% 
+  # Get rid of other GDP/capitas
+  select(-e_migdppc, -wb_gdpcap)
+
+testthat::expect_equal(nrow(panel_skeleton), 
+                       nrow(panel_done))
+
+panel_done_trimmed <- panel_done %>% 
+  filter(year >= 2000)
+
+panel_done_lagged <- panel_done %>% 
+  group_by(gwcode) %>% 
+  # Lag all the time-varying variables
+  mutate_at(vars(starts_with("advocacy"), starts_with("entry"), 
+                 starts_with("funding"), starts_with("barriers"), 
+                 starts_with("population"), starts_with("PTS"), 
+                 starts_with("gh"), starts_with("v2"), e_polity2, 
+                 starts_with("armed_"), starts_with("gdp")),
+            list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3),
+                 lag4 = ~lag(., 4), lag5 = ~lag(., 5))) %>% 
+  # Lead PTS in case we want to use PTS_lead1 instead of IVs_lag1
+  mutate_at(vars(PTS, PTS_factor), 
+            list(lead1 = ~lead(., 1), lead2 = ~lead(., 2), lead3 = ~lead(., 3),
+                 lead4 = ~lead(., 4), lead5 = ~lead(., 5))) %>% 
+  ungroup() %>% 
+  # Lop off earlier years now that everything is time shifted
+  filter(year >= 2000)
+
+testthat::expect_equal(nrow(filter(panel_skeleton, year >= 2000)), 
+                       nrow(panel_done_lagged))
+```
+
+```{r}
+glimpse(panel_done_trimmed)
+```
+
+Because lagging and leading inflates the number of columns in the data, here's what the lagged/leaded data looks like with just PTS 
+
+```{r show-lagged}
+panel_done_lagged %>% 
+  select(gwcode, year, country, starts_with("PTS_factor")) %>% 
+  glimpse()
+```
+
+
+```{r save-everything}
+write_rds(panel_done_trimmed, here("data", "derived_data", "canary_clean.rds"), 
+          compress = "gz")
+write_csv(panel_done_trimmed, here("data", "derived_data", "canary_clean.csv"))
+
+write_rds(panel_done_lagged, here("data", "derived_data", "canary_clean_lagged.rds"), 
+          compress = "gz")
+write_csv(panel_done_lagged, here("data", "derived_data", "canary_clean_lagged.csv"))
+```
+
+
+# Basic data details
+
+Number of countries and years:
+
+```{r show-country-years-summary, results="asis"}
+panel_done_trimmed %>% 
+  summarize(num_countries = length(unique(gwcode)),
+            num_years = length(unique(year)),
+            first_year = min(year),
+            last_year = max(year)) %>% 
+  pander::pandoc.table()
+```
+
+Countries across years:
+
+```{r show-country-year-count, results="asis"}
+panel_done_trimmed %>% 
+  count(year, name = "n_countries") %>% 
+  pander::pandoc.table()
+```
+
+
+# Check missing data
+
+```{r include=FALSE}
+no_ngo_data <- panel_done_trimmed %>% 
+  group_by(gwcode) %>% 
+  mutate(all_ngo_missing = all(is.na(barriers_total))) %>% 
+  filter(all_ngo_missing) %>% 
+  ungroup() %>% 
+  count(gwcode) %>% nrow()
+```
+
+There are `r no_ngo_data` countries without any NGO restriction data. The only other variable that has any substantial missingness is Polity IV, but we don't use it in our analysis (we use V-Dem's polyarchy index instead). We keep Polity in our data just for reference and comparison with the polyarchy index.
+
+```{r}
+vis_miss(panel_done_trimmed) +
+  theme_ngo() +
+  theme(axis.text.x = element_text(hjust = 0, angle = 45))
+```
+
+Here we see again that the NGO restrictions data is the most mossing, followed by Polity. The others are randomish blips of missing GDP, PTS, internet censorship, and population.
+
+```{r}
+gg_miss_var(panel_done_trimmed) +
+  theme_ngo()
+```
+
