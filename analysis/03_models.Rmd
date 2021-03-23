@@ -6,10 +6,32 @@ date: "Last run: `r format(Sys.time(), '%F')`"
 
 ```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
+library(broom)
 library(here)
+library(brms)
+library(lme4)
+
+CHAINS <- 4
+ITER <- 2000
+WARMUP <- 1000
+BAYES_SEED <- 1234
+options(mc.cores = parallel::detectCores())  # Use all cores
 
 canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
+canary_lagged <- read_rds(here("data", "derived_data", "canary_clean_lagged.rds"))
 ```
+
+TODO: (from the envelope on my desk):
+
+1. Null model: PTS ~ (1 | year) + (1 | country)
+2. PTS ~ repression + (1 | year) + (1 | country)
+3. PTS + repression within/between + (1 | year) + (1 | country)
+4. Fuller models with more controls - region dummies vs. (1 | region / country)
+5. Switch to ordered logit
+6. Logs and SNMM combination
+7. Make sure selection on observables is okay
+8. IPW?
+
 
 TODO:
 
@@ -19,3 +41,186 @@ TODO:
 - Use matching (https://cran.r-project.org/web/packages/PanelMatch/vignettes/using_panelmatch.html), IPW (BlackwellGlynn:2018) to isolate effect
 - Careful selection of confounders, following BellemareMasakiPepinsky:2017 and Samii:2016
 - Use MSMs or whatever BlackwellGlynn:2018 suggest?
+
+
+- Use four versions of each coefficient - within/between year/country
+- When interpreting, focus on within (moving up/down from average level). Within country = in a typical country, the effect/association of x on y (i.e. increasing 1 more above average in a normal country is associated with β change in Y). Within year = in a typical year, the effect association of x on y (i.e. increasing 1 more above average in a given year is associated with a β change in Y)
+
+- Within country = increasing 1 unit of X above the average in a typical country is associated with β change in Y
+- Within year = increasing 1 unit of X above the average during a typical year is associated with a β change in Y
+- Between country = countries with higher average X are associated with a β higher level of Y 
+- Between country = years with higher average X are associated with a β higher level of Y 
+
+> I'd just go with the basic one unit change marginal effects language. You can talk about it in ranges too since the groups are actually meaningful. The effect of X on Y was twice as great in 2012 as it was in 2008 or something.
+https://twitter.com/DavidPoe223/status/1236864935537278976
+
+> When you add a 1 inside (1 + year|continent/country), you are essentially allowing the countries to have their intercepts specified as "global intercept + country-specific displacement from global intecept + continent-specific displacement from global intercept".
+https://twitter.com/IsabellaGhement/status/1236849235275829248
+
+> Yes, that model would allow temporal trends specific to each country, while also estimating how trends differ across countries and also across continents relative to the trend for a "typical" country in a "typical" continent (all else being equal).
+https://twitter.com/IsabellaGhement/status/1236850446016188416
+
+# Within/between effects (aka Mundlak device)
+PTS ~ 1 + CS_repress_demeaned + CS_repress_mean + controls_demeaned + controls_meaned +
+  year +  # Allow for year global trend
+  (1 + year | country)  # Random country intercepts
+
+https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#model-specification
+
+https://rpubs.com/jebyrnes/causal_mods
+
+http://methods.johndavidpoe.com/2019/02/05/my-talk-at-iu/
+
+
+```{r}
+canary_demeaned <- canary_lagged %>% 
+  mutate(gwcode = as.factor(gwcode)) %>% 
+  group_by(gwcode) %>% 
+  mutate_at(vars(v2csreprss, v2x_polyarchy, gdpcap_log),
+            list(between = ~mean(., na.rm = TRUE),  # Between, for countries
+                 within = ~. - mean(., na.rm = TRUE)))  # Within, for countries
+
+model_asdf <- lmer(PTS_lead1 ~  # Overall terror/repression level
+                     v2csreprss_within + v2csreprss_between +  # Civil society repression
+                     v2x_polyarchy_within + v2x_polyarchy_between +  # Democracy
+                     gdpcap_log_within + gdpcap_log_between +  # GDP per capita
+                     armed_conflict +  # Government involved in conflict with 25+ battle deaths
+                     splines::bs(year) +  # Non-linear year trend
+                     (1 + v2csreprss_within | region/gwcode) +  # Random slopes for within CS repression
+                     (1 + v2csreprss_between | region/gwcode),  # Random slopes for between CS repression
+                   data = canary_demeaned)
+
+tidy(model_asdf, effects = "fixed")
+coef(model_asdf)$`gwcode:region` %>% rownames_to_column() %>% as_tibble() %>% head()
+coef(model_asdf)$region %>% rownames_to_column() %>% as_tibble()
+```
+
+
+```{r}
+model_lag1 <- lm(PTS_lead1 ~ barriers_total + v2x_polyarchy + region + gdpcap_log + as.factor(year),
+                 data = canary_lagged)
+tidy(model_lag1)
+
+modelx_lag1 <- lm(PTS_lead1 ~ v2csreprss + v2x_polyarchy + region + gdpcap_log + as.factor(year),
+                 data = canary_lagged)
+tidy(modelx_lag1)
+
+modelx_lag1 <- lm(PTS_lead1 ~ v2csreprss,
+                 data = canary_lagged)
+tidy(modelx_lag1)
+```
+
+
+```{r}
+thing1 <- brm(
+  bf(PTS_lead1 ~ v2csreprss + v2x_polyarchy + region + gdpcap_log + 
+       year + (1 + year | gwcode)),
+  family = gaussian, inits = 0,
+  control = list(adapt_delta = 0.99),
+  data = canary_lagged %>% select(PTS_lead1, v2csreprss, v2x_polyarchy, 
+                                  region, gdpcap_log, year, gwcode),
+  prior = c(set_prior("normal(0, 10)", class = "Intercept"),
+            set_prior("normal(0, 2.5)", class = "b"),
+            set_prior("normal(0, 2.5)", class = "sd")),
+  chains = CHAINS, iter = 8000, warmup = WARMUP, seed = BAYES_SEED,
+  file = here("analysis", "cache", "thing_8000")
+)
+
+tidy(thing1)
+tidy(thing)
+
+# Random intercepts & random slopes?
+lmer(outcome ~ explanatory + controls + (1 | year) + (1 | countrycode))
+
+# Partial pooling?
+lmer(outcome ~ explanatory + controls + (1 + year | countrycode))
+
+brm(bf(outcome ~ explanatory + controls + year + (1 + year | countrycode)))
+
+
+PTS ~ CS_repress + controls + as.factor(year) + 
+  (1 + as.factor(year) | countrycode) + (1 + region | )
+
+# Super rich model with country, year, and region effects - information flows through the whole structure: https://twitter.com/statwonk/status/1236794927683698688
+PTS ~ CS_repress + controls +
+  (1 | continent/country/year)
+
+# Effect of each year and also each country has its own year effects:
+(1 | year) + (1 | country) + (1 | year:country)
+
+# Slopes vs. shocks
+# https://twitter.com/statwonk/status/1236785673853681664
+as.factor(year) + (1 | year) + (1 | country) + (1 | year:country)
+
+
+
+PTS ~ CS_repress + controls +
+  year + (1 + year | country) +  # Random year slopes within countries
+  (1 | continent/country/year)  # Random intercepts nested inside continent/country/year
+
+
+PTS ~ CS_repress + controls +
+  year + (1 + year | country) +  # Random year slopes within countries
+  (1 | continent/country/year)  # Random intercepts nested inside continent/country/year
+
+
+# Nested continent/country effects
+PTS ~ CS_repress + controls +
+  (1 | year) +  # Allow for year shocks
+  (1 + year | continent / country)  # Random nested continent/country intercepts
+
+# Within/between effects (aka Mundlak device)
+PTS ~ 1 + CS_repress_demeaned + CS_repress_mean + controls_demeaned + controls_meaned +
+  year +  # Allow for year global trend
+  (1 + year | continent / country)  # Random nested continent/country intercepts
+
+PTS ~ CS_repress + controls +
+  year + (1 | year) +  # YOLO trend + shocks
+  (1 + year | continent / country)  # Random nested continent/country intercepts
+
+
+# Just country effects
+PTS ~ CS_repress + controls +
+  (1 | year) +  # Allow for year shocks
+  (1 + year | country)  # Random nested country intercepts
+
+PTS ~ CS_repress + controls +
+  year +  # Allow for year global trend
+  (1 + year | country)  # Random nested country intercepts
+
+PTS ~ CS_repress + controls +
+  year + (1 | year) +  # YOLO trend + shocks
+  (1 + year | country)  # Random nested country intercepts
+
+
+
+
+get_prior(bf(PTS_lead1 ~ v2csreprss + v2x_polyarchy + region + gdpcap_log + (1 | year) + (1 | gwcode)),
+  family = gaussian,
+  data = canary_lagged)
+
+diff_cs_pts <- brm(
+  bf(v2csreprss ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
+  family = student, 
+  data = filter(canary, year == 2010) %>% select(v2csreprss, PTS_factor),
+  prior = c(
+    # Set group mean prior
+    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
+    # Set group variance priors. We keep the less informative cauchy(0, 1).
+    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
+    set_prior("exponential(1.0/29)", class = "nu")
+  ),
+  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
+  file = here("analysis", "cache", "diff_cs_pts")
+)
+
+
+
+tidy(thing)
+
+lag1 <- lm(I(sqrt(terrorinclead) - coef(out)["totspendrevlog"]*totspendrevlog) ~ l(totspendrevlog, cow)  + l(govleft, cow) + l(democ, cow) + l(poplog, cow) + l(govcap, cow) + l(conflict, cow) + l(tradelog, cow) + europe +africa + asia + america + sqrt(l(terrorinc, cow))+ sqrt(l(terrorinc, cow, 2))+ as.factor(year), data=reasonabledata)
+
+
+lag2 <- lm(I(sqrt(terrorinclead) - coef(out)["totspendrevlog"]*totspendrevlog - coef(lag1)["l(totspendrevlog, cow)"]*l(totspendrevlog, cow))~l(totspendrevlog, cow, 2)  + l(govleft, cow, 2) + l(democ, cow, 2) + l(democ, cow, 3) + l(poplog, cow, 2) + l(govcap, cow, 2) + l(conflict, cow, 2) + l(tradelog, cow, 2) + europe +africa + asia + america + sqrt(l(terrorinc, cow, 2))+ sqrt(l(terrorinc, cow,3))+ as.factor(year), data=reasonabledata)
+```
+

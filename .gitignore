@@ -27,6 +27,7 @@ manuscript/vc*
 # Other folders
 admin/*
 manuscript/submissions/*
+analysis/• sandbox/*
 
 # Miscellaneous
 *.~lock.*
