@@ -1,0 +1,120 @@
+---
+title: "Canary in the Coal Mine: Anti-NGO Legislation as a Predictor of Civil Society Repression"
+short-title: "Canary in the Coal Mine"
+author:
+- name: Suparna Chaudhry
+  affiliation: Lewis & Clark College
+  email: schaudhry@lclark.edu
+  url: http://www.suparnachaudhry.com/
+- name: Andrew Heiss
+  affiliation: Georgia State University
+  email: aheiss@gsu.edu
+  url: https://www.andrewheiss.com/
+date: "March 23, 2021"
+published: This is an early draft of a working paper.
+git-repo: https://github.com/andrewheiss/canary-ngos
+abstract: >-
+  Many countries across the globe are increasingly cracking down on civil society groups through legal restrictions. While research on democratic backsliding has tended to focus on rights and institutions in the electoral arena, this new wave of laws—many of which appear mundane on their face—represent a bureaucratic form of repressive that could be indicative of more severe human rights abuses and backsliding. This is especially the case for electoral democracies, which unlike autocracies do not aggressively and openly attack civic space. In this paper, we ask: do legal crackdowns on NGOs predict broader civil society repression? We argue that this is the case because anti-NGO laws are among the most subtle means of repression and attract the least least domestic and international condemnation, as many audiences mistake this repression as regulation and are not personally affected by it. These laws also make it easier for states to prevent and deter future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of attacks on journalists, independent media, academic freedom, and freedoms of expression and association. This project has important implications: if crackdown on NGOs is indeed an early warning, it can potentially prevent further deteriorations in space for civil society. 
+keywords: "civil society restrictions, human rights, journalists"
+reference-section-title: References
+bibliography: bibliography.bib
+csl: pandoc/csl/chicago-author-date.csl
+title-page: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# Figure out output format
+is_docx <- knitr::pandoc_to("docx") | knitr::pandoc_to("odt")
+is_latex <- knitr::pandoc_to("latex")
+is_html <- knitr::pandoc_to("html")
+
+# Word-specific things
+table_format <- ifelse(is_docx, "huxtable", "kableExtra")  # Huxtable tables
+conditional_dpi <- ifelse(is_docx, 300, 300)  # Higher DPI
+conditional_align <- ifelse(is_docx, "default", "center")  # Word doesn't support align
+
+# Knitr options
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE,
+  tidy.opts = list(width.cutoff = 120),  # Code width
+  fig.retina = 3, dpi = conditional_dpi,
+  fig.width = 7, fig.asp = 0.618,
+  fig.align = conditional_align, out.width = "85%",
+  fig.path = "output/figures/",
+  cache.path = "output/_cache/",
+  fig.process = function(x) {  # Remove "-1" from figure names
+    x2 = sub('-\\d+([.][a-z]+)$', '\\1', x)
+    if (file.rename(x, x2)) x2 else x
+  }
+)
+
+# R options
+options(
+  width = 90,  # Output width
+  dplyr.summarise.inform = FALSE,  # Turn off dplyr's summarize() auto messages
+  knitr.kable.NA = "",  # Make NAs blank in kables
+  kableExtra.latex.load_packages = FALSE,  # Don't add LaTeX preamble stuff
+  modelsummary_default = table_format  # Set modelsummary backend
+)
+
+library(tidyverse)
+library(here)
+
+source(here("lib", "graphics.R"))
+```
+
+Governments across the globe have been cracking down on civil society organizations (CSOs) -- a phenomenon referred to as closing civic space in policy arena. The non-violent nature of this repression is particularly notable.The last two decades have
+seen a proliferation of laws designed to limit the influence of civil society organizations,
+with more than 100 countries obstructing, repressing, or closing the legal
+environment for civil society have required that funds
+to NGOs be routed through state-owned banks, mandated that funds cannot be used
+for political purposes, or prohibited NGOs from accepting any funds from foreign
+sources (Carothers, DPR, Chaudhry, Heiss)
+
+
+
+
+As someone points out, states have toned down 'open, violent confrontation' and favor the development of a 'civilized' oppression. The use of legal tools instead of violent repression means that NGOs have to  their practices to stay within the bounds of permitted activities and operations.  This has led to depoliticization, avoidance of direct political activism. But that state cannot soften or neutralize all forms of political activities in subtle, legal ways that they have with NGOs. Soon or later, states need to deal with threats in a more violent, confrontational manner. Studying these NGO laws can thus be the canary in the coal mine which signals the states that intend to continue down this repressive path, especially in their short to medium term trajectories. 
+
+
+What does their targeting tell us about a state's broader respect for civil society and the overall level of human rights repression? Can the crackdown on NGOs act as an indicator for subsequent increasing repression?
+
+
+Information about crackdown can be a valuable indicator of human rights trajectories. Can act as an early warning signal for worsening repression, suggesting which countries are testing the waters with comparatively 'milder' forms of repression before enacting more violent forms of crackdown.
+
+
+Structural factors such as levels of democracy, economic development, electoral competitiveness can identify countries that are likely to have more or less respect for civic freedoms, but these factors are also slow to change over time. Thus, they may not be particularly suitable for forecasting short-term trajectories, especially for moderatively repressive countries.
+
+# Assessing Changes in Government Repression
+
+
+Why we look as NGOs
+From an economic perspective, the foreign aid community prefers NGOs since
+they overcome many failures associated with channeling funds through the state
+(Dietrich 2013). They provide services to large parts of the population in the Global
+South, especially where governments are unable to do so on a consistent basis.
+
+
+
+## Structural factors explaining repression
+
+## Exploring non-violent forms of repression
+Why might repressive states start with non-violent forms of repression?
+
+
+# State repression of NGOs
+
+A robust, strong civil society is widely considered as an important component on democratic transition and consolidation.
+Accountability
+Corruption
+Monitoring
+In addition, services when the state falls short
+Leaders want to avoid accountability. Shape the narrative of their performance both domestically and internationally. Don't like being shamed.
+Can be the beginning of a deteriorating human rights situation.
+
+
+
+
+In the aftermath of the failed coup attempt in Turkey in 2016, the government initiated a widespread crackdown on civil society, leading to the closure of almost 1500 NGOs soon after the group. However, this crackdown, ``spiraled far beyond those with any possible connection to the coup itself." In October 2017, the government levied terrorism charges against human rights activists, including on Amnesty International's Turkey Director and Chair.  The government also imprisoned an increasing number of journalists in 2017 and 2018, and issued arrest warrants for numerous academics in 2018.
