@@ -2,15 +2,16 @@
 title: "Process and merge data"
 author: "Suparna Chaudhry and Andrew Heiss"
 date: "Last run: `r format(Sys.time(), '%F')`"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, warning=FALSE, message=FALSE}
-knitr::opts_chunk$set(fig.retina = 2,
+knitr::opts_chunk$set(fig.retina = 3,
                       tidy.opts = list(width.cutoff = 120),  # For code
                       options(width = 100))  # For output
 
 library(tidyverse)
-library(canaryNGOs)
 library(readxl)
 library(haven)
 library(countrycode)

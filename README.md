@@ -32,27 +32,27 @@ important implications: if crackdown on NGOs is indeed an early warning,
 it can potentially prevent further deteriorations in space for civil
 society.
 
------
+------------------------------------------------------------------------
 
 This repository contains the data and code for our paper:
 
-> Suparna Chaudhry and Andrew Heiss. (2019). *Canary in the Coal Mine:
+> Suparna Chaudhry and Andrew Heiss. (2021). *Canary in the Coal Mine:
 > Anti-NGO Legislation as a Predictor of Civil Society Repression*.
-> Accessed May 15, 2019.
+> Accessed March 23, 2021.
 
 Our pre-print is online here:
 
 > Authors, (YYYY). *Canary in the Coal Mine: Anti-NGO Legislation as a
 > Predictor of Civil Society Repression*. Name of journal/book, Accessed
-> 15 May 2019. Online at <https://doi.org/xxx/xxx>
+> 23 Mar 2021. Online at <https://doi.org/xxx/xxx>
 
 ## How to cite
 
 Please cite this compendium as:
 
-> Suparna Chaudhry and Andrew Heiss. (2019). *Compendium of R code and
+> Suparna Chaudhry and Andrew Heiss. (2021). *Compendium of R code and
 > data for Canary in the Coal Mine: Anti-NGO Legislation as a Predictor
-> of Civil Society Repression*. Accessed May 15, 2019.
+> of Civil Society Repression*. Accessed March 23, 2021.
 
 ### How to download or install
 

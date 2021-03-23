@@ -13,7 +13,6 @@ params:
 
 ```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
-library(canaryNGOs)
 library(brms)
 library(broom)
 library(tidybayes)

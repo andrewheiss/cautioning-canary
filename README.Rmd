@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 # Please put your title here to include it in the file below. 
 Title <- "Canary in the Coal Mine: Anti-NGO Legislation as a Predictor of Civil Society Repression"
 Authors <- "Suparna Chaudhry and Andrew Heiss"
-Year <- "2019"
+Year <- "2021"
 ```
 
 # `r Title`
@@ -47,7 +47,7 @@ Please cite this compendium as:
 
 You can either [download the compendium as a ZIP file](/archive/master.zip) or use GitHub to clone or fork the compendium repository (see the green "Clone or download" button at the top of the GitHub page).
 
-In order to reproduce this project, you'll need to install the compendium as an R package. After downloading the compendium, do the following:
+In order to reproduce this project, you'll need to install ASDF:
 
 ### Licenses
 
