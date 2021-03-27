@@ -4,6 +4,9 @@
 % Disable all warnings issued by biblatex starting with "Since you are using the 'memoir' class..."
 \usepackage{silence}
 \WarningFilter{biblatex}{Since you are using the}
+% Not all fonts have fancy OpenType features like proportional and oldstyle
+% figures, so this suppresses fontspec's warnings when using those kinds of fonts
+\PassOptionsToPackage{quiet}{fontspec}
 
 
 % ---------------
@@ -57,18 +60,18 @@ $endif$
 \providecommand{\keywords}[1]{\small{\sffamily{\textbf{\textit{Keywords---}}#1 \vskip 3em}}}
 
 % Redefine \and and \andnext to remove tabular environment.
-% Needed below for custom article-styles when multiple authors are present. 
+% Needed below for custom article-styles when multiple authors are present.
 \renewcommand{\and}{\, }
 \renewcommand*{\andnext}{%
   \\\medskip }
 
 % Command for a note at the top of the first page describing the publication
 % status of the paper.
-\newcommand{\published}[1]{% 
-   \gdef\puB{#1}} 
-   \newcommand{\puB}{} 
-   \renewcommand{\maketitlehooka}{% 
-       \par\noindent\footnotesize \puB}
+\newcommand{\published}[1]{%
+   \gdef\puB{#1}}
+   \newcommand{\puB}{}
+   \renewcommand{\maketitlehooka}{%
+       \par\noindent\footnotesize\sffamily \puB}
 
 
 % --------------------------------
@@ -82,13 +85,13 @@ $endif$
     \setaftersecskip{1ex}  % Space after
 
     % Heading 2
-    \setsubsecheadstyle{\large\sffamily} 
+    \setsubsecheadstyle{\large\sffamily}
     \setbeforesubsecskip{-2.5ex}
     \setaftersubsecskip{0.7ex}
 
     % Heading 3
     \setaftersubsubsecskip{-1em}  % Inline heading
-    \setsubsubsecheadstyle{\normalsize\sffamily\bfseries} 
+    \setsubsubsecheadstyle{\normalsize\sffamily\bfseries}
     \setbeforesubsubsecskip{1.5ex}
 
     % Captions
@@ -100,7 +103,7 @@ $endif$
 
     % TOC stuff
     \settocdepth{subsubsection}
-    \maxsecnumdepth{subsubsection} 
+    \maxsecnumdepth{subsubsection}
     \setsecnumdepth{chapter}
 
     % Change formatting in title block
@@ -116,9 +119,9 @@ $endif$
     \renewcommand{\abstracttextfont}{\small\sffamily}
 
     \epigraphfontsize{\normalfont\footnotesize}
-    \setlength\epigraphwidth{8cm}
+    \setlength\epigraphwidth{186pt}  % 15p6 (31p0 / 2)
     \setlength\epigraphrule{0pt}
-    
+
     % Footnotes
     \setfootins{3em}{3em}
 }
@@ -128,7 +131,7 @@ $endif$
   \chapterstyle{hikma-article}  % Copy previous style
   \counterwithout{section}{chapter}  % Make sections start at 1, not 0
   \settocdepth{subsubsection}
-  \maxsecnumdepth{subsubsection} 
+  \maxsecnumdepth{subsubsection}
   \setsecnumdepth{subsubsection}
 }
 
@@ -164,6 +167,14 @@ $endif$
 % For better TOCs
 \usepackage{tocloft}
 
+% Page margins
+% {left}{right}{ratio} - one has to be *
+% 10p0 left/right, 11p0 top/bottom
+% Text block is 31p0 wide, 44p0 tall
+\setlrmarginsandblock{10pc}{10pc}{*}  % 10p0
+\setulmarginsandblock{11pc}{11pc}{*}  % 11p0
+\checkandfixthelayout
+
 
 % ------------------
 % TYPOGRAPHY STUFF
@@ -175,12 +186,22 @@ $endif$
 % Fix widows and orphans
 \usepackage[all,defaultlines=2]{nowidow}
 
-% Don't typeset URLs in a monospaced font
+% Add - as an acceptable hyphenation break in URLs
 \usepackage{url}
-\urlstyle{same}
-% Add - to url's default breaks
 \def\UrlBreaks{\do\.\do\@\do\\\do\/\do\!\do\_\do\|\do\;\do\>\do\]%
     \do\)\do\,\do\?\do\&\do\'\do+\do\=\do\#\do-}
+
+% Ordinarily I'd like to make URLs not monospaced up here with other typographic
+% settings, but NOO because if you use apacite, it overwrites whatever
+% \urlstyle{} you use, so the actual \urlstyle{same} appears down below in
+% the REFERENCES section
+
+% Use "1. Note" in the footnotes
+\footmarkstyle{#1.\,}
+
+% Tweak \thanks{} stuff
+\thanksheadextra{\small}{}  % Marker in title section
+\thanksmarkstyle{\footnotesize #1\,}  % Actual note down in footnotes
 
 % Wrap definition list terms
 % https://tex.stackexchange.com/a/9763/11851
@@ -305,6 +326,10 @@ $endif$
 \setlength\bibhang{\parindent}
 $endif$
 
+% Don't typeset URLs in a monospaced font
+% This has to come after apacite because apacite sets its own URL style
+\urlstyle{same}
+
 
 % ----------
 % METADATA
@@ -318,7 +343,7 @@ $endif$
   % Subject={},
 }}
 
-% Add content from pandoc metadata 
+% Add content from pandoc metadata
 $if(title)$
 \title{\bigskip \bigskip $title$$if(thanks)$\thanks{$thanks$}$endif$}
 $endif$
@@ -327,8 +352,8 @@ $endif$
 $for(author)$
   \Large $author.name$ \newline
   \footnotesize $author.affiliation$ \newline
-  \footnotesize \url{$author.email$}\vspace*{1.1em}\newline 
-  $sep$  \and 
+  \footnotesize \url{$author.email$}\vspace*{1.1em}\newline
+  $sep$  \and
 $endfor$
 }
 
@@ -348,18 +373,26 @@ $endfor$
 $if(chapterstyle)$
 \chapterstyle{$chapterstyle$}
 $else$
-\chapterstyle{hikma-article} 
+\chapterstyle{hikma-article}
 $endif$
 $if(pagestyle)$
 \pagestyle{$pagestyle$}
 $else$
-\pagestyle{ath} 
+\pagestyle{ath}
 $endif$
 
 $if(published)$
-\published{$date$. $published$}
+$if(code-repo)$
+\published{\textbf{$date$} \qquad $published$ \\ {\tiny $code-repo$}}
 $else$
-\published{$date$}
+\published{\textbf{$date$} \qquad {\tiny $published$}}
+$endif$
+$else$
+$if(code-repo)$
+\published{\textbf{$date$} \\ {\tiny $code-repo$}}
+$else$
+\published{\textbf{$date$}}
+$endif$
 $endif$
 
 $if(title)$
@@ -388,13 +421,13 @@ $if(keywords)$
 $endif$
 
 $if(epigraph)$
-  $for(epigraph)$
-    $if(epigraph.source)$
-    \epigraph{$epigraph.text$}{---$epigraph.source$}
-    $else$
-    \epigraph{$epigraph.text$}
-    $endif$
-  $endfor$
+$for(epigraph)$
+$if(epigraph.source)$
+\epigraph{$epigraph.text$}{---$epigraph.source$}
+$else$
+\epigraph{$epigraph.text$}
+$endif$
+$endfor$
 $endif$
 
 $body$

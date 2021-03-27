@@ -136,6 +136,13 @@
 % Color names for hyperlinks
 \usepackage[svgnames]{xcolor}
 
+% Epigraphs
+$if(epigraph)$
+\usepackage{epigraph}
+\renewcommand{\epigraphsize}{\footnotesize}
+\setlength{\epigraphrule}{0pt}
+$endif$
+
 % Syntax highlighting stuff
 $if(highlighting-macros)$
 $highlighting-macros$
@@ -178,16 +185,6 @@ $endif$
 % Remove left margin in lists inside longtables
 % https://tex.stackexchange.com/a/378190/11851
 \AtBeginEnvironment{longtable}{\setlist[itemize]{nosep, wide=0pt, leftmargin=*, before=\vspace*{-\baselineskip}, after=\vspace*{-\baselineskip}}}
-
-% Single spacing in longtables
-% This doesn't work with endfloat though
-% \BeforeBeginEnvironment{longtable}{\begin{singlespacing}}
-% \AfterEndEnvironment{longtable}{\end{singlespacing}}
-
-$if(endfloat)$
-\usepackage[nolists]{endfloat}
-\DeclareDelayedFloatFlavour*{longtable}{table}
-$endif$
 
 
 % ----------
@@ -252,6 +249,21 @@ $endif$
 
 \addtolength{\skip\footins}{12pt}    % vertical space between rule and main text
 \setlength{\footnotesep}{16pt}  % vertical space between footnotes
+
+
+% -----------------------
+% ENDFLOAT AND ENDNOTES
+% -----------------------
+$if(endfloat)$
+\usepackage[nolists]{endfloat}
+\DeclareDelayedFloatFlavour*{longtable}{table}
+$endif$
+
+$if(endnotes)$
+\usepackage{endnotes}
+\renewcommand{\enotesize}{\normalsize}
+\let\footnote=\endnote
+$endif$
 
 
 % ------------------------------------------------------------------------------
@@ -368,6 +380,16 @@ $endif$
 }
 $endif$
 
+$if(epigraph)$
+$for(epigraph)$
+$if(epigraph.source)$
+\epigraph{$epigraph.text$}{---$epigraph.source$}
+$else$
+\epigraph{$epigraph.text$}
+$endif$
+$endfor$
+$endif$
+
 \doublespacing
 
 $body$
@@ -375,5 +397,14 @@ $body$
 \clearpage
 \singlespacing
 \printbibliography[heading=bibliography$if(reference-section-title)$, title=$reference-section-title$$endif$]
+
+$if(endnotes)$
+\clearpage
+\begingroup
+\parindent 0pt
+\parskip 1em
+\theendnotes
+\endgroup
+$endif$
 
 \end{document}
