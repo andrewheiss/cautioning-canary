@@ -2,14 +2,43 @@
 title: "Models"
 author: "Suparna Chaudhry and Andrew Heiss"
 date: "Last run: `r format(Sys.time(), '%F')`"
+output: 
+  html_document:
+    code_folding: show
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r setup, warning=FALSE, message=FALSE}
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knit_print.data.frame <- function(x, ...) {
+  res <- paste(c('', '', kable_styling(kable(x, booktabs = TRUE))), collapse = '\n')
+  asis_output(res)
+}
+
+registerS3method("knit_print", "data.frame", knit_print.data.frame)
+registerS3method("knit_print", "grouped_df", knit_print.data.frame)
+
+knitr::opts_chunk$set(fig.retina = 3,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 90),  # For output
+                      fig.asp = 0.618, fig.width = 7, 
+                      fig.align = "center", out.width = "85%")
+
+options(dplyr.summarise.inform = FALSE,
+        knitr.kable.NA = "")
+```
+
+```{r load-libraries-data, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(targets)
 library(broom)
+library(broom.mixed)
 library(here)
 library(brms)
 library(lme4)
+library(modelsummary)
 
 CHAINS <- 4
 ITER <- 2000
@@ -17,8 +46,18 @@ WARMUP <- 1000
 BAYES_SEED <- 1234
 options(mc.cores = parallel::detectCores())  # Use all cores
 
-canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
-canary_lagged <- read_rds(here("data", "derived_data", "canary_clean_lagged.rds"))
+# Generated via random.org
+set.seed(9936)
+
+# Load data
+# Need to use this withr thing because tar_read() and tar_load() need to see the
+# _targets folder in the current directory, but this .Rmd file is in a subfolder
+withr::with_dir(here::here(), {
+  source(tar_read(plot_funs))
+  
+  canary <- tar_read(panel_done_trimmed)
+  canary_lagged <- tar_read(panel_lagged_trimmed)
+})
 ```
 
 TODO: (from the envelope on my desk):
@@ -72,6 +111,8 @@ https://rpubs.com/jebyrnes/causal_mods
 http://methods.johndavidpoe.com/2019/02/05/my-talk-at-iu/
 
 
+**I ran all these models in March 2020 pre-pandemic and I have no idea why??**
+
 ```{r}
 canary_demeaned <- canary_lagged %>% 
   mutate(gwcode = as.factor(gwcode)) %>% 
@@ -86,32 +127,39 @@ model_asdf <- lmer(PTS_lead1 ~  # Overall terror/repression level
                      gdpcap_log_within + gdpcap_log_between +  # GDP per capita
                      armed_conflict +  # Government involved in conflict with 25+ battle deaths
                      splines::bs(year) +  # Non-linear year trend
-                     (1 + v2csreprss_within | region/gwcode) +  # Random slopes for within CS repression
-                     (1 + v2csreprss_between | region/gwcode),  # Random slopes for between CS repression
+                     (1 + v2csreprss_within | gwcode) +  # Random slopes for within CS repression
+                     # (1 + v2csreprss_within | region/gwcode) +  # Random slopes for within CS repression
+                     (1 + v2csreprss_between | gwcode),  # Random slopes for within CS repression
+                     # (1 + v2csreprss_between | region/gwcode),  # Random slopes for between CS repression
                    data = canary_demeaned)
 
+# modelsummary(list(model_asdf))
 tidy(model_asdf, effects = "fixed")
-coef(model_asdf)$`gwcode:region` %>% rownames_to_column() %>% as_tibble() %>% head()
-coef(model_asdf)$region %>% rownames_to_column() %>% as_tibble()
+# coef(model_asdf)$`gwcode` %>% rownames_to_column() %>% as_tibble() %>% head()
+# coef(model_asdf)$region %>% rownames_to_column() %>% as_tibble()
 ```
 
 
+
 ```{r}
-model_lag1 <- lm(PTS_lead1 ~ barriers_total + v2x_polyarchy + region + gdpcap_log + as.factor(year),
+model_lag1 <- lm(PTS_lead1 ~ barriers_total + v2x_polyarchy + gdpcap_log + as.factor(year),
                  data = canary_lagged)
-tidy(model_lag1)
 
-modelx_lag1 <- lm(PTS_lead1 ~ v2csreprss + v2x_polyarchy + region + gdpcap_log + as.factor(year),
+modelx_lag1 <- lm(PTS_lead1 ~ v2csreprss + v2x_polyarchy + gdpcap_log + as.factor(year),
                  data = canary_lagged)
-tidy(modelx_lag1)
 
-modelx_lag1 <- lm(PTS_lead1 ~ v2csreprss,
-                 data = canary_lagged)
-tidy(modelx_lag1)
+modelxx_lag1 <- lm(PTS_lead1 ~ v2csreprss,
+                   data = canary_lagged)
+
+modelsummary(list(model_lag1, modelx_lag1, modelxx_lag1),
+             coef_omit = "^as.factor",
+             stars = TRUE, gof_omit = "IC|F|Log.|R2$") %>% 
+  row_spec(10, extra_css = "border-bottom: 2px solid")
 ```
 
+**¿What even is this stuff?**
 
-```{r}
+```{r eval=FALSE}
 thing1 <- brm(
   bf(PTS_lead1 ~ v2csreprss + v2x_polyarchy + region + gdpcap_log + 
        year + (1 + year | gwcode)),
@@ -213,14 +261,5 @@ diff_cs_pts <- brm(
   chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
   file = here("analysis", "cache", "diff_cs_pts")
 )
-
-
-
-tidy(thing)
-
-lag1 <- lm(I(sqrt(terrorinclead) - coef(out)["totspendrevlog"]*totspendrevlog) ~ l(totspendrevlog, cow)  + l(govleft, cow) + l(democ, cow) + l(poplog, cow) + l(govcap, cow) + l(conflict, cow) + l(tradelog, cow) + europe +africa + asia + america + sqrt(l(terrorinc, cow))+ sqrt(l(terrorinc, cow, 2))+ as.factor(year), data=reasonabledata)
-
-
-lag2 <- lm(I(sqrt(terrorinclead) - coef(out)["totspendrevlog"]*totspendrevlog - coef(lag1)["l(totspendrevlog, cow)"]*l(totspendrevlog, cow))~l(totspendrevlog, cow, 2)  + l(govleft, cow, 2) + l(democ, cow, 2) + l(democ, cow, 3) + l(poplog, cow, 2) + l(govcap, cow, 2) + l(conflict, cow, 2) + l(tradelog, cow, 2) + europe +africa + asia + america + sqrt(l(terrorinc, cow, 2))+ sqrt(l(terrorinc, cow,3))+ as.factor(year), data=reasonabledata)
 ```
 

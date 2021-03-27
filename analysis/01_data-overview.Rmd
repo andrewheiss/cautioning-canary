@@ -1,0 +1,307 @@
+---
+title: "Process and merge data"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+output: 
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knit_print.data.frame <- function(x, ...) {
+  res <- paste(c('', '', kable_styling(kable(x, booktabs = TRUE))), collapse = '\n')
+  asis_output(res)
+}
+
+registerS3method("knit_print", "data.frame", knit_print.data.frame)
+registerS3method("knit_print", "grouped_df", knit_print.data.frame)
+
+knitr::opts_chunk$set(fig.retina = 3,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 90),  # For output
+                      fig.asp = 0.618, fig.width = 7, 
+                      fig.align = "center", out.width = "85%")
+
+options(dplyr.summarise.inform = FALSE,
+        knitr.kable.NA = "")
+```
+
+```{r load-libraries-data, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(targets)
+library(scales)
+library(patchwork)
+library(DT)
+library(naniar)
+library(here)
+
+# Generated via random.org
+set.seed(9936)
+
+# Load data
+# Need to use this withr thing because tar_read() and tar_load() need to see the
+# _targets folder in the current directory, but this .Rmd file is in a subfolder
+withr::with_dir(here::here(), {
+  source(tar_read(plot_funs))
+  
+  tar_load(skeleton)
+  tar_load(chaudhry_clean)
+  tar_load(pts_clean)
+  tar_load(killings_all)
+  tar_load(vdem_clean)
+  tar_load(wdi_clean)
+  tar_load(un_pop)
+  tar_load(un_gdp)
+  tar_load(ucdp_prio_clean)
+  
+  tar_load(panel_done_trimmed)
+})
+```
+
+# Data processing
+
+## Country-year skeleton
+
+We use [Gleditsch-Ward country codes](http://ksgleditsch.com/data-4.html) to identify each country across the different datasets we merge. We omit a bunch of things though:
+
+- We omit microstates
+- Because the World Bank doesn't include it in the WDI, we omit Taiwan (713)
+- We only use countries in Suparna's anti-NGO law data
+
+To get consistency in country codes, we do this:
+
+- When converting GW codes to COW codes, [following Gleditsch and Ward](https://www.andybeger.com/states/articles/differences-gw-cow.html), we treat post-2006 Serbia as 345 (a continuation of Serbia & Montenegro). And we also treat Serbia as a continuation of Yugoslavia with 345 (following V-Dem, which does that too)
+- In both COW and GW codes, modern Vietnam is 816, but `countrycode()` thinks the COW code is 817, which is old South Vietnam (see [issue](https://github.com/vincentarelbundock/countrycode/issues/16)), so we use `custom_match` to force 816 to recode to 816.
+- Also, following V-Dem, we treat Czechoslovakia (GW/COW 315) and Czech Republic (GW/COW 316) as the same continuous country (V-Dem has both use ID 157).
+
+We have `r panel_done_trimmed %>% distinct(gwcode) %>% nrow()` countries in this data, spanning `r panel_done_trimmed %>% distinct(year) %>% nrow()` possible years. Here's a lookup table of all the countries included:
+
+```{r show-final-countries}
+skeleton$skeleton_lookup %>% 
+  filter(gwcode %in% unique(chaudhry_clean$gwcode)) %>% 
+  select(-years_included) %>% 
+  datatable()
+```
+
+## Chaudhry NGO restrictions
+
+We create several indexes for each of the categories of regulation, following Christensen and Weinstein’s classification:
+
+- `entry` (Q2b, Q2c, Q2d; 3 points maximum, actual max = 3 points maximum): barriers to entry
+  - Q2c is reversed, so not being allowed to appeal registration status earns 1 point.
+  - Q2a is omitted because it’s benign
+- `funding` (Q3b, Q3c, Q3d, Q3e, Q3f; 5 points maximum, actual max = 4.5): barriers to funding
+  - Q3a is omitted because it’s benign
+  - Scores that range between 0–2 are rescaled to 0–1 (so 1 becomes 0.5)
+- `advocacy` (Q4a, Q4c; 2 points maximum, actual max = 2): barriers to advocacy
+  - Q4b is omitted because it’s not a law
+  - Scores that range between 0–2 are rescaled to 0–1 (so 1 becomes 0.5)
+- `barriers_total` (10 points maximum, actual max = 8.5): sum of all three indexes
+
+These indexes are also standardized by dividing by the maximum, yielding the following variables:
+
+- `entry_std`: 1 point maximum, actual max = 1
+- `funding_std`: 1 point maximum, actual max = 1
+- `advocacy_std`: 1 point maximum, actual max = 1
+- `barriers_total_std`: 3 points maximum, actual max = 2.5
+
+```{r glimpse-chaudhry-ngos}
+glimpse(chaudhry_clean)
+```
+
+## Political Terror Scale (PTS)
+
+We use data from the [Political Terror Scale (PTS) project](http://www.politicalterrorscale.org/) to measure state repression. This project uses reports from the US State Department, Amnesty International, and Human Rights Watch and codes political repression on a scale of 1-5:
+
+- **Level 1**: Countries under a secure rule of law, people are not imprisoned for their view, and torture is rare or exceptional. Political murders are extremely rare.
+- **Level 2**: There is a limited amount of imprisonment for nonviolent political activity. However, few persons are affected, torture and beatings are exceptional. Political murder is rare.
+- **Level 3**: There is extensive political imprisonment, or a recent history of such imprisonment. Execution or other political murders and brutality may be common. Unlimited detention, with or without a trial, for political views is accepted.
+- **Level 4**: Civil and political rights violations have expanded to large numbers of the population. Murders, disappearances, and torture are a common part of life. In spite of its generality, on this level terror affects primarily those who interest themselves in politics or ideas.
+- **Level 5**: The terrors of Level 4 have been extended to the whole population. The leaders of these societies place no limits on the means or thoroughness with which they pursue personal or ideological goals.
+
+Following Gohdes and Carey, we use the State Department score, unless it's missing, in which case we use Amnesty's score.
+
+```{r glimpse-pts}
+glimpse(pts_clean)
+```
+
+## Gohdes and Carey journalist deaths
+
+We use data from [Gohdes and Carey (2017)](https://doi.org/10.1177/0022343316680859) for the number of journalists murdered between 2002 and 2014. They provide two `.Rdata` files in their replication materials—one is a list of all journalist deaths, and one is a TSCS dataset they use in their main analysis, with summary values of journalist deaths for each country/year. Their panel data does not include 2002 for some reason, so we ignore the panel data and recreate the summary values by hand here.
+
+```{r glimpse-gh-journalists}
+glimpse(killings_all)
+```
+
+## Varieties of Democracy (V-Dem)
+
+We use a bunch of variables from the [Varieties of Democracy project](https://www.v-dem.net/en/):
+
+- **Civil society stuff**
+  - CSO entry and exit: `v2cseeorgs`
+  - CSO repression: `v2csreprss`
+  - CSO consultation: `v2cscnsult`
+  - CSO participatory environment: `v2csprtcpt`
+  - CSO women's participation: `v2csgender`
+  - CSO anti-system movements: `v2csantimv`
+  - Core civil society index (entry/exit, repression, participatory env): `v2xcs_ccsi`
+- **Freedom of expression stuff**
+  - Freedom of expression index: `v2x_freexp`
+  - Freedom of expression and alternative sources of information index: `v2x_freexp_altinf`
+  - Freedom of academic and cultural expression: `v2clacfree`
+  - Media self-censorship: `v2meslfcen`
+- **Repression stuff**
+  - Religious organization repression: `v2csrlgrep`
+  - Govt censorship effort - media: `v2mecenefm`
+  - Harassment of journalists: `v2meharjrn`
+- **Rights indexes**
+  - Civil liberties index: `v2x_civlib`
+  - Physical violence index: `v2x_clphy`
+  - Private civil liberties index: `v2x_clpriv`
+  - Political civil liberties index: `v2x_clpol`
+- **Democracy**
+  - Polyarchy index: `v2x_polyarchy`
+  - Regimes of the world category: `v2x_regime_amb`
+
+
+```{r glimpse-vdem}
+glimpse(vdem_clean)
+```
+
+## World Bank development indicators
+
+We don't really use anything from the World Bank's data except for population data for Kosovo.
+
+```{r wlimpse-wdi}
+glimpse(wdi_clean)
+```
+
+## UNData
+
+The reason we don't just use WDI data for GDP and % of GDP from trade is that the WDI data is incomplete (especially pre-1990, but that's not an issue in this project) To get around that, we create our own GDP and trade measures using data directly from the UN (at [UNData](https://data.un.org/)). They don't have a neat API like the World Bank, so you have to go to their website and export the data manually.
+
+We collect three variables: [GDP at constant 2015 prices](http://data.un.org/Data.aspx?q=gdp&d=SNAAMA&f=grID%3a102%3bcurrID%3aUSD%3bpcFlag%3a0), [GDP at current prices](http://data.un.org/Data.aspx?q=gdp&d=SNAAMA&f=grID%3a101%3bcurrID%3aUSD%3bpcFlag%3a0), and [population](https://population.un.org/wpp/Download/Standard/Population/).
+
+```{r glimpse-un-pop}
+glimpse(un_pop)
+```
+
+```{r glimpse-un-gdp}
+glimpse(un_gdp)
+```
+
+## UCDP/PRIO Armed Conflict
+
+Following [Gohdes and Carey (2017)](https://doi.org/10.1177/0022343316680859), we use [UCDP/PRIO Armed Conflict data](https://ucdp.uu.se/downloads/index.html#armedconflict) to create an indicator marking if a country-year was involved in armed conflict that resulted in at least 25 battle-related deaths.
+
+```{r glimpse-ucdp-prio}
+glimpse(ucdp_prio_clean)
+```
+
+## Final clean combined data
+
+Finally, we join everything together in one nice clean panel:
+
+```{r glimpse-combined}
+glimpse(panel_done_trimmed)
+```
+
+\ 
+
+
+# Basic data details
+
+```{r show-country-years-summary}
+panel_done_trimmed %>% 
+  summarize(`Number of countries` = length(unique(gwcode)),
+            `Number of years` = length(unique(year)),
+            `First year` = min(year),
+            `Last year` = max(year)) %>% 
+  kbl(align = "c") %>% 
+  kable_styling()
+```
+
+Countries across years:
+
+```{r show-country-year-count}
+panel_done_trimmed %>% 
+  count(Year = year, name = "Number of countries") %>% 
+  kbl(align = "c") %>% 
+  kable_styling()
+```
+
+\ 
+
+
+# Missingness
+
+We were super careful to ensure that our data is as complete as possible.
+
+```{r plot-missing}
+panel_done_trimmed %>% 
+  vis_miss() +
+  theme_ngo() +
+  theme(axis.text.x = element_text(hjust = 0, angle = 45),
+        panel.grid.major = element_blank())
+```
+
+There are only a tiny handful of rows with missing data: Serbia pre-2006.
+
+```{r show-missing-rows, class.source="fold-show"}
+panel_done_trimmed %>% 
+  filter(is.na(advocacy)) %>% 
+  select(gwcode, year, country, iso3, advocacy, entry, funding)
+```
+
+That's because our anti-NGO data doesn't include data for those years. That's fine, though. In models where we look at anti-NGO laws, we exclude those rows and only include rows where our `laws` indicator variable is TRUE. In models where we look at the general civil society environment, we do include these rows because V-Dem has data for them.
+
+There are just two instances of missing data with PTS scores:
+
+```{r show-missing-pts, class.source="fold-show"}
+panel_done_trimmed %>% 
+  filter(is.na(PTS)) %>% 
+  select(gwcode, year, country, iso3, PTS, PTS_factor)
+```
+
+We just ignore them, I guess.
+
+With that, here's our actual final cleaned data:
+
+```{r plot-missing-laws}
+panel_done_trimmed %>% 
+  filter(laws) %>% 
+  vis_miss() +
+  theme_ngo() +
+  theme(axis.text.x = element_text(hjust = 0, angle = 45),
+        panel.grid.major = element_blank())
+```
+
+Beautiful.
+
+\ 
+
+
+# `targets` pipeline
+
+Here's the general process for building and running this analysis. This is all done with [the magical **`targets`** package](https://docs.ropensci.org/targets/), which orchestrates all the dependencies automatically.
+
+```{r show-targets-pipeline, echo=FALSE}
+withr::with_dir(here::here(), {
+  targets::tar_glimpse()
+})
+```
+
+
+\ 
+
+
+# Actual code
+
+All the data processing is handled with dataset-specific functions that live in `R/funs_data-cleaning.R`, which **`targets`** then runs as needed. For the sake of transparency, here's that code:
+
+```{r, code=xfun::read_utf8(here::here("R", "funs_data-cleaning.R")), eval=FALSE, class.source="fold-show"}
+```

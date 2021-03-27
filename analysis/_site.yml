@@ -1,21 +1,23 @@
 name: canary-ngos
 exclude:
   - options.R
+  - Makefile
   - cache
+  - • sandbox
 navbar:
   title: Canary in the Coal Mine
   right:
   - text: Process and merge data
-    icon: fa-table
-    href: 01_get-merge-data.html
+    icon: fas fa-table
+    href: 01_data-overview.html
   - text: Descriptive analysis
-    icon: fa-bar-chart
+    icon: fas fa-chart-bar
     href: 02_descriptive-analysis.html
   - text: Models
-    icon: fa-bar-chart
+    icon: fas fa-chart-line
     href: 03_models.html
   - text: Predictions
-    icon: fa-bar-chart
+    icon: fas fa-question-circle
     href: 04_predictions.html
 output:
   html_document:

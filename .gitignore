@@ -11,6 +11,9 @@ data/*
 analysis/_site/*
 analysis/site_libs/*
 
+# Targets stuff
+_targets
+
 # knitr and caching stuff
 */*_files/*
 */*_cache/*

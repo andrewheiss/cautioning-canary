@@ -5,14 +5,34 @@ date: "Last run: `r format(Sys.time(), '%F')`"
 output: 
   html_document:
     code_folding: hide
-params:
-  fig_width: 6
-  fig_height: 3.6
-  fig_height_taller: 5
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r setup, warning=FALSE, message=FALSE}
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knit_print.data.frame <- function(x, ...) {
+  res <- paste(c('', '', kable_styling(kable(x, booktabs = TRUE))), collapse = '\n')
+  asis_output(res)
+}
+
+registerS3method("knit_print", "data.frame", knit_print.data.frame)
+registerS3method("knit_print", "grouped_df", knit_print.data.frame)
+
+knitr::opts_chunk$set(fig.retina = 3,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 90),  # For output
+                      fig.asp = 0.618, fig.width = 7, 
+                      fig.align = "center", out.width = "85%")
+
+options(dplyr.summarise.inform = FALSE,
+        knitr.kable.NA = "")
+```
+
+```{r load-libraries-data, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(targets)
 library(brms)
 library(broom)
 library(tidybayes)
@@ -29,12 +49,18 @@ WARMUP <- 1000
 BAYES_SEED <- 1234
 options(mc.cores = parallel::detectCores())  # Use all cores
 
-canary <- read_rds(here("data", "derived_data", "canary_clean.rds"))
+# Generated via random.org
+set.seed(9936)
 
-# https://www.naturalearthdata.com/downloads/110m-cultural-vectors/
-country_borders <- read_sf(here("data", "raw_data", "Natural Earth", 
-                                "ne_110m_admin_0_countries", 
-                                "ne_110m_admin_0_countries.shp"))
+# Load data
+# Need to use this withr thing because tar_read() and tar_load() need to see the
+# _targets folder in the current directory, but this .Rmd file is in a subfolder
+withr::with_dir(here::here(), {
+  source(tar_read(plot_funs))
+  
+  canary <- tar_read(panel_done_trimmed)
+  tar_load(world_map)
+})
 ```
 
 
@@ -61,18 +87,17 @@ things_to_map <- canary %>%
            TRUE ~ pct_change_csrepress
          ))
 
-map_data <- country_borders %>% 
-  left_join(things_to_map, by = c("ADM0_A3_IS" = "iso3")) %>% 
-  filter(ISO_A3 != "ATA")
+map_data <- world_map %>% 
+  left_join(things_to_map, by = c("ADM0_A3_IS" = "iso3"))
 ```
 
 ## Legislation
 
-```{r map-ngo-laws, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+```{r map-ngo-laws}
 map_ngo_laws <- ggplot() +
   geom_sf(data = map_data, aes(fill = factor(new_laws)),
           color = "black", size = 0.1) +
-  coord_sf(crs = 54030, datum = NA, expand = FALSE) + 
+  coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
   scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#BF0404")(seq(0, 1, length.out = 7)), 
                     na.value = "grey80", breaks = 0:6) +
   # scale_fill_manual(values = scico(7, palette = "devon", direction = -1), 
@@ -95,11 +120,11 @@ map_ngo_laws
 
 ## Civil society repression
 
-```{r map-cs-repression, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+```{r map-cs-repression}
 map_cs_repression <- ggplot() +
   geom_sf(data = map_data, aes(fill = diff_csrepress_trunc),
           color = "black", size = 0.1) +
-  coord_sf(crs = 54030, datum = NA, expand = FALSE) + 
+  coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
   scale_fill_scico(palette = "vik", direction = -1,
                    limits = c(-1, 1) * max(abs(map_data$diff_csrepress_trunc), na.rm = TRUE),
                    breaks = seq(-4, 4, 1), na.value = "grey80") +
@@ -123,7 +148,7 @@ map_cs_repression
 
 ## V-Dem civil society repression and the PTS
 
-```{r model-pts-cs, cache=TRUE, message=FALSE, results="hide"}
+```{r model-pts-cs, message=FALSE, results="hide"}
 diff_cs_pts <- brm(
   bf(v2csreprss ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
   family = student,
@@ -158,34 +183,31 @@ diff_cs_pts_posterior <- canary %>%
   add_predicted_draws(diff_cs_pts, seed = BAYES_SEED)
 ```
 
-```{r plot-draws-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height}
+```{r plot-draws-pts-cs}
 ggplot(diff_cs_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
-  geom_halfeyeh() +
+  stat_halfeye() +
   scale_x_reverse() +
   scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Civil society repression", y = "Political Terror Scale (PTS)") +
   theme_ngo()
 ```
 
-```{r plot-posterior-preds-pts-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+```{r plot-posterior-preds-pts-cs, warning=FALSE, message=FALSE}
 ggplot(diff_cs_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
-  stat_dotsh(quantiles = 100, shape = 19) +
-  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
-                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  stat_dots(quantiles = 100, shape = 19) +
+  stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                         interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
   scale_x_reverse() +
   scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Civil society repression", y = "Political Terror Scale (PTS)",
        caption = "Each • represents an equally likely outcome from the posterior distribution") +
   theme_ngo()
-
-# ggsave("~/Desktop/plot1.pdf", device = cairo_pdf, width = 5, height = 3, units = "in")
-# ggsave("~/Desktop/plot1.png", type = "cairo", dpi = 300, width = 6, height = 3.6, units = "in")
 ```
 
 
 ## Chaudhry NGO regulations and V-Dem's `v2csreprss`
 
-```{r vdem-suparna-plot, warning=FALSE, message=FALSE, fig.width=params$fig_width, fig.height=params$fig_height_taller}
+```{r vdem-suparna-plot, warning=FALSE, message=FALSE}
 canary_barriers <- canary %>% 
   pivot_longer(cols = c(advocacy, entry, funding, barriers_total), 
                names_to = "barrier", values_to = "count") %>% 
@@ -205,7 +227,7 @@ ggplot(canary_barriers, aes(x = count, y = v2csreprss)) +
 
 ## Chaudhry NGO regulations and the PTS
 
-```{r model-pts-restrictions, cache=TRUE, message=FALSE, warning=FALSE, results="hide"}
+```{r model-pts-restrictions, message=FALSE, warning=FALSE, results="hide"}
 diff_ngo_pts <- brm(
   bf(barriers_total ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
   family = student,
@@ -240,19 +262,19 @@ diff_ngo_pts_posterior <- canary %>%
   add_predicted_draws(diff_ngo_pts, seed = BAYES_SEED)
 ```
 
-```{r plot-draws-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height}
+```{r plot-draws-pts-ngo}
 ggplot(diff_ngo_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
-  geom_halfeyeh() +
+  stat_halfeye() +
   scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)") +
   theme_ngo()
 ```
 
-```{r plot-posterior-preds-pts-ngo, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+```{r plot-posterior-preds-pts-ngo, warning=FALSE, message=FALSE}
 ggplot(diff_ngo_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
-  stat_dotsh(quantiles = 100, shape = 19) +
-  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
-                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  stat_dots(quantiles = 100, shape = 19) +
+  stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                         interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
   scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)",
        caption = "Each • represents an equally likely outcome from the posterior distribution") +
@@ -262,7 +284,7 @@ ggplot(diff_ngo_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), col
 
 # Conflict and civil society restrictions
 
-```{r model-conflict-cs, cache=TRUE, message=FALSE, results="hide"}
+```{r model-conflict-cs, message=FALSE, results="hide"}
 diff_cs_conflict <- brm(
   bf(v2csreprss ~ 0 + armed_conflict, sigma ~ 0 + armed_conflict),
   family = student,
@@ -299,28 +321,25 @@ diff_cs_conflict_posterior <- canary %>%
   mutate(armed_conflict = factor(armed_conflict, labels = c("No armed conflict", "Armed conflict")))
 ```
 
-```{r plot-draws-conflict-cs, fig.width=params$fig_width, fig.height=params$fig_height}
+```{r plot-draws-conflict-cs}
 ggplot(diff_cs_conflict_draws, aes(y = .variable, x = .value, fill = .variable)) + 
-  geom_halfeyeh() +
+  stat_halfeye() +
   scale_x_reverse() +
   scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Civil society repression", y = "Armed conflict") +
   theme_ngo()
 ```
 
-```{r plot-posterior-preds-conflict-cs, fig.width=params$fig_width, fig.height=params$fig_height, warning=FALSE, message=FALSE}
+```{r plot-posterior-preds-conflict-cs, warning=FALSE, message=FALSE}
 ggplot(diff_cs_conflict_posterior, aes(x = .prediction, y = fct_rev(armed_conflict), color = fct_rev(armed_conflict))) +
-  stat_dotsh(quantiles = 100, shape = 19) +
-  stat_pointintervalh(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
-                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
+  stat_dots(quantiles = 100, shape = 19) +
+  stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
+                         interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
   scale_x_reverse() +
   scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
   labs(x = "Civil society repression", y = "Armed conflict",
        caption = "Each • represents an equally likely outcome from the posterior distribution") +
   theme_ngo()
-
-# ggsave("~/Desktop/plot1.pdf", device = cairo_pdf, width = 5, height = 3, units = "in")
-# ggsave("~/Desktop/plot1.png", type = "cairo", dpi = 300, width = 6, height = 3.6, units = "in")
 ```
 
 
@@ -331,7 +350,7 @@ library(GGally)
 repression_only <- canary %>% 
   filter(year == 2014) %>% 
   select(barriers_total, PTS, gh_alljourn, 
-         v2clacfree, v2csrlgrep, v2mecenefm, v2mecenefi, v2meharjrn, v2meslfcen,
+         v2clacfree, v2csrlgrep, v2mecenefm, v2meharjrn, v2meslfcen,
          v2x_clphy, v2x_clpol, v2x_clpriv, v2x_freexp, v2csreprss)
 
 ggscatmat(repression_only, alpha = 0.4) + 
