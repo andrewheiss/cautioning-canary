@@ -58,7 +58,7 @@ withr::with_dir(here::here(), {
   tar_load(un_gdp)
   tar_load(ucdp_prio_clean)
   
-  tar_load(panel_done_trimmed)
+  tar_load(panel)
 })
 ```
 
@@ -78,7 +78,7 @@ To get consistency in country codes, we do this:
 - In both COW and GW codes, modern Vietnam is 816, but `countrycode()` thinks the COW code is 817, which is old South Vietnam (see [issue](https://github.com/vincentarelbundock/countrycode/issues/16)), so we use `custom_match` to force 816 to recode to 816.
 - Also, following V-Dem, we treat Czechoslovakia (GW/COW 315) and Czech Republic (GW/COW 316) as the same continuous country (V-Dem has both use ID 157).
 
-We have `r panel_done_trimmed %>% distinct(gwcode) %>% nrow()` countries in this data, spanning `r panel_done_trimmed %>% distinct(year) %>% nrow()` possible years. Here's a lookup table of all the countries included:
+We have `r panel %>% distinct(gwcode) %>% nrow()` countries in this data, spanning `r panel %>% distinct(year) %>% nrow()` possible years. Here's a lookup table of all the countries included:
 
 ```{r show-final-countries}
 skeleton$skeleton_lookup %>% 
@@ -163,9 +163,12 @@ We use a bunch of variables from the [Varieties of Democracy project](https://ww
   - Physical violence index: `v2x_clphy`
   - Private civil liberties index: `v2x_clpriv`
   - Political civil liberties index: `v2x_clpol`
-- **Democracy**
-  - Polyarchy index: `v2x_polyarchy`
-  - Regimes of the world category: `v2x_regime_amb`
+- **Democracy and governance stuff**
+  - Polyarchy index (for electoral democracies): `v2x_polyarchy`
+  - Liberal democracy index (for democracies in general): `v2x_libdem`
+  - Regimes of the world category: `v2x_regime`
+  - Political corruption index: `v2x_corr` (less to more, 0-1) (public sector + executive + legislative + judicial corruption)
+  - Rule of law index: `v2x_rule`
 
 
 ```{r glimpse-vdem}
@@ -207,7 +210,7 @@ glimpse(ucdp_prio_clean)
 Finally, we join everything together in one nice clean panel:
 
 ```{r glimpse-combined}
-glimpse(panel_done_trimmed)
+glimpse(panel)
 ```
 
 \ 
@@ -216,7 +219,7 @@ glimpse(panel_done_trimmed)
 # Basic data details
 
 ```{r show-country-years-summary}
-panel_done_trimmed %>% 
+panel %>% 
   summarize(`Number of countries` = length(unique(gwcode)),
             `Number of years` = length(unique(year)),
             `First year` = min(year),
@@ -228,7 +231,7 @@ panel_done_trimmed %>%
 Countries across years:
 
 ```{r show-country-year-count}
-panel_done_trimmed %>% 
+panel %>% 
   count(Year = year, name = "Number of countries") %>% 
   kbl(align = "c") %>% 
   kable_styling()
@@ -242,7 +245,7 @@ panel_done_trimmed %>%
 We were super careful to ensure that our data is as complete as possible.
 
 ```{r plot-missing}
-panel_done_trimmed %>% 
+panel %>% 
   vis_miss() +
   theme_ngo() +
   theme(axis.text.x = element_text(hjust = 0, angle = 45),
@@ -252,7 +255,7 @@ panel_done_trimmed %>%
 There are only a tiny handful of rows with missing data: Serbia pre-2006.
 
 ```{r show-missing-rows, class.source="fold-show"}
-panel_done_trimmed %>% 
+panel %>% 
   filter(is.na(advocacy)) %>% 
   select(gwcode, year, country, iso3, advocacy, entry, funding)
 ```
@@ -262,7 +265,7 @@ That's because our anti-NGO data doesn't include data for those years. That's fi
 There are just two instances of missing data with PTS scores:
 
 ```{r show-missing-pts, class.source="fold-show"}
-panel_done_trimmed %>% 
+panel %>% 
   filter(is.na(PTS)) %>% 
   select(gwcode, year, country, iso3, PTS, PTS_factor)
 ```
@@ -272,7 +275,7 @@ We just ignore them, I guess.
 With that, here's our actual final cleaned data:
 
 ```{r plot-missing-laws}
-panel_done_trimmed %>% 
+panel %>% 
   filter(laws) %>% 
   vis_miss() +
   theme_ngo() +

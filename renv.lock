@@ -44,13 +44,6 @@
       "Repository": "CRAN",
       "Hash": "b56998fff55e4a4b4860ad6e8c67e0f9"
     },
-    "GGally": {
-      "Package": "GGally",
-      "Version": "2.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b1be92f7d872bd8b7d97ce8a21634ad2"
-    },
     "HDInterval": {
       "Package": "HDInterval",
       "Version": "0.2.2",
@@ -345,10 +338,10 @@
     },
     "callr": {
       "Package": "callr",
-      "Version": "3.5.1",
+      "Version": "3.6.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "b7d7f1e926dfcd57c74ce93f5c048e80"
+      "Hash": "25da2c6fba6a13b5da94e37acdb3f532"
     },
     "cellranger": {
       "Package": "cellranger",
@@ -406,6 +399,19 @@
       "Repository": "CRAN",
       "Hash": "385cd5623e6f8f27dc79437398dceed1"
     },
+    "cmdstanr": {
+      "Package": "cmdstanr",
+      "Version": "0.3.0.9000",
+      "Source": "GitHub",
+      "Remotes": "stan-dev/posterior",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "cmdstanr",
+      "RemoteUsername": "stan-dev",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "d157a4eb209fcb77ba66135afa9ceef34b590f8f",
+      "Hash": "cd4794c887123cf866dd8268e1af61a6"
+    },
     "coda": {
       "Package": "coda",
       "Version": "0.19-4",
@@ -450,10 +456,10 @@
     },
     "cpp11": {
       "Package": "cpp11",
-      "Version": "0.2.6",
+      "Version": "0.2.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f08909ebdad90b19d8d3930da4220564"
+      "Hash": "730eebcc741a5c36761f7d4d0f5e37b8"
     },
     "crayon": {
       "Package": "crayon",
@@ -924,6 +930,13 @@
       "Repository": "CRAN",
       "Hash": "5f2466f5127e0ce67e44bb381387eeca"
     },
+    "lmtest": {
+      "Package": "lmtest",
+      "Version": "0.9-38",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b0edacc02f7a3dad41a1afc385e929f4"
+    },
     "locfit": {
       "Package": "locfit",
       "Version": "1.5-9.4",
@@ -1024,10 +1037,15 @@
     },
     "modelsummary": {
       "Package": "modelsummary",
-      "Version": "0.6.6",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "92fdf4cd0e2d327c87d61b84a077ebc5"
+      "Version": "0.6.6.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "modelsummary",
+      "RemoteUsername": "vincentarelbundock",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "55d0d91b14464de58a5e05624c983fc3bad00602",
+      "Hash": "ee33fb440e8877cf8f7f138e0347914c"
     },
     "multicool": {
       "Package": "multicool",
@@ -1124,6 +1142,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "7e25ed8dc4f16eada2532a61107d0dc7"
+    },
+    "pROC": {
+      "Package": "pROC",
+      "Version": "1.17.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e25078f6e770b81121672874474f69c0"
     },
     "packrat": {
       "Package": "packrat",
@@ -1222,6 +1247,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "03b7076c234cb3331288919983326c55"
+    },
+    "posterior": {
+      "Package": "posterior",
+      "Version": "0.1.4",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "posterior",
+      "RemoteUsername": "stan-dev",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "0184c56f0f6f7a7f9183f418983c1d028fef2942",
+      "Hash": "6bf38ca2bc1db016e81191fc8dc7694f"
     },
     "praise": {
       "Package": "praise",
@@ -1341,13 +1378,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "cb4d6f77f163b8d685833f2a59e7cb4c"
-    },
-    "reshape": {
-      "Package": "reshape",
-      "Version": "0.8.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0f4d941129e00ed34a7d192b1da7ccef"
     },
     "reshape2": {
       "Package": "reshape2",
@@ -1587,6 +1617,13 @@
       "Repository": "CRAN",
       "Hash": "c893326d7a0f169964e16c94edfba375"
     },
+    "tensorA": {
+      "Package": "tensorA",
+      "Version": "0.36.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fd792ceac77f96b647fa8d6e1788969a"
+    },
     "testthat": {
       "Package": "testthat",
       "Version": "3.0.2",
@@ -1638,10 +1675,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.30",
+      "Version": "0.31",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "066f49a225dc3215cb1f32bc23535f88"
+      "Hash": "25b572f764f3c19fef9aac33b5724f3d"
     },
     "units": {
       "Package": "units",
@@ -1652,10 +1689,10 @@
     },
     "utf8": {
       "Package": "utf8",
-      "Version": "1.1.4",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4a5081acfb7b81a572e4384a7aaf2af1"
+      "Hash": "c3ad47dc6da0751f18ed53c4613e3ac7"
     },
     "uuid": {
       "Package": "uuid",
@@ -1722,10 +1759,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.21",
+      "Version": "0.22",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f3ddcca198959a42e8cb6b06c30d4f1e"
+      "Hash": "eab2f8ba53809c321813e72ecbbd19ba"
     },
     "xml2": {
       "Package": "xml2",
@@ -1754,6 +1791,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2826c5d9efb0a88f657c7a679c7106db"
+    },
+    "yardstick": {
+      "Package": "yardstick",
+      "Version": "0.0.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b49509a72e4c99ef95036c061885ab07"
     },
     "zip": {
       "Package": "zip",

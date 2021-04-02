@@ -21,13 +21,19 @@ create_panel_skeleton <- function() {
   # Serbia & Montenegro as 345 in COW codes (see
   # https://www.andybeger.com/states/articles/differences-gw-cow.html)
   #
-  # Also, because the World Bank doesn't include it in the WDI, we omit Taiwan (713)
+  # Following V-Dem, we treat Czechoslovakia (GW/COW 315) and Czech Republic
+  # (GW/COW 316) as the same continuous country (V-Dem has both use ID 157).
+  #
+  # Also, because the World Bank doesn't include it in the WDI, we omit
+  # Taiwan (713). We also omit East Germany (265) and South Yemen (680).
 
-  panel_skeleton <- state_panel(1995, 2014, partial = "any") %>%
+  panel_skeleton <- state_panel(1990, 2014, partial = "any") %>%
     # Remove microstates
     filter(!(gwcode %in% microstates$gwcode)) %>%
-    # Remove Taiwan, the Bahamas, Belize, and Brunei
-    filter(!(gwcode %in% c(713, 31, 80, 835))) %>%
+    # Deal with Czechia
+    mutate(gwcode = recode(gwcode, `315` = 316L)) %>%
+    # Remove East Germany, South Yemen, Taiwan, the Bahamas, Belize, and Brunei
+    filter(!(gwcode %in% c(265, 680, 713, 31, 80, 835))) %>%
     mutate(cowcode = countrycode(gwcode, origin = "gwn", destination = "cown",
                                  custom_match = c("816" = 816L, "340" = 345L)),
            country = countrycode(cowcode, origin = "cown", destination = "country.name",
@@ -172,8 +178,12 @@ load_clean_pts <- function(path, skeleton) {
     mutate(PTS = coalesce(PTS_S, PTS_A)) %>%
     mutate(gwcode = countrycode(COW_Code_N, origin = "cown", destination = "gwn",
                                 custom_match = c("679" = 678L, "816" = 816L))) %>%
+    # Get rid of things like the EU, USSR, Crimea, Palestine, and Western Sahara
+    filter(!is.na(gwcode)) %>%
     select(year = Year, gwcode, PTS) %>%
-    mutate(PTS_factor = factor(PTS, levels = 1:5, labels = paste0("Level ", 1:5)))
+    mutate(PTS_factor = factor(PTS, levels = 1:5,
+                               labels = paste0("Level ", 1:5),
+                               ordered = TRUE))
 
   return(pts_clean)
 }
@@ -240,7 +250,7 @@ load_clean_vdem <- function(path) {
   vdem_raw <- read_rds(path) %>% as_tibble()
 
   vdem_clean <- vdem_raw %>%
-    filter(year >= 1995) %>%
+    filter(year >= 1990) %>%
     select(country_name, year, cowcode = COWcode,
 
            # Civil society stuff
@@ -270,13 +280,22 @@ load_clean_vdem <- function(path) {
            v2x_clpriv,  # Private civil liberties index
            v2x_clpol,   # Political civil liberties index
 
-           # Democracy
-           v2x_polyarchy, v2x_regime_amb,
+           # Democracy and governance stuff
+           v2x_polyarchy,  # Polyarchy index (for electoral democracies)
+           v2x_libdem,     # Liberal democracy index (for democracies in general)
+           v2x_regime,     # Regimes of the world
+           v2x_corr,       # Political corruption index
+           v2x_rule,       # Rule of law index
     ) %>%
+    # Get rid of East Germany
+    filter(cowcode != 265) %>%
     mutate(gwcode = countrycode(cowcode, origin = "cown", destination = "gwn",
                                 custom_match = c("403" = 403L, "591" = 591L,
                                                  "679" = 678L, "935" = 935L,
-                                                 "816" = 816L))) %>%
+                                                 "816" = 816L, "260" = 260L,
+                                                 "315" = 316L))) %>%
+    # Get rid of Hong Kong, Palestine (West Bank and Gaza), and Somaliland
+    filter(!is.na(cowcode)) %>%
     select(-country_name, -cowcode)
 
   return(vdem_clean)
@@ -399,6 +418,7 @@ combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
     left_join(un_gdp, by = c("gwcode", "year")) %>%
     left_join(un_pop, by = c("gwcode", "year")) %>%
     mutate(gdpcap = un_gdp / population,
+           gdp_log = log(un_gdp),
            gdpcap_log = log(gdpcap),
            population_log = log(population)) %>%
     left_join(chaudhry_clean, by = c("gwcode", "year")) %>%
@@ -406,24 +426,27 @@ combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
     # Chaudhry's Serbia data starts with 2006 and doesn't include pre-2006 stuff,
     # so we mark those as false. Also, Chaudhry starts in 1992 for Russia and 1993
     # for Czechia, so we mark those as false too
-    mutate(laws = year %in% 1990:2014) %>%
+    mutate(laws = year %in% 1990:2013) %>%
     mutate(laws = case_when(
       gwcode == 345 & year <= 2005 ~ FALSE,  # Serbia
-      # gwcode == 316 & year <= 1992 ~ FALSE,  # Czechia
-      # gwcode == 365 & year <= 1991 ~ FALSE,  # Russia
+      gwcode == 316 & year <= 1992 ~ FALSE,  # Czechia
+      gwcode == 365 & year <= 1991 ~ FALSE,  # Russia
       TRUE ~ laws  # Otherwise, use FALSE
     )) %>%
     left_join(pts_clean, by = c("gwcode", "year")) %>%
     left_join(killings_all, by = c("gwcode", "year")) %>%
-    mutate_at(vars(starts_with("gh")), ~coalesce(., 0L)) %>%
+    mutate(across(starts_with("gh"), ~coalesce(., 0L))) %>%
+    mutate(gh_range = year >= 2002) %>%
     left_join(vdem_clean, by = c("gwcode", "year")) %>%
     left_join(ucdp_prio_clean, by = c("gwcode", "year")) %>%
     mutate(armed_conflict = coalesce(armed_conflict, FALSE),
-           armed_conflict_num = as.numeric(armed_conflict))
-
+           armed_conflict_num = as.numeric(armed_conflict)) %>%
+    mutate(pred_group = ifelse(year >= 2011, "Testing", "Training"))
 
   testthat::expect_equal(nrow(panel_skeleton),
                          nrow(panel_done))
+
+  panel_done <- panel_done %>% filter(year < 2014)
 
   return(panel_done)
 }
@@ -433,25 +456,37 @@ lag_data <- function(df) {
   panel_lagged <- df %>%
     group_by(gwcode) %>%
     # Lag all the time-varying variables
-    mutate_at(vars(starts_with("advocacy"), starts_with("entry"),
-                   starts_with("funding"), starts_with("barriers"),
-                   starts_with("population"), starts_with("PTS"),
-                   starts_with("gh"), starts_with("v2"), v2x_polyarchy,
-                   starts_with("armed_"), starts_with("gdp")),
-              list(lag1 = ~lag(., 1), lag2 = ~lag(., 2), lag3 = ~lag(., 3),
-                   lag4 = ~lag(., 4), lag5 = ~lag(., 5))) %>%
-    # Lead PTS in case we want to use PTS_lead1 instead of IVs_lag1
-    mutate_at(vars(PTS, PTS_factor),
-              list(lead1 = ~lead(., 1), lead2 = ~lead(., 2), lead3 = ~lead(., 3),
-                   lead4 = ~lead(., 4), lead5 = ~lead(., 5))) %>%
+    mutate(across(c(starts_with("advocacy"), starts_with("entry"),
+                    starts_with("funding"), starts_with("barriers"),
+                    starts_with("population"), starts_with("PTS"),
+                    starts_with("gh"), starts_with("v2"),
+                    un_trade_pct_gdp,
+                    starts_with("armed_"), starts_with("gdp")),
+                  list(lag1 = ~lag(., 1), lag2 = ~lag(., 2)))) %>%
+    # Lead outcome variables so we can use DV_lead1 instead of IVs_lag1
+    mutate(across(c(PTS, PTS_factor, v2x_clphy, v2x_clpriv),
+                  list(lead1 = ~lead(., 1), lead2 = ~lead(., 2)))) %>%
+    # To do fancy Bell and Jones adjustment (https://doi.org/10.1017/psrm.2014.7)
+    # (aka Mundlak devices), we split explanatory variables into a meaned
+    # version (\bar{x}) and a de-meaned version (x - \bar{x}) so that they
+    # can explain the within-country and between-country variation.
+    mutate(across(c(starts_with("advocacy"), starts_with("entry"),
+                    starts_with("funding"), starts_with("barriers"),
+                    starts_with("population"), starts_with("gh"),
+                    starts_with("v2"), starts_with("gdp"), un_trade_pct_gdp),
+                  list(between = ~mean(., na.rm = TRUE),  # Between
+                       within = ~. - mean(., na.rm = TRUE)))) %>%  # Within
     ungroup()
 
   return(panel_lagged)
 }
 
+create_training <- function(df) {
+  df %>% filter(pred_group == "Training")
+}
 
-trim_data <- function(df) {
-  df %>% filter(year >= 2000)
+create_testing <- function(df) {
+  df %>% filter(pred_group == "Testing")
 }
 
 

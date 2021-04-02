@@ -58,7 +58,7 @@ set.seed(9936)
 withr::with_dir(here::here(), {
   source(tar_read(plot_funs))
   
-  canary <- tar_read(panel_done_trimmed)
+  canary <- tar_read(panel)
   tar_load(world_map)
 })
 ```
@@ -68,19 +68,19 @@ withr::with_dir(here::here(), {
 
 ```{r make-map-data}
 things_to_map <- canary %>% 
-  filter(year %in% c(2000, 2014)) %>% 
+  filter(year %in% c(1990, 2013)) %>% 
   select(country, year, iso3, barriers_total, PTS_factor, v2csreprss) %>% 
   pivot_wider(names_from = year, values_from = c(barriers_total, PTS_factor, v2csreprss)) %>% 
-  mutate(new_laws = barriers_total_2014 - barriers_total_2000,
+  mutate(new_laws = barriers_total_2013 - barriers_total_1990,
          new_laws = ifelse(new_laws <= 0, 0, new_laws),
          new_laws = ceiling(new_laws)) %>% 
-  mutate(diff_csrepress = v2csreprss_2014 - v2csreprss_2000,
+  mutate(diff_csrepress = v2csreprss_2013 - v2csreprss_1990,
          diff_csrepress_trunc = case_when(
            diff_csrepress >= 2 ~ 2,
            diff_csrepress <= -2 ~ -2,
            TRUE ~ diff_csrepress
          )) %>% 
-  mutate(pct_change_csrepress = diff_csrepress / v2csreprss_2000,
+  mutate(pct_change_csrepress = diff_csrepress / v2csreprss_1990,
          pct_change_csrepress_trunc = case_when(
            pct_change_csrepress >= 5 ~ 5,
            pct_change_csrepress <= -5 ~ -5,
@@ -98,14 +98,14 @@ map_ngo_laws <- ggplot() +
   geom_sf(data = map_data, aes(fill = factor(new_laws)),
           color = "black", size = 0.1) +
   coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
-  scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#BF0404")(seq(0, 1, length.out = 7)), 
+  scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#BF0404")(seq(0, 1, length.out = 8)), 
                     na.value = "grey80", breaks = 0:6) +
   # scale_fill_manual(values = scico(7, palette = "devon", direction = -1), 
   #                   na.value = "grey80", breaks = 0:6) +
   guides(fill = guide_legend(nrow = 1, label.position = "bottom",
                              keywidth = unit(1, units = "lines"),
                              keyheight = unit(0.6, units = "lines"))) +
-  labs(fill = "Restrictive NGO laws passed between 2000 and 2014") +
+  labs(fill = "Restrictive NGO laws passed between 1990 and 2014") +
   theme_ngo() +
   theme(panel.border = element_blank(),
         legend.box.margin = margin(t = 5),
@@ -128,10 +128,10 @@ map_cs_repression <- ggplot() +
   scale_fill_scico(palette = "vik", direction = -1,
                    limits = c(-1, 1) * max(abs(map_data$diff_csrepress_trunc), na.rm = TRUE),
                    breaks = seq(-4, 4, 1), na.value = "grey80") +
-  guides(fill = guide_colorbar(reverse = TRUE, ticks = FALSE,
+  guides(fill = guide_colorbar(reverse = FALSE, ticks = FALSE,
                                barwidth = unit(7, units = "lines"),
                                barheight = unit(0.5, units = "lines"))) +
-  labs(fill = "Change in V-Dem civil society repression between 2000 and 2014") +
+  labs(fill = "Change in V-Dem civil society repression between 1990 and 2013") +
   theme_ngo() +
   theme(panel.border = element_blank(),
         legend.box.margin = margin(t = 5),
@@ -341,19 +341,3 @@ ggplot(diff_cs_conflict_posterior, aes(x = .prediction, y = fct_rev(armed_confli
        caption = "Each • represents an equally likely outcome from the posterior distribution") +
   theme_ngo()
 ```
-
-
-# Civil society restrictions and other kinds of repression
-
-```{r repression-matrix, fig.width=12, fig.height=12, warning=FALSE, message=FALSE}
-library(GGally)
-repression_only <- canary %>% 
-  filter(year == 2014) %>% 
-  select(barriers_total, PTS, gh_alljourn, 
-         v2clacfree, v2csrlgrep, v2mecenefm, v2meharjrn, v2meslfcen,
-         v2x_clphy, v2x_clpol, v2x_clpriv, v2x_freexp, v2csreprss)
-
-ggscatmat(repression_only, alpha = 0.4) + 
-  theme_ngo(base_size = 6)
-```
-

@@ -1,0 +1,179 @@
+---
+title: "Model details and diagnostics"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+output: 
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knit_print.data.frame <- function(x, ...) {
+  res <- paste(c('', '', kable_styling(kable(x, booktabs = TRUE))), collapse = '\n')
+  asis_output(res)
+}
+
+registerS3method("knit_print", "data.frame", knit_print.data.frame)
+registerS3method("knit_print", "grouped_df", knit_print.data.frame)
+
+knitr::opts_chunk$set(fig.retina = 3,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 90),  # For output
+                      fig.asp = 0.618, fig.width = 7, 
+                      fig.align = "center", out.width = "85%")
+
+options(dplyr.summarise.inform = FALSE,
+        knitr.kable.NA = "")
+```
+
+```{r load-libraries-data, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(targets)
+library(broom)
+library(broom.mixed)
+library(tidybayes)
+library(glue)
+library(brms)
+library(scales)
+library(kableExtra)
+library(modelsummary)
+library(lubridate)
+library(here)
+
+# Generated via random.org
+set.seed(9936)
+
+# Load models
+withr::with_dir(here::here(), {
+  source(tar_read(plot_funs))
+  
+  # Load big list of models
+  tar_load(model_df)
+  
+  # Load actual model objects
+  # This works, but doesn't put the models in the dependency network for some reason
+  # tar_load(model_df$model)
+  
+  # This also works but again doesn't register correctly as dependencies
+  # tar_load(starts_with("m_clpriv"))
+  
+  # So we do it this manual way
+  tar_load(c(m_pts_baseline, m_pts_total, m_pts_advocacy, 
+             m_pts_entry, m_pts_funding, m_pts_v2csreprss, 
+             m_pts_baseline_rewb, m_pts_total_rewb, m_pts_advocacy_rewb, 
+             m_pts_entry_rewb, m_pts_funding_rewb, m_pts_v2csreprss_rewb, 
+             m_clphy_baseline, m_clphy_total, m_clphy_advocacy, 
+             m_clphy_entry, m_clphy_funding, m_clphy_v2csreprss, 
+             m_clphy_baseline_rewb, m_clphy_total_rewb, m_clphy_advocacy_rewb, 
+             m_clphy_entry_rewb, m_clphy_funding_rewb, m_clphy_v2csreprss_rewb, 
+             m_clpriv_baseline, m_clpriv_total, m_clpriv_advocacy, 
+             m_clpriv_entry, m_clpriv_funding, m_clpriv_v2csreprss, 
+             m_clpriv_baseline_rewb, m_clpriv_total_rewb, m_clpriv_advocacy_rewb, 
+             m_clpriv_entry_rewb, m_clpriv_funding_rewb, m_clpriv_v2csreprss_rewb))
+})
+```
+
+
+# Model run times
+
+## Models for E~1~ (civil society laws)
+
+```{r running-time-e1}
+models_e1 <- model_df %>% 
+  filter(!str_detect(model, "v2csreprss")) %>% 
+  mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
+  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+
+model_time_e1 <- models_e1 %>% 
+  mutate(duration = map(actual_model, ~rstan::get_elapsed_time(.$fit)),
+         duration = map(duration, ~rownames_to_column(as_tibble(.)))) %>% 
+  select(-actual_model) %>% 
+  unnest(duration) %>% 
+  mutate(model = glue("<code>{model}</code>")) %>% 
+  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
+           `Random effects` = re, `Family` = family) %>% 
+  summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
+  ungroup() %>% 
+  arrange(Outcome, `Main predictor`, `Random effects`)
+
+total_row_e1 <- tibble(Outcome = "Total", 
+                       `Total time (i.e. longest chain)` = 
+                         as.duration(sum(model_time_e1$`Total time (i.e. longest chain)`)))
+
+model_time_e1 <- model_time_e1 %>% 
+  bind_rows(total_row_e1)
+
+model_time_e1 %>% 
+  select(-Outcome) %>% 
+  kbl(escape = FALSE) %>% 
+  pack_rows(index = table(fct_inorder(model_time_e1$Outcome))) %>% 
+  kable_styling()
+```
+
+
+## Models for E~2~ (civil society environment)
+
+```{r running-time-e2}
+models_e2 <- model_df %>% 
+  filter(str_detect(model, "baseline") | str_detect(model, "v2csreprss")) %>% 
+  mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
+  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+
+model_time_e2 <- models_e2 %>% 
+  mutate(duration = map(actual_model, ~rstan::get_elapsed_time(.$fit)),
+         duration = map(duration, ~rownames_to_column(as_tibble(.)))) %>% 
+  select(-actual_model) %>% 
+  unnest(duration) %>% 
+  mutate(model = glue("<code>{model}</code>")) %>% 
+  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
+           `Random effects` = re, `Family` = family) %>% 
+  summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
+  ungroup() %>% 
+  arrange(Outcome, `Main predictor`, `Random effects`)
+
+total_row_e2 <- tibble(Outcome = "Total", 
+                       `Total time (i.e. longest chain)` = 
+                         as.duration(sum(model_time_e2$`Total time (i.e. longest chain)`)))
+
+model_time_e2 <- model_time_e2 %>% 
+  bind_rows(total_row_e2)
+
+model_time_e2 %>% 
+  select(-Outcome) %>% 
+  kbl(escape = FALSE) %>% 
+  pack_rows(index = table(fct_inorder(model_time_e2$Outcome))) %>% 
+  kable_styling()
+```
+
+
+
+\ 
+
+# Actual code
+
+All the models are run with a **`targets`** pipeline with dataset-specific functions that live in these files:
+
+- `R/models_pts.R` (for PTS-based models)
+- `R/models_clphy.R` (for V-Dem physical violence-based models)
+- `R/models_clpriv.R` (for V-Dem private civil liberties-based models)
+
+To keep the analysis relatively self contained here in the analysis notebook, and to make it so there's no need to hunt through the GitHub repository to find the actual code, here's that code:
+
+#### `R/models_pts.R`
+
+```{r, code=xfun::read_utf8(here::here("R", "models_pts.R")), eval=FALSE, class.source="fold-hide"}
+```
+
+#### `R/models_clphy.R`
+
+```{r, code=xfun::read_utf8(here::here("R", "models_clphy.R")), eval=FALSE, class.source="fold-hide"}
+```
+
+#### `R/models_clpriv.R`
+
+```{r, code=xfun::read_utf8(here::here("R", "models_clpriv.R")), eval=FALSE, class.source="fold-hide"}
+```

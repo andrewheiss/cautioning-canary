@@ -15,7 +15,15 @@ navbar:
     href: 02_descriptive-analysis.html
   - text: Models
     icon: fas fa-chart-line
-    href: 03_models.html
+    menu:
+      - text: "Modeling choices"
+        href: 03_modeling-choices.html
+      - text: "Model details and diagnostics"
+        href: 03_model-details.html
+      - text: "E1: Laws predict deteriorating human rights"
+        href: 03_laws-repression.html
+      - text: "E2: Civil society environment predicts deteriorating human rights"
+        href: 03_environment-repression.html
   - text: Predictions
     icon: fas fa-question-circle
     href: 04_predictions.html

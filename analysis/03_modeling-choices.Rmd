@@ -1,0 +1,192 @@
+---
+title: "Modeling choices"
+author: "Suparna Chaudhry and Andrew Heiss"
+date: "Last run: `r format(Sys.time(), '%F')`"
+output: 
+  html_document:
+    code_folding: show
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knit_print.data.frame <- function(x, ...) {
+  res <- paste(c('', '', kable_styling(kable(x, booktabs = TRUE))), collapse = '\n')
+  asis_output(res)
+}
+
+registerS3method("knit_print", "data.frame", knit_print.data.frame)
+registerS3method("knit_print", "grouped_df", knit_print.data.frame)
+
+knitr::opts_chunk$set(fig.retina = 3,
+                      tidy.opts = list(width.cutoff = 120),  # For code
+                      options(width = 90),  # For output
+                      fig.asp = 0.618, fig.width = 7, 
+                      fig.align = "center", out.width = "85%")
+
+options(dplyr.summarise.inform = FALSE,
+        knitr.kable.NA = "")
+```
+
+```{r load-libraries-data, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(targets)
+library(broom)
+library(janitor)
+library(brms)
+library(lme4)
+library(lmtest)  # For log ratio tests
+library(performance)  # For ICCs
+library(scales)
+library(modelsummary)
+library(here)
+
+CHAINS <- 4
+ITER <- 2000
+WARMUP <- 1000
+BAYES_SEED <- 1234
+
+options(mc.cores = parallel::detectCores(),
+        brms.backend = "cmdstanr")
+
+# Generated via random.org
+set.seed(9936)
+
+# Load data
+# Need to use this withr thing because tar_read() and tar_load() need to see the
+# _targets folder in the current directory, but this .Rmd file is in a subfolder
+withr::with_dir(here::here(), {
+  source(tar_read(plot_funs))
+  
+  canary <- tar_read(panel_lagged)
+})
+
+# canary <- canary %>%
+#   mutate(gwcode = as.factor(gwcode), year = as.factor(year)) %>%  # Make a factor
+#   mutate(PTS_factor_lead1 = ordered(PTS_factor_lead1)) %>%  # Make this ordered
+#   # To do fancy Bell and Jones adjustment (https://doi.org/10.1017/psrm.2014.7)
+#   # (aka Mundlak devices), explanatory variables should be split into a meaned
+#   # version (\bar{x}) and a de-meaned version (x - \bar{x}) so that they can
+#   # explain the within-group and between-group variation. We de-mean three variables here:
+#   group_by(gwcode) %>%
+#   mutate_at(vars(v2csreprss, v2x_polyarchy, gdpcap_log),
+#             list(between = ~mean(., na.rm = TRUE),  # Between, for countries
+#                  within = ~. - mean(., na.rm = TRUE))) %>%   # Within, for countries
+#   ungroup()
+```
+
+# Interpretation reminders
+
+I always forget how to interpret these dang within/between coefficients in REWB models, so here's a reminder:
+
+- "Within" coefficients show what happens as you move up and down from the average level.
+  - Template = increasing 1 unit of `x` above the average in a typical country is associated with a β change in `y`
+- "Between" coefficients show what happens as you move the whole average up. They're trickier (and less important) to interpret. [This post](https://statisticalhorizons.com/between-within-contextual-effects) explains more, along with [Bell, Fairbrother, and Jones (2018)](https://doi.org/10.1007/s11135-018-0802-x).
+
+
+# Check if multilevel models are warranted
+
+First we can start with a simple null model to see what the effect of country and year is on our outcome (i.e. how much do country and year alone explain the variation in repression?)
+
+```{r null-models}
+m0_pts <- lmer(PTS_lead1 ~ (1 | year) + (1 | gwcode),
+               REML = FALSE, data = canary)
+m0_clphy <- lmer(v2x_clphy_lead1 ~ (1 | year) + (1 | gwcode),
+               REML = FALSE, data = canary)
+m0_clpriv <- lmer(v2x_clpriv_lead1 ~ (1 | year) + (1 | gwcode),
+               REML = FALSE, data = canary)
+```
+
+We then calculate the intraclass correlation coefficients (ICC) for year and country:
+
+```{r icc-models}
+# This shows just the ICC. modelsummary() helpfully includes it.
+# icc(m0_pts)
+
+modelsummary(list(m0_pts, m0_clphy, m0_clpriv),
+             estimate = "{estimate}", statistic = NULL,
+             gof_map = list(list("raw" = "icc", "clean" = "ICC", "fmt" = 4)))
+```
+
+These values represent the variation in the outcome variable that can be explained by the country/year structure, which is a *ton*! For the PTS model, for instance, the ICC is `r round(icc(m0_pts)$ICC_adjusted, 4)`, meaning that the random effects structure explains `r percent(icc(m0_pts)$ICC_adjusted)` of the variation in PTS.
+
+We can also look at how each of the levels are related to the outcome
+
+```{r icc-models-by-group}
+icc(m0_pts, by_group = TRUE)
+icc(m0_clphy, by_group = TRUE)
+icc(m0_clpriv, by_group = TRUE)
+```
+
+It looks like pretty much all the variability in PTS is explained at a country level and not at a year level, which makes sense, since there's probably a ton of autocorrelation in human rights practices within a country, while global human rights levels probably don't move simultaneously across years.
+
+Just because the bulk of the relative variation is at at the country level doesn't mean that there isn't significant variability within countries over time. Thus, we should really used a multilevel model because the country-year structure matters *a lot* when explaining human rights abuses
+
+
+# Gradually build up the model
+
+Understanding all the different country/year dynamics can get complicated, so [John Poe](http://www.johndavidpoe.com/) suggests slowly building up the model and inspecting it to see what's going on.
+
+```{r basic-model}
+# First we add the main variable of interest (civil society repression here)
+m1 <- lmer(PTS_lead1 ~ v2csreprss + (1 | year) + (1 | gwcode),
+           REML = FALSE, data = canary)
+modelsummary(list("Null model" = m1),
+             coef_omit = "sd__")
+```
+
+
+```{r model-details, include=FALSE}
+m1_out <- broom.mixed::tidy(m1) %>% 
+  filter(effect == "fixed") %>% 
+  mutate(term = make_clean_names(term)) %>% 
+  split(.$term)
+
+# For fun, we can see the effects of specific countries/years with ranef()
+# lme4::ranef(m1)$gwcode %>% rownames_to_column() %>% as_tibble()
+# lme4::ranef(m1)$year %>% rownames_to_column() %>% as_tibble()
+```
+
+On average, increasing civil society repression by a point leads to a decrease of `r abs(round(m1_out$v2csreprss$estimate, 3))` points of human rights repression in the following year.
+
+Finally, we can see if adding `v2csreprss` is an improvement over the null `m0_pts` model:
+
+```{r check-against-m0}
+lrtest(m0_pts, m1) %>% as_tibble()
+```
+
+It is! `m1` is definitely an improvement over `m0_pts` (p < 0.001).
+
+Next, we can split civil society repression into its within and between versions and see how that performs and how it changes the results
+
+```{r mundlak-model}
+m2 <- lmer(PTS_lead1 ~ v2csreprss_within + v2csreprss_between +
+             (1 | year) + (1 | gwcode),
+           REML = FALSE, data = canary)
+
+modelsummary(list("Null model" = m1, "Within/between model" = m2),
+             coef_omit = "sd__")
+```
+
+```{r m2-details, include=FALSE}
+m2_out <- broom.mixed::tidy(m2) %>% 
+  filter(effect == "fixed") %>% 
+  mutate(term = make_clean_names(term)) %>% 
+  split(.$term)
+```
+
+On average, a one-unit increase beyond a country's average level of civil society repression (i.e. the within-country effect) is associated with a `r abs(round(m2_out$v2csreprss_within$estimate, 3))` point decrease in overall repression the following year
+
+Also, the `v2csreprss_between` coefficient can be interpreted somehow, but I'm not 100% sure how. (I think something like "as a country's average civil society repression increases, general repression worsens by `r abs(round(m2_out$v2csreprss_between$estimate, 3))`" or something).
+
+And we can check if `m2` is an improvement over `m1` (it is!):
+
+```{r check-against-m1}
+lrtest(m1, m2) %>% as_tibble()
+```
+
+# Thus…
+
+So, using a Mundlak within/between split of time-varying covariates is warranted, as is using a country/year random effects structure. Woot.
