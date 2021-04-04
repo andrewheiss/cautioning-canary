@@ -14,11 +14,15 @@ date: "April 3, 2021"
 published: This is an early draft of a working paper.
 git-repo: https://github.com/andrewheiss/canary-ngos
 abstract: >-
-  Many countries across the globe are increasingly cracking down on civil society groups through legal restrictions. This new wave of attempts to repress civil society organization-many of which are sanctioned by law—represent a bureaucratic form of repression that could indicate more severe human rights abuses and democratic backsliding. This is especially the case for electoral democracies, which unlike autocracies do not aggressively and openly attack civic space. In this paper, we ask: do crackdowns on NGOs predict broader human rights repression? We argue that this is the case because anti-NGO laws are among the most subtle means of repression and attract the least least domestic and international condemnation, as many audiences mistake this repression as regulation and are not personally affected by it. These laws also make it easier for states to prevent and deter future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, physical violence, and violations of private civil liberties. This project has important implications: if crackdown on NGOs is indeed an early warning, it can potentially prevent further deteriorations in space for civil society. 
+  Many countries across the globe are increasingly cracking down on civil society groups through legal restrictions. This new wave of attempts to repress civil society organizations—many of which are sanctioned by law—represent a bureaucratic form of repression that could indicate more severe human rights abuses and democratic backsliding. This is especially the case for electoral democracies, which unlike autocracies do not aggressively and openly attack civic space. In this paper, we ask: do crackdowns on NGOs predict broader human rights repression? We argue that this is the case because anti-NGO laws are among the most subtle means of repression and attract the least least domestic and international condemnation, as many audiences mistake this repression as regulation and are not personally affected by it. These laws also make it easier for states to prevent and deter future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, physical violence, and violations of private civil liberties. This project has important implications: if crackdown on NGOs is indeed an early warning, it can potentially prevent further deteriorations in space for civil society. 
 keywords: "civil society restrictions, human rights, political terror, civil liberties"
 reference-section-title: References
 bibliography: bibliography.bib
 title-page: true
+endnotes: false
+endfloat: false
+mainfont: Cochineal
+sansfont: Inter
 editor_options: 
   chunk_output_type: console
 ---
@@ -182,7 +186,9 @@ To test these empirical expectations, we use a new dataset of civil society laws
 # 
 # It's weird, but it works
 
-tribble(
+tbl_var_summary_caption <- "Outcomes and predictors"
+
+tbl_var_summary <- tribble(
   ~Measure, ~Category, ~Description, ~Source,
   "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "(ref:pts)",
   "Physical violence index", NA, "0–1; higher values indicate less violence", "(ref:vdem); v2x_clphy",
@@ -192,16 +198,34 @@ tribble(
   "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "(ref:chaudhry)",
   "Barriers to funding", "De jure laws", "Count of laws restricting NGO funding sources", "(ref:chaudhry)",
   "CSO repression", "De facto repression", "≈ −3–3; higher values indicate less repression", "(ref:vdem); v2csreprss"
-) %>%
-  kbl(caption = "Outcomes and predictors",
-      booktabs = TRUE, linesep = "") %>% 
-  kable_styling(font_size = 8.5) %>% 
-  row_spec(0, bold = TRUE) %>% 
-  column_spec(1, width = "0.14\\\\textwidth") %>% 
-  column_spec(2, width = "0.14\\\\textwidth") %>% 
-  column_spec(3, width = "0.5\\\\textwidth") %>% 
-  column_spec(4, width = "0.2\\\\textwidth") %>% 
-  pack_rows(index = c("Outcomes" = 3, "Predictors" = 5))
+) 
+
+if (!is_docx) {
+  tbl_var_summary %>%
+    kbl(caption = tbl_var_summary_caption,
+        booktabs = TRUE, linesep = "") %>% 
+    pack_rows(index = c("Outcomes" = 3, "Predictors" = 5)) %>% 
+    kable_styling(font_size = ifelse(is_latex, 8.5, NA)) %>% 
+    row_spec(0, bold = TRUE) %>% 
+    column_spec(1, width = "0.14\\\\textwidth") %>% 
+    column_spec(2, width = "0.14\\\\textwidth") %>% 
+    column_spec(3, width = "0.5\\\\textwidth") %>% 
+    column_spec(4, width = "0.2\\\\textwidth")
+} else {
+  tbl_var_summary %>% 
+    hux() %>% 
+    set_font_size(10) %>%
+    set_all_padding(3) %>% 
+    insert_row("Outcomes", "", "", "", after = 1) %>% 
+    insert_row("Predictors", "", "", "", after = 5) %>% 
+    set_bold(1, everywhere) %>%
+    set_bold(c(2, 6), everywhere) %>%
+    set_bottom_border(c(2, 6), everywhere) %>%
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_var_summary_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 ## Measuring de jure and de facto civil society repression
@@ -656,15 +680,32 @@ pts_pred_table <- tribble(
          "Barriers to funding included" = funding,
          "Civil society repression included" = repression)
 
-pts_pred_table %>% 
-  kbl(align = "lcccccc",
-      booktabs = TRUE, linesep = "",
-      caption = "Counts of correctly and incorrectly predicted cases across different PTS models") %>% 
-  kable_styling(font_size = 8.5) %>%
-  kable_styling() %>% 
-  row_spec(0, bold = TRUE) %>% 
-  column_spec(1, width = "0.05\\\\textwidth") %>% 
-  column_spec(2:7, width = "0.14\\\\textwidth")
+pts_pred_table_caption <- "Counts of correctly and incorrectly predicted cases across different PTS models"
+
+if (!is_docx) {
+  pts_pred_table %>% 
+    kbl(align = "lcccccc",
+        booktabs = TRUE, linesep = "",
+        caption = pts_pred_table_caption) %>% 
+    kable_styling(font_size = ifelse(is_latex, 8.5, NA)) %>%
+    kable_styling() %>% 
+    row_spec(0, bold = TRUE) %>% 
+    column_spec(1, width = "0.05\\\\textwidth") %>% 
+    column_spec(2:7, width = "0.14\\\\textwidth")
+} else {
+  pts_pred_table %>% 
+    hux() %>% 
+    set_font_size(10) %>%
+    set_all_padding(3) %>% 
+    set_bold(1, everywhere) %>%
+    set_bottom_border(1, everywhere) %>%
+    # set_col_width(1, 0.05) %>%
+    # set_col_width(2:7, 0.14) %>% 
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(pts_pred_table_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 We assess predictive power in a few different ways, depending on the model used to predict the outcome. For the ordinal Political Terror Scale, Table \@ref(tab:correct-not-correct) shows a count of correct and incorrect predictions from each model. Because the physical violence and private civil liberties indexes are predicted with Gaussian models, we measure predictive accuracy with the root mean squared error, provided in Table \@ref(tab:tbl-rmse). In the appendix we include lists of country-year cases that see improved predictions when taking civil society laws and repression into account.
@@ -689,12 +730,32 @@ tbl_rmse <- tribble(
 ) %>% 
   mutate(RMSE = round(RMSE, 4))
 
-tbl_rmse %>% 
-  kbl(align = "lcc",
-      booktabs = TRUE, linesep = "",
-      caption = "Root mean squared error across models predicting physical violence and private civil liberties") %>% 
-  pack_rows(index = c("Physical violence index" = 6, "Private civil liberties index" = 6)) %>% 
-  kable_styling()
+tbl_rmse_caption <- "Root mean squared error across models predicting physical violence and private civil liberties"
+
+if (!is_docx) {
+  tbl_rmse %>% 
+    kbl(align = "lcc",
+        booktabs = TRUE, linesep = "",
+        caption = tbl_rmse_caption) %>% 
+    pack_rows(index = c("Physical violence index" = 6, "Private civil liberties index" = 6)) %>% 
+    kable_styling()
+} else {
+  tbl_rmse %>% 
+    hux() %>% 
+    set_font_size(10) %>%
+    set_all_padding(3) %>% 
+    set_align(everywhere, 1, "left") %>% 
+    set_align(everywhere, 2:3, "center") %>% 
+    insert_row("Physical violence index", "", "", after = 1) %>% 
+    insert_row("Private civil liberties index", "", "", after = 8) %>% 
+    set_bold(1, everywhere) %>%
+    set_bold(c(2, 9), everywhere) %>%
+    set_bottom_border(c(2, 9), everywhere) %>%
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_rmse_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 When looking at the level of physical violence in a country, including civil society laws and repression also does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for legal barriers and civil society repression only reduces the RMSE by at most 0.4% compared to the baseline model. This is likely related to the lack of improvements in predicting political terror—both indexes measure similar phenomena. However, including civil society-related predictors when modeling private civil liberties does result in small gains in accuracy, reducing the RMSE by as much as 2% compared to the baseline model. 
@@ -717,7 +778,7 @@ Importantly, the lack of predictive power when modeling political violence and t
 # Appendix
 
 ```{r tbl-improved-pts}
-tbl_improved_pts <- tibble::tribble(
+tbl_improved_pts <- tribble(
                ~Country, ~Year,   ~Actual, ~`Baseline prediction`, ~`Total NGO barriers included`, ~`Civil society repression included`,
             "Guatemala", 2013L, "Level 3", "Level 2",                    "Level 3",                          "Level 3",
                "Kosovo", 2012L, "Level 1", "Level 2",                    "Level 1",                          "Level 1",
@@ -729,15 +790,32 @@ tbl_improved_pts <- tibble::tribble(
                 "Libya", 2011L, "Level 4", "Level 5",                          "—",                          "Level 4"
   )
 
-tbl_improved_pts %>% 
-  kbl(align = "llcccc",
-      booktabs = TRUE, linesep = "\\addlinespace",
-      caption = "Country-year cases where including civil society restrictions improved PTS predictions") %>% 
-  kable_styling(latex_options = c("hold_position")) %>% 
-  row_spec(0, bold = TRUE) %>% 
-  column_spec(1, width = "0.1\\\\textwidth") %>% 
-  column_spec(2, width = "0.05\\\\textwidth") %>% 
-  column_spec(3:6, width = "0.16\\\\textwidth")
+tbl_improved_pts_caption <- "Country-year cases where including civil society restrictions improved PTS predictions"
+
+if (!is_docx) {
+  tbl_improved_pts %>% 
+    kbl(align = "llcccc",
+        booktabs = TRUE, linesep = "\\addlinespace",
+        caption = tbl_improved_pts_caption) %>% 
+    kable_styling(latex_options = c("hold_position")) %>% 
+    row_spec(0, bold = TRUE) %>% 
+    column_spec(1, width = "0.1\\\\textwidth") %>% 
+    column_spec(2, width = "0.05\\\\textwidth") %>% 
+    column_spec(3:6, width = "0.16\\\\textwidth")
+} else {
+  tbl_improved_pts %>% 
+    hux() %>% 
+    set_font_size(10) %>%
+    set_all_padding(3) %>% 
+    set_align(everywhere, 1:2, "left") %>% 
+    set_align(everywhere, 3:6, "center") %>% 
+    set_bold(1, everywhere) %>%
+    set_bottom_border(1, everywhere) %>%
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_improved_pts_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 \newpage
@@ -751,17 +829,35 @@ model_names_tbl_pts <- c("Total barriers\n(t + 1)",
 
 names(models_paper_pts) <- model_names_tbl_pts
 
-modelsummary(models_paper_pts,
-             output = "kableExtra",
-             statistic = "[{conf.low}, {conf.high}]",
-             coef_map = coef_list,
-             gof_omit = "ELPD",
-             escape = FALSE,
-             caption = "Full results from ordered logistic regression models predicting political terror",
-             notes = list("Posterior means; 95% credible intervals in brackets")) %>% 
-  kable_styling(font_size = 6) %>% 
-  column_spec(1, width = "0.10\\\\textwidth") %>% 
-  column_spec(2:6, width = "0.14\\\\textwidth")
+tbl_reg_pts_caption <- "Full results from ordered logistic regression models predicting political terror"
+
+tbl_reg_pts <- modelsummary(models_paper_pts,
+                            output = table_format,
+                            statistic = "[{conf.low}, {conf.high}]",
+                            coef_map = coef_list,
+                            gof_omit = "ELPD",
+                            escape = FALSE,
+                            caption = tbl_reg_pts_caption,
+                            notes = list("Posterior means; 95% credible intervals in brackets")) 
+
+if (!is_docx) {
+  tbl_reg_pts %>% 
+    kable_styling(font_size = ifelse(is_latex, 7, NA)) %>% 
+    column_spec(1, width = "0.10\\\\textwidth") %>% 
+    column_spec(2:6, width = "0.14\\\\textwidth")
+} else {
+  tbl_reg_pts %>% 
+    set_font_size(10) %>% 
+    set_all_padding(1) %>% 
+    set_align(everywhere, 2:6, "center") %>% 
+    set_bold(1, everywhere) %>% 
+    # set_col_width(1, 0.1) %>% 
+    # set_col_width(2:6, 0.14) %>% 
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_reg_pts_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 \clearpage
@@ -775,17 +871,33 @@ model_names_tbl_clphy <- c("Total barriers\n(t + 1)",
 
 names(models_paper_clphy) <- model_names_tbl_clphy
 
-modelsummary(models_paper_clphy,
-             output = "kableExtra",
-             statistic = "[{conf.low}, {conf.high}]",
-             coef_map = coef_list,
-             gof_omit = "ELPD",
-             escape = FALSE,
-             caption = "Full results from Gaussian regression models predicting physical violence",
-             notes = list("Posterior means; 95% credible intervals in brackets")) %>% 
-  kable_styling(font_size = 7.5) %>% 
-  column_spec(1, width = "0.10\\\\textwidth") %>% 
-  column_spec(2:6, width = "0.14\\\\textwidth")
+tbl_reg_clphy_caption <- "Full results from Gaussian regression models predicting physical violence"
+
+tbl_reg_clphy <- modelsummary(models_paper_clphy,
+                              output = table_format,
+                              statistic = "[{conf.low}, {conf.high}]",
+                              coef_map = coef_list,
+                              gof_omit = "ELPD",
+                              escape = FALSE,
+                              caption = tbl_reg_clphy_caption,
+                              notes = list("Posterior means; 95% credible intervals in brackets")) 
+
+if (!is_docx) {
+  tbl_reg_clphy %>% 
+    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    column_spec(1, width = "0.10\\\\textwidth") %>% 
+    column_spec(2:6, width = "0.14\\\\textwidth")
+} else {
+  tbl_reg_clphy %>% 
+    set_font_size(10) %>% 
+    set_all_padding(1) %>% 
+    set_align(everywhere, 2:6, "center") %>% 
+    set_bold(1, everywhere) %>% 
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_reg_clphy_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 \clearpage
@@ -799,17 +911,33 @@ model_names_tbl_clpriv <- c("Total barriers\n(t + 1)",
 
 names(models_paper_clpriv) <- model_names_tbl_clpriv
 
-modelsummary(models_paper_clpriv,
-             output = "kableExtra",
-             statistic = "[{conf.low}, {conf.high}]",
-             coef_map = coef_list,
-             gof_omit = "ELPD",
-             escape = FALSE,
-             caption = "Full results from Gaussian regression models predicting private civil liberties",
-             notes = list("Posterior means; 95% credible intervals in brackets")) %>% 
-  kable_styling(font_size = 7.5) %>% 
-  column_spec(1, width = "0.10\\\\textwidth") %>% 
-  column_spec(2:6, width = "0.14\\\\textwidth")
+tbl_reg_clpriv_caption <- "Full results from Gaussian regression models predicting private civil liberties"
+
+tbl_reg_clpriv <- modelsummary(models_paper_clpriv,
+                               output = table_format,
+                               statistic = "[{conf.low}, {conf.high}]",
+                               coef_map = coef_list,
+                               gof_omit = "ELPD",
+                               escape = FALSE,
+                               caption = tbl_reg_clpriv_caption,
+                               notes = list("Posterior means; 95% credible intervals in brackets"))
+
+if (!is_docx) {
+  tbl_reg_clpriv %>% 
+    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    column_spec(1, width = "0.10\\\\textwidth") %>% 
+    column_spec(2:6, width = "0.14\\\\textwidth")
+} else {
+  tbl_reg_clpriv %>% 
+    set_font_size(10) %>% 
+    set_all_padding(1) %>% 
+    set_align(everywhere, 2:6, "center") %>% 
+    set_bold(1, everywhere) %>% 
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_reg_clpriv_caption) %>% 
+    huxtable::as_flextable()
+}
 ```
 
 \clearpage

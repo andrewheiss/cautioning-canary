@@ -1,4 +1,4 @@
-render_html <- function(input, output, csl) {
+render_html <- function(input, output, csl, ...) {
   # Add CSS file as a dependency so it goes into the _files directory
   dep <- htmltools::htmlDependency(
     name = "ath",
@@ -26,7 +26,7 @@ render_html <- function(input, output, csl) {
   )
 }
 
-render_pdf <- function(input, output, bibstyle) {
+render_pdf <- function(input, output, bibstyle, ...) {
   rmarkdown::render(
     input = input,
     output_file = output,
@@ -46,7 +46,7 @@ render_pdf <- function(input, output, bibstyle) {
   )
 }
 
-render_pdf_ms <- function(input, output, bibstyle) {
+render_pdf_ms <- function(input, output, bibstyle, ...) {
   rmarkdown::render(
     input = input,
     output_file = output,
@@ -65,7 +65,7 @@ render_pdf_ms <- function(input, output, bibstyle) {
   )
 }
 
-render_docx <- function(input, output, csl) {
+render_docx <- function(input, output, csl, ...) {
   rmarkdown::render(
     input = input,
     output_file = output,

@@ -257,31 +257,40 @@ list(
   #      to detect the target dependencies in the Rmd file
   #   2. Use a bunch of other file-based targets to actually render the document
   #      through different custom functions
+  tar_target(bib_file,
+             here("manuscript", "bibliography.bib"),
+             format = "file"),
+
   tar_target_raw("main_manuscript", "manuscript/manuscript.Rmd",
                  format = "file",
-                 deps = tar_knitr_deps("manuscript/manuscript.Rmd")),
+                 deps = c("bib_file",
+                          tar_knitr_deps("manuscript/manuscript.Rmd"))),
   tar_target(html,
              render_html(
                input = main_manuscript,
                output = "output/manuscript.html",
-               csl = csl),
+               csl = csl,
+               bib_file),
              format = "file"),
   tar_target(pdf,
              render_pdf(
                input = main_manuscript,
                output = "output/manuscript.pdf",
-               bibstyle = bibstyle),
-             format = "file")#,
-  # tar_target(rendered_mspdf,
-  #            render_pdf_ms(
-  #              input = main_manuscript,
-  #              output = "output/manuscript-ms.pdf",
-  #              bibstyle = bibstyle),
-  #            format = "file"),
-  # tar_target(rendered_docx,
-  #            render_docx(
-  #              input = main_manuscript,
-  #              output = "output/manuscript.docx",
-  #              csl = csl),
-  #            format = "file")
+               bibstyle = bibstyle,
+               bib_file),
+             format = "file"),
+  tar_target(ms_pdf,
+             render_pdf_ms(
+               input = main_manuscript,
+               output = "output/manuscript-ms.pdf",
+               bibstyle = bibstyle,
+               bib_file),
+             format = "file"),
+  tar_target(docx,
+             render_docx(
+               input = main_manuscript,
+               output = "output/manuscript.docx",
+               csl = csl,
+               bib_file),
+             format = "file")
 )
