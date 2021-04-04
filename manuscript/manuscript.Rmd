@@ -1,5 +1,5 @@
 ---
-title: "Canary in the Coal Mine: Anti-NGO Legislation as a Predictor of Civil Society Repression"
+title: "Canary in the Coal Mine? Civil Society Repression as a Predictor of Human Rights Abuses"
 short-title: "Canary in the Coal Mine"
 author:
 - name: Suparna Chaudhry
@@ -159,40 +159,39 @@ Based on these purposes of civil society restrictions and the different methods 
 
 To test these empirical expectations, we use a new dataset of civil society laws, as well as measures from several other larger datasets focused on human rights, political terror, and democratization. Table \@ref(tab:var-summary) provides a summary of our key variables.
 
-```{r var-summary}
-tribble(
-  ~Measure, ~Category, ~Description, ~Source,
-  "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "Gibney et al. (2019)",
-  "Physical violence index", NA, "0–1; higher values indicate less violence", "Coppedge et al. (2020); v2x_clphy",
-  "Private civil liberties index", NA, "0–1; higher values indicate greater respect for civil liberties", "Coppedge et al. (2020); v2x_clpriv",
-  "Total legal barriers", "De jure laws", "Count of all anti-NGO legal barriers", "Chaudhry (2016)",
-  "Barriers to advocacy", "De jure laws", "Count of laws restricting NGO advocacy", "Chaudhry (2016)",
-  "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "Chaudhry (2016)",
-  "Barriers to funding", "De jure laws", "Count of laws restricting NGO funding sources", "Chaudhry (2016)",
-  "CSO repression", "De facto repression", "≈ −3–3; higher values indicate less repression", "Coppedge et al. (2020); v2csreprss"
-) %>%
-  kbl(caption = "Outcomes and predictors",
-      booktabs = TRUE, linesep = "\\addlinespace") %>% 
-  kable_styling(font_size = 8) %>% 
-  row_spec(0, bold = TRUE) %>% 
-  column_spec(1, width = "0.14\\\\textwidth") %>% 
-  column_spec(2, width = "0.14\\\\textwidth") %>% 
-  column_spec(3, width = "0.4\\\\textwidth") %>% 
-  column_spec(4, width = "0.2\\\\textwidth") %>% 
-  pack_rows(index = c("Outcomes" = 3, "Predictors" = 5))
-```
+(ref:pts) @GibneyCornettWood:2019
 
-```{r var-summary1, eval=FALSE, include=FALSE}
+(ref:vdem) @vdem-v10
+
+(ref:chaudhry) @Chaudhry:2016
+
+```{r var-summary}
+# For whatever reason, bookdown::pdf_document2 can't process in-table citations
+# like @vdem-v10; it just skips them. bookdown::html_document2 works just fine,
+# though. This is a known issue (see
+# https://github.com/haozhu233/kableExtra/issues/214#issuecomment-421706528),
+# and the solution is to use bookdown text references
+# (https://bookdown.org/yihui/bookdown/markdown-extensions-by-bookdown.html#text-references)
+# out in the main text and then include the reference key in the table:
+# 
+# In the text:
+# (ref:vdem) @vdem-v10
+#
+# In the table:
+# (ref:vdem)
+# 
+# It's weird, but it works
+
 tribble(
   ~Measure, ~Category, ~Description, ~Source,
-  "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "@GibneyCornettWood:2019",
-  "Physical violence index", NA, "0–1; higher values indicate less violence", "@vdem-v10; v2x_clphy",
-  "Private civil liberties index", NA, "0–1; higher values indicate greater respect for civil liberties", "@vdem-v10; v2x_clpriv",
-  "Total legal barriers", "De jure laws", "Count of all anti-NGO legal barriers", "\\@Chaudhry:2016",
-  "Barriers to advocacy", "De jure laws", "Count of laws restricting NGO advocacy", "\\@Chaudhry:2016",
-  "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "@Chaudhry:2016",
-  "Barriers to funding", "De jure laws", "Count of laws restricting NGO funding sources", "@Chaudhry:2016",
-  "CSO repression", "De facto repression", "≈ −3–3; higher values indicate less repression", "@vdem-v10; v2csreprss"
+  "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "(ref:pts)",
+  "Physical violence index", NA, "0–1; higher values indicate less violence", "(ref:vdem); v2x_clphy",
+  "Private civil liberties index", NA, "0–1; higher values indicate greater respect for civil liberties", "(ref:vdem); v2x_clpriv",
+  "Total legal barriers", "De jure laws", "Count of all anti-NGO legal barriers", "(ref:chaudhry)",
+  "Barriers to advocacy", "De jure laws", "Count of laws restricting NGO advocacy", "(ref:chaudhry)",
+  "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "(ref:chaudhry)",
+  "Barriers to funding", "De jure laws", "Count of laws restricting NGO funding sources", "(ref:chaudhry)",
+  "CSO repression", "De facto repression", "≈ −3–3; higher values indicate less repression", "(ref:vdem); v2csreprss"
 ) %>%
   kbl(caption = "Outcomes and predictors",
       booktabs = TRUE, linesep = "") %>% 
