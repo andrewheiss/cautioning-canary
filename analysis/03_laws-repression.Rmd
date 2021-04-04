@@ -413,7 +413,7 @@ mfx %>%
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   guides(color = FALSE) +
   labs(x = "Count of legal barriers",
-       y = "Predicted civil liberties index\n(higher values = less violence)") +
+       y = "Predicted civil liberties index\n(higher values = better protection)") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())

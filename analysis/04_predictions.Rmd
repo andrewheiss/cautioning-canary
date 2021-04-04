@@ -509,7 +509,7 @@ pts_pred_table <- pts_cat_preds %>%
   pivot_wider(names_from = "nice_name", values_from = "n")
 
 pts_pred_table %>% 
-  kbl(align = "lcccc") %>% 
+  kbl(align = "lccccc") %>% 
   kable_styling()
 ```
 

@@ -68,19 +68,20 @@ withr::with_dir(here::here(), {
 
 ```{r make-map-data}
 things_to_map <- canary %>% 
-  filter(year %in% c(1990, 2013)) %>% 
+  filter(year %in% c(1993, 2013)) %>% 
   select(country, year, iso3, barriers_total, PTS_factor, v2csreprss) %>% 
   pivot_wider(names_from = year, values_from = c(barriers_total, PTS_factor, v2csreprss)) %>% 
-  mutate(new_laws = barriers_total_2013 - barriers_total_1990,
+  mutate(new_laws = barriers_total_2013 - barriers_total_1993,
          new_laws = ifelse(new_laws <= 0, 0, new_laws),
-         new_laws = ceiling(new_laws)) %>% 
-  mutate(diff_csrepress = v2csreprss_2013 - v2csreprss_1990,
+         new_laws = ceiling(new_laws),
+         new_laws_cat = ifelse(new_laws >= 5, "5+", as.character(new_laws))) %>% 
+  mutate(diff_csrepress = v2csreprss_2013 - v2csreprss_1993,
          diff_csrepress_trunc = case_when(
            diff_csrepress >= 2 ~ 2,
            diff_csrepress <= -2 ~ -2,
            TRUE ~ diff_csrepress
          )) %>% 
-  mutate(pct_change_csrepress = diff_csrepress / v2csreprss_1990,
+  mutate(pct_change_csrepress = diff_csrepress / v2csreprss_1993,
          pct_change_csrepress_trunc = case_when(
            pct_change_csrepress >= 5 ~ 5,
            pct_change_csrepress <= -5 ~ -5,
@@ -95,17 +96,17 @@ map_data <- world_map %>%
 
 ```{r map-ngo-laws}
 map_ngo_laws <- ggplot() +
-  geom_sf(data = map_data, aes(fill = factor(new_laws)),
+  geom_sf(data = map_data, aes(fill = factor(new_laws_cat)),
           color = "black", size = 0.1) +
   coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
-  scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#BF0404")(seq(0, 1, length.out = 8)), 
-                    na.value = "grey80", breaks = 0:6) +
-  # scale_fill_manual(values = scico(7, palette = "devon", direction = -1), 
+  scale_fill_manual(values = seq_gradient_pal("#FFFFFF", "#CF4446")(seq(0, 1, length.out = 6)),
+                    na.value = "grey95", breaks = c(as.character(0:4), "5+")) +
+  # scale_fill_manual(values = scico(7, palette = "devon", direction = -1),
   #                   na.value = "grey80", breaks = 0:6) +
   guides(fill = guide_legend(nrow = 1, label.position = "bottom",
                              keywidth = unit(1, units = "lines"),
                              keyheight = unit(0.6, units = "lines"))) +
-  labs(fill = "Restrictive NGO laws passed between 1990 and 2014") +
+  labs(fill = "Restrictive NGO laws passed between 1993 and 2013") +
   theme_ngo() +
   theme(panel.border = element_blank(),
         legend.box.margin = margin(t = 5),

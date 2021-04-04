@@ -3,7 +3,7 @@ library(tarchetypes)
 library(tibble)
 
 # General variables
-csl <- "pandoc/csl/apa.csl"
+csl <- "pandoc/csl/chicago-author-date.csl"
 bibstyle <- "bibstyle-chicago-authordate"
 
 suppressPackageStartupMessages(library(brms))
@@ -31,10 +31,10 @@ tar_option_set(packages = c("tidyverse", "countrycode", "states", "WDI", "here",
                             "janitor", "kableExtra", "huxtable", "modelsummary",
                             "knitr", "withr", "flextable", "testthat", "DT",
                             "brms", "tidybayes", "broom", "broom.mixed", "scico",
-                            "ggtext", "colorspace", "lme4", "cmdstanr"))
+                            "ggtext", "colorspace", "lme4", "cmdstanr", "jsonlite"))
 
 source("R/funs_data-cleaning.R")
-# source("R/funs_knitting.R")
+source("R/funs_knitting.R")
 source("R/funs_notebook.R")
 source("R/models_details.R")
 source("R/models_pts.R")
@@ -76,12 +76,18 @@ list(
              here("data", "raw_data", "ne_110m_admin_0_countries",
                   "ne_110m_admin_0_countries.shp"),
              format = "file"),
+  tar_target(civicus_raw_file,
+             here("data", "raw_data", "Civicus", "civicus_2021-03-19.json"),
+             format = "file"),
 
   # Define helper functions
   tar_target(plot_funs, here("lib", "graphics.R"), format = "file"),
 
   # Load and clean data
   tar_target(world_map, load_world_map(naturalearth_raw_file)),
+  tar_target(civicus_clean, load_clean_civicus(civicus_raw_file)),
+  tar_target(civicus_map_data, create_civicus_map_data(civicus_clean, world_map)),
+
   tar_target(skeleton, create_panel_skeleton()),
   tar_target(wdi_clean, load_clean_wdi(skeleton)),
   tar_target(chaudhry_clean, load_clean_chaudhry(chaudhry_raw_file)),
@@ -230,8 +236,19 @@ list(
              build_modelsummary(lst(m_clpriv_baseline, m_clpriv_v2csreprss,
                                     m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb))),
 
+  # Models for paper
+  tar_target(models_paper_pts,
+             build_modelsummary(lst(m_pts_total, m_pts_advocacy, m_pts_entry,
+                                    m_pts_funding, m_pts_v2csreprss))),
+  tar_target(models_paper_clphy,
+             build_modelsummary(lst(m_clphy_total, m_clphy_advocacy, m_clphy_entry,
+                                    m_clphy_funding, m_clphy_v2csreprss))),
+  tar_target(models_paper_clpriv,
+             build_modelsummary(lst(m_clpriv_total, m_clpriv_advocacy, m_clpriv_entry,
+                                    m_clpriv_funding, m_clpriv_v2csreprss))),
+
   # Render the analysis notebook
-  tar_notebook_pages()
+  tar_notebook_pages(),
 
   # tarchetypes::tar_render() automatically detects target dependencies in Rmd
   # files and knits them, but there's no easy way to pass a custom rendering
@@ -240,21 +257,21 @@ list(
   #      to detect the target dependencies in the Rmd file
   #   2. Use a bunch of other file-based targets to actually render the document
   #      through different custom functions
-  # tar_target_raw("main_manuscript", "manuscript/manuscript.Rmd",
-  #                format = "file",
-  #                deps = tar_knitr_deps("manuscript/manuscript.Rmd")),
-  # tar_target(rendered_html,
-  #            render_html(
-  #              input = main_manuscript,
-  #              output = "output/manuscript.html",
-  #              csl = csl),
-  #            format = "file"),
-  # tar_target(rendered_pdf,
-  #            render_pdf(
-  #              input = main_manuscript,
-  #              output = "output/manuscript.pdf",
-  #              bibstyle = bibstyle),
-  #            format = "file"),
+  tar_target_raw("main_manuscript", "manuscript/manuscript.Rmd",
+                 format = "file",
+                 deps = tar_knitr_deps("manuscript/manuscript.Rmd")),
+  tar_target(html,
+             render_html(
+               input = main_manuscript,
+               output = "output/manuscript.html",
+               csl = csl),
+             format = "file"),
+  tar_target(pdf,
+             render_pdf(
+               input = main_manuscript,
+               output = "output/manuscript.pdf",
+               bibstyle = bibstyle),
+             format = "file")#,
   # tar_target(rendered_mspdf,
   #            render_pdf_ms(
   #              input = main_manuscript,

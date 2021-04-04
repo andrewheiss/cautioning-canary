@@ -6,6 +6,7 @@
 
 # Data (temporarily?)
 data/*
+temp_cache/*
 
 # Site output
 analysis/_site/*
@@ -20,12 +21,13 @@ _targets
 analysis/cache/*
 
 # Manuscript output
-manuscript/*.docx
-manuscript/*.html
-manuscript/*.pdf
-manuscript/*.tex
-manuscript/tex_out/*
-manuscript/vc*
+manuscript/*.log
+manuscript/output/*.docx
+manuscript/output/*.html
+manuscript/output/*.pdf
+manuscript/output/*.tex
+manuscript/output/figures/*
+manuscript/pandoc/bin/vc*
 
 # Other folders
 admin/*
