@@ -27,6 +27,17 @@ navbar:
   - text: Predictions
     icon: fas fa-question-circle
     href: 04_predictions.html
+  - text: Manuscript
+    icon: far fa-file-alt
+    menu:
+      - text: "PDF"
+        href: "output/manuscript.pdf"
+      - text: "Manuscripty PDF"
+        href: "output/manuscript-ms.pdf"
+      - text: "HTML"
+        href: "output/manuscript.html"
+      - text: "Word"
+        href: "output/manuscript.docx"
 output:
   html_document:
     theme: united
