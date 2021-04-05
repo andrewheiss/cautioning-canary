@@ -92,15 +92,11 @@ withr::with_dir(here::here(), {
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
+  
+  # Load marginal effects
+  tar_load(c(mfx_e1a_pts, mfx_e1b_clphy, mfx_e1c_clpriv,
+             mfx_e2a_pts, mfx_e2b_clphy, mfx_e2c_clpriv))
 })
-
-# Temporary fake cache stuff
-mfx_e1a <- readRDS(here("temp_cache", "mfx_e1a.rds"))
-mfx_e1b <- readRDS(here("temp_cache", "mfx_e1b.rds"))
-mfx_e1c <- readRDS(here("temp_cache", "mfx_e1c.rds"))
-df_mfx_e2a <- readRDS(here("temp_cache", "df_mfx_e2a.rds"))
-df_mfx_e2b <- readRDS(here("temp_cache", "df_mfx_e2b.rds"))
-df_mfx_e2c <- readRDS(here("temp_cache", "df_mfx_e2c.rds"))
 ```
 
 ```{r calc-civicus}
@@ -474,24 +470,7 @@ We present the results of our models in two stages. First, in order to see how m
 In general, when holding all other covariates constant, the passage of an additional anti-NGO legal barrier is generally associated with a higher probability of more severe level of political terror in the following year. The probability of seeing different levels of political terror varies across different possible counts of NGO laws (see Figure \@ref(fig:plot-mfx-e1a)). In the absence of formal legal barriers, Level 2 of the PTS—an environment where political imprisonment, torture, and beatings are rare—is the most likely category of political terror across all models, appearing a predicted 60% of the time. Level 1, where a country is under secure rule of law, is the second most likely outcome at slightly under 40%. The other categories of the PTS are extremely rare when there are no anti-NGO laws. 
 
 ```{r plot-mfx-e1a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on the probability of specific levels of political terror"}
-plot_e1a_mfx <- tribble(
-  ~model, ~plot_var, ~plot_var_nice,
-  m_pts_total, "barriers_total", "Total legal barriers",
-  m_pts_advocacy, "advocacy", "Barriers to advocacy",
-  m_pts_entry, "entry", "Barriers to entry",
-  m_pts_funding, "funding", "Barriers to funding"
-) %>% 
-  mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
-
-# mfx_e1a <- plot_e1a_mfx %>% 
-#   mutate(fx = map2(model, plot_var, 
-#                    ~conditional_effects(.x, effects = .y,
-#                                         categorical = TRUE)[[1]])) %>% 
-#   select(-model) %>% 
-#   unnest(fx)
-# saveRDS(mfx_e1a, here("temp_cache", "mfx_e1a.rds"))
-
-mfx_e1a %>% 
+mfx_e1a_pts %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, effect2__, plot_var_nice) %>% 
   slice(1) %>% 
@@ -520,39 +499,7 @@ Figure \@ref(fig:plot-mfx-e1b-e1c) shows the marginal effects of additional NGO 
 At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal (albeit weakly) that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. When looking at other forms of political repression, though, such as physical violence and private civil liberties, NGO legal barriers do not change predicted values in any meaningful way.
 
 ```{r plot-mfx-e1b-e1c, fig.width=7.5, fig.height=5.5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on V-Dem rights indexes"}
-plot_e1b_mfx <- tribble(
-  ~model, ~plot_var, ~plot_var_nice,
-  m_clphy_total, "barriers_total", "Total legal barriers",
-  m_clphy_advocacy, "advocacy", "Advocacy",
-  m_clphy_entry, "entry", "Entry",
-  m_clphy_funding, "funding", "Funding"
-) %>% 
-  mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
-
-# mfx_e1b <- plot_e1b_mfx %>% 
-#   mutate(fx = map2(model, plot_var, 
-#                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
-#   select(-model) %>% 
-#   unnest(fx)
-# saveRDS(mfx_e1b, here("temp_cache", "mfx_e1b.rds"))
-
-plot_e1c_mfx <- tribble(
-  ~model, ~plot_var, ~plot_var_nice,
-  m_clpriv_total, "barriers_total", "Total legal barriers",
-  m_clpriv_advocacy, "advocacy", "Advocacy",
-  m_clpriv_entry, "entry", "Entry",
-  m_clpriv_funding, "funding", "Funding"
-) %>% 
-  mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
-
-# mfx_e1c <- plot_e1c_mfx %>% 
-#   mutate(fx = map2(model, plot_var, 
-#                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
-#   select(-model) %>% 
-#   unnest(fx)
-# saveRDS(mfx_e1c, here("temp_cache", "mfx_e1c.rds"))
-
-out_mfx_e1b <- mfx_e1b %>% 
+out_mfx_e1b <- mfx_e1b_clphy %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
@@ -572,7 +519,7 @@ out_mfx_e1b <- mfx_e1b %>%
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
 
-out_mfx_e1c <- mfx_e1c %>% 
+out_mfx_e1c <- mfx_e1c_clpriv %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
@@ -603,12 +550,7 @@ The weak (or even non-existent) predictive power of formal NGO laws is likely at
 The effect of civil society repression on predicted values of the Political Terror Scale mirrors what we found previously with our first empirical expectation. As seen in Figure \@ref(fig:plot-mfx-e2a), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression.
 
 ```{r plot-mfx-e2a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror"}
-# df_mfx_e2a <- conditional_effects(m_pts_v2csreprss,
-#                                   effects = "v2csreprss",
-#                                   categorical = TRUE)[[1]]
-# saveRDS(df_mfx_e2a, here("temp_cache", "df_mfx_e2a.rds"))
-
-out_mfx_e2a <- df_mfx_e2a %>% 
+out_mfx_e2a <- mfx_e2a_pts %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
   geom_line(size = 0.75) +
@@ -629,14 +571,7 @@ In contrast with formal laws, civil society repression does have a noticeable ef
 When holding all other factors equal, the de factor implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passing of formal de jure laws. Increasing civil society repression in countries with low levels of political terror can again potentially serve as a weak signal of more a more general increase in political violence in the future, while crackdowns on civil society predict more substantial changes in physical violence and threats to civil liberties. 
 
 ```{r plot-mfx-e2b-e2c, fig.width=7.5, fig.height=3.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on V-Dem rights indexes"}
-# df_mfx_e2b <- conditional_effects(m_clphy_v2csreprss,
-#                                   effects = "v2csreprss")[[1]]
-# df_mfx_e2c <- conditional_effects(m_clpriv_v2csreprss,
-#                                   effects = "v2csreprss")[[1]]
-# saveRDS(df_mfx_e2b, here("temp_cache", "df_mfx_e2b.rds"))
-# saveRDS(df_mfx_e2c, here("temp_cache", "df_mfx_e2c.rds"))
-
-out_mfx_e2b <- df_mfx_e2b %>% 
+out_mfx_e2b <- mfx_e2b_clphy %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#433E85", color = NA) +
@@ -648,7 +583,7 @@ out_mfx_e2b <- df_mfx_e2b %>%
        title = "Physical violence index") +
   theme_ngo()
 
-out_mfx_e2c <- df_mfx_e2c %>% 
+out_mfx_e2c <- mfx_e2c_clpriv %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#4DC36B", color = NA) +

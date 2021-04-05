@@ -6,7 +6,6 @@
 
 # Data (temporarily?)
 data/*
-temp_cache/*
 
 # Site output
 analysis/_site/*

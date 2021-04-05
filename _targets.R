@@ -37,6 +37,7 @@ source("R/funs_data-cleaning.R")
 source("R/funs_knitting.R")
 source("R/funs_notebook.R")
 source("R/models_details.R")
+source("R/models_analysis.R")
 source("R/models_pts.R")
 source("R/models_clphy.R")
 source("R/models_clpriv.R")
@@ -202,6 +203,42 @@ list(
 
   # Big dataframe of model names for full models
   tar_target(model_df, create_model_df()),
+
+  # Calculate marginal effects
+  tar_target(mfx_e1a_pts, generate_mfx(
+    tibble(model = list(m_pts_total, m_pts_advocacy, m_pts_entry, m_pts_funding),
+           plot_var = c("barriers_total", "advocacy", "entry", "funding"),
+           plot_var_nice = c("Total legal barriers", "Barriers to advocacy",
+                             "Barriers to entry", "Barriers to funding")),
+    is_categorical = TRUE)),
+
+  tar_target(mfx_e1b_clphy, generate_mfx(
+    tibble(model = list(m_clphy_total, m_clphy_advocacy, m_clphy_entry, m_clphy_funding),
+           plot_var = c("barriers_total", "advocacy", "entry", "funding"),
+           plot_var_nice = c("Total legal barriers", "Barriers to advocacy",
+                             "Barriers to entry", "Barriers to funding")))),
+
+  tar_target(mfx_e1c_clpriv, generate_mfx(
+    tibble(model = list(m_clpriv_total, m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding),
+           plot_var = c("barriers_total", "advocacy", "entry", "funding"),
+           plot_var_nice = c("Total legal barriers", "Barriers to advocacy",
+                             "Barriers to entry", "Barriers to funding")))),
+
+  tar_target(mfx_e2a_pts, generate_mfx(
+    tibble(model = list(m_pts_v2csreprss),
+           plot_var = c("v2csreprss"),
+           plot_var_nice = c("Civil society repression")),
+    is_categorical = TRUE)),
+
+  tar_target(mfx_e2b_clphy, generate_mfx(
+    tibble(model = list(m_clphy_v2csreprss),
+           plot_var = c("v2csreprss"),
+           plot_var_nice = c("Civil society repression")))),
+
+  tar_target(mfx_e2c_clpriv, generate_mfx(
+    tibble(model = list(m_clpriv_v2csreprss),
+           plot_var = c("v2csreprss"),
+           plot_var_nice = c("Civil society repression")))),
 
   # Build models here because they take forever
   # Note tibble::lst() instead of base::list(); lst() auto-names the elements by
