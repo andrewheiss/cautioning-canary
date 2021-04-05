@@ -181,6 +181,38 @@ To test these empirical expectations, we use a new dataset of civil society laws
 # (ref:vdem)
 # 
 # It's weird, but it works
+#
+# BUT it doesn't work with Word, and flextable specifically. (ref:vdem) gets
+# correctly replaced with @vdem-10, but then it doesn't get processed by pandoc.
+# One way around this is to use the ftExtra package, which has colformat_md()
+# that will treat a column like Markdown and will allow pandoc to process
+# citations (see https://github.com/davidgohel/flextable/issues/243 and
+# ftExtra's citation support here:
+# https://ftextra.atusy.net/articles/format_columns.html#citations). BUT BUT the
+# ordering of bookdown's text references replacement messes with flextable's
+# citation processing or something, so pandoc references that are inserted with
+# (ref:vdem) remain as @vdem-10 when knitted. The way around *this* is to use
+# the raw @citekey in the table. Oof.
+#
+# Here's a minimal example:
+#
+# bloop <- tribble(
+#   ~Thing, ~Source, ~Source_word,
+#   "This *is* a test", "(ref:vdem)", "@vdem-v10"
+# ) 
+# 
+# if (is_docx) {
+#   bloop %>% 
+#     select(Thing, Source = Source_word) %>% 
+#     hux() %>% 
+#     huxtable::as_flextable() %>% 
+#     ftExtra::colformat_md() 
+# } else {
+#   bloop %>% 
+#     select(-Source_word) %>% 
+#     kbl(booktabs = TRUE) %>% 
+#     kable_styling()
+# }
 
 tbl_var_summary_caption <- "Outcomes and predictors"
 
