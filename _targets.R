@@ -329,5 +329,11 @@ list(
                output = "output/manuscript.docx",
                csl = csl,
                bib_file),
+             format = "file"),
+  tar_target(bib,
+             extract_bib(
+               input_rmd = main_manuscript,
+               input_bib = bib_file,
+               output = "manuscript/output/extracted-citations.bib"),
              format = "file")
 )
