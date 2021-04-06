@@ -26,7 +26,7 @@ options(tidyverse.quiet = TRUE,
 
 future::plan(future::multisession)
 
-tar_option_set(packages = c("tidyverse", "countrycode", "states", "WDI", "here",
+tar_option_set(packages = c("tidyverse", "countrycode", "states", "WDI", "here", "fs",
                             "readxl", "haven", "sf", "lubridate", "scales", "naniar",
                             "janitor", "kableExtra", "huxtable", "modelsummary",
                             "knitr", "withr", "flextable", "testthat", "DT",
@@ -41,6 +41,14 @@ source("R/models_analysis.R")
 source("R/models_pts.R")
 source("R/models_clphy.R")
 source("R/models_clpriv.R")
+
+# here::here() returns an absolute path, which then gets stored in tar_meta and
+# becomes computer-specific (i.e. /Users/andrew/Research/blah/thing.Rmd).
+# There's no way to get a relative path directly out of here::here(), but
+# fs::path_rel() works fine with it (see
+# https://github.com/r-lib/here/issues/36#issuecomment-530894167)
+here_rel <- function(...) {fs::path_rel(here::here(...))}
+
 
 list(
   # Define raw data files
@@ -74,15 +82,15 @@ list(
                   "UNdata_Export_20210118_034311252.csv"),
              format = "file"),
   tar_target(naturalearth_raw_file,
-             here("data", "raw_data", "ne_110m_admin_0_countries",
-                  "ne_110m_admin_0_countries.shp"),
+             here_rel("data", "raw_data", "ne_110m_admin_0_countries",
+                      "ne_110m_admin_0_countries.shp"),
              format = "file"),
   tar_target(civicus_raw_file,
-             here("data", "raw_data", "Civicus", "civicus_2021-03-19.json"),
+             here_rel("data", "raw_data", "Civicus", "civicus_2021-03-19.json"),
              format = "file"),
 
   # Define helper functions
-  tar_target(plot_funs, here("lib", "graphics.R"), format = "file"),
+  tar_target(plot_funs, here_rel("lib", "graphics.R"), format = "file"),
 
   # Load and clean data
   tar_target(world_map, load_world_map(naturalearth_raw_file)),
@@ -295,38 +303,38 @@ list(
   #   2. Use a bunch of other file-based targets to actually render the document
   #      through different custom functions
   tar_target(bib_file,
-             here("manuscript", "bibliography.bib"),
+             here_rel("manuscript", "bibliography.bib"),
              format = "file"),
 
-  tar_target_raw("main_manuscript", "manuscript/manuscript.Rmd",
+  tar_target_raw("main_manuscript", here_rel("manuscript", "manuscript.Rmd"),
                  format = "file",
                  deps = c("bib_file",
-                          tar_knitr_deps("manuscript/manuscript.Rmd"))),
+                          tar_knitr_deps(here_rel("manuscript", "manuscript.Rmd")))),
   tar_target(html,
              render_html(
                input = main_manuscript,
-               output = "output/manuscript.html",
+               output = here_rel("manuscript", "output", "manuscript.html"),
                csl = csl,
                bib_file),
              format = "file"),
   tar_target(pdf,
              render_pdf(
                input = main_manuscript,
-               output = "output/manuscript.pdf",
+               output = here_rel("manuscript", "output/manuscript.pdf"),
                bibstyle = bibstyle,
                bib_file),
              format = "file"),
   tar_target(ms_pdf,
              render_pdf_ms(
                input = main_manuscript,
-               output = "output/manuscript-ms.pdf",
+               output = here_rel("manuscript", "output/manuscript-ms.pdf"),
                bibstyle = bibstyle,
                bib_file),
              format = "file"),
   tar_target(docx,
              render_docx(
                input = main_manuscript,
-               output = "output/manuscript.docx",
+               output = here_rel("manuscript", "output/manuscript.docx"),
                csl = csl,
                bib_file),
              format = "file"),
@@ -334,6 +342,6 @@ list(
              extract_bib(
                input_rmd = main_manuscript,
                input_bib = bib_file,
-               output = "manuscript/output/extracted-citations.bib"),
+               output = here_rel("manuscript", "output", "extracted-citations.bib")),
              format = "file")
 )
