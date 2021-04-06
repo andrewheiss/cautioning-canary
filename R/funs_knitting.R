@@ -10,7 +10,7 @@ render_html <- function(input, output, csl, ...) {
   )
   extra_dependencies <- list(dep)
 
-  rmarkdown::render(
+  out <- rmarkdown::render(
     input = input,
     output_file = output,
     bookdown::html_document2(
@@ -26,10 +26,12 @@ render_html <- function(input, output, csl, ...) {
       extra_dependencies = extra_dependencies
     )
   )
+
+  return(fs::path_rel(out))
 }
 
 render_pdf <- function(input, output, bibstyle, ...) {
-  rmarkdown::render(
+  out <- rmarkdown::render(
     input = input,
     output_file = output,
     bookdown::pdf_document2(
@@ -46,10 +48,12 @@ render_pdf <- function(input, output, bibstyle, ...) {
       citation_package = "biblatex"
     )
   )
+
+  return(fs::path_rel(out))
 }
 
 render_pdf_ms <- function(input, output, bibstyle, ...) {
-  rmarkdown::render(
+  out <- rmarkdown::render(
     input = input,
     output_file = output,
     bookdown::pdf_document2(
@@ -65,10 +69,12 @@ render_pdf_ms <- function(input, output, bibstyle, ...) {
       citation_package = "biblatex"
     )
   )
+
+  return(fs::path_rel(out))
 }
 
 render_docx <- function(input, output, csl, ...) {
-  rmarkdown::render(
+  out <- rmarkdown::render(
     input = input,
     output_file = output,
     bookdown::word_document2(
@@ -79,6 +85,8 @@ render_docx <- function(input, output, csl, ...) {
       number_sections = FALSE
     )
   )
+
+  return(fs::path_rel(out))
 }
 
 extract_bib <- function(input_rmd, input_bib, output, ...) {
