@@ -381,7 +381,7 @@ csreprss_plot <- ggplot(df_csreprss_plot, aes(x = year, y = y)) +
   facet_wrap(vars(fake_facet_title))
 
 barriers_summary <- 
-  ((advocacy_plot | funding_plot) / 
+  ((advocacy_plot | entry_plot) / 
      (funding_plot | csreprss_plot)) &
   theme(legend.text = element_text(size = rel(0.7)),
         axis.title.y = element_text(margin = margin(r = 3)),
