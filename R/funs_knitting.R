@@ -1,6 +1,6 @@
 library(bib2df)
 
-render_html <- function(input, output, csl, ...) {
+render_html <- function(input, output, csl, support_folder, ...) {
   # Add CSS file as a dependency so it goes into the _files directory
   dep <- htmltools::htmlDependency(
     name = "ath",
@@ -9,6 +9,12 @@ render_html <- function(input, output, csl, ...) {
     stylesheet = "ath-clean.css"
   )
   extra_dependencies <- list(dep)
+
+  # IMPORTANT
+  # When knitting to docx, bookdown deletes the _files directory for whatever
+  # reason, so if you knit to HTML and then docx, you get a nice *_files
+  # directly that then disappears when the Word file is done. One way around
+  # this is to specify lib_dir here in rmarkdown::render()
 
   out <- rmarkdown::render(
     input = input,
@@ -23,7 +29,8 @@ render_html <- function(input, output, csl, ...) {
       number_sections = FALSE,
       self_contained = FALSE,
       theme = NULL,
-      extra_dependencies = extra_dependencies
+      extra_dependencies = extra_dependencies,
+      lib_dir = support_folder
     )
   )
 

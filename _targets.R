@@ -315,7 +315,8 @@ list(
                input = main_manuscript,
                output = here_rel("manuscript", "output", "manuscript.html"),
                csl = csl,
-               bib_file),
+               bib_file,
+               support_folder = "output/html-support"),
              format = "file"),
   tar_target(pdf,
              render_pdf(
