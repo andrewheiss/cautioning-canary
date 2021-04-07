@@ -53,32 +53,32 @@ here_rel <- function(...) {fs::path_rel(here::here(...))}
 list(
   # Define raw data files
   tar_target(chaudhry_raw_file,
-             here("data", "raw_data", "Chaudhry restrictions", "SC_Expanded.dta"),
+             here_rel("data", "raw_data", "Chaudhry restrictions", "SC_Expanded.dta"),
              format = "file"),
   tar_target(pts_raw_file,
-             here("data", "raw_data", "Political Terror Scale", "PTS-2019.RData"),
+             here_rel("data", "raw_data", "Political Terror Scale", "PTS-2019.RData"),
              format = "file"),
   tar_target(journalists_raw_file,
-             here("data", "raw_data", "Gohdes Carey journalists",
+             here_rel("data", "raw_data", "Gohdes Carey journalists",
                   "journalist-data-incl-pts.RData"),
              format = "file"),
   tar_target(ucdp_raw_file,
-             here("data", "raw_data", "UCDP PRIO", "ucdp-prio-acd-191.csv"),
+             here_rel("data", "raw_data", "UCDP PRIO", "ucdp-prio-acd-191.csv"),
              format = "file"),
   tar_target(vdem_raw_file,
-             here("data", "raw_data", "Country_Year_V-Dem_Full+others_R_v10",
+             here_rel("data", "raw_data", "Country_Year_V-Dem_Full+others_R_v10",
                   "V-Dem-CY-Full+Others-v10.rds"),
              format = "file"),
   tar_target(un_pop_raw_file,
-             here("data", "raw_data", "UN data",
+             here_rel("data", "raw_data", "UN data",
                   "WPP2019_POP_F01_1_TOTAL_POPULATION_BOTH_SEXES.xlsx"),
              format = "file"),
   tar_target(un_gdp_constant_raw_file,
-             here("data", "raw_data", "UN data",
+             here_rel("data", "raw_data", "UN data",
                   "UNdata_Export_20210118_034054729.csv"),
              format = "file"),
   tar_target(un_gdp_current_raw_file,
-             here("data", "raw_data", "UN data",
+             here_rel("data", "raw_data", "UN data",
                   "UNdata_Export_20210118_034311252.csv"),
              format = "file"),
   tar_target(naturalearth_raw_file,
@@ -107,13 +107,21 @@ list(
   tar_target(un_pop, load_clean_un_pop(un_pop_raw_file, skeleton, wdi_clean)),
   tar_target(un_gdp, load_clean_un_gdp(un_gdp_constant_raw_file,
                                        un_gdp_current_raw_file, skeleton)),
-  tar_target(panel, combine_data(skeleton, chaudhry_clean, pts_clean,
-                                 killings_all, ucdp_prio_clean, vdem_clean,
-                                 un_pop, un_gdp)),
-  tar_target(panel_lagged, lag_data(panel)),
-  tar_target(panel_training, create_training(panel)),
+  # Combine data
+  # This includes 2014 for lagging/leading
+  tar_target(panel_with_2014, combine_data(skeleton, chaudhry_clean, pts_clean,
+                                           killings_all, ucdp_prio_clean, vdem_clean,
+                                           un_pop, un_gdp)),
+  # THIS is the final 2014-less data
+  tar_target(panel, trim_data(panel_with_2014)),
+
+  # Lagging/leading
+  tar_target(panel_lagged, trim_data(lag_data(panel_with_2014))),
+
+  # Training/testing
+  tar_target(panel_training, trim_data(create_training(panel_with_2014))),  # Remove 2014
   tar_target(panel_training_lagged, create_training(panel_lagged)),
-  tar_target(panel_testing, create_testing(panel)),
+  tar_target(panel_testing, trim_data(create_testing(panel_with_2014))),  # Remove 2014
   tar_target(panel_testing_lagged, create_testing(panel_lagged)),
 
   # Models for the political terror score (PTS_factor)

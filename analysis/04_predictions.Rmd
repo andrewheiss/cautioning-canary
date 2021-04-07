@@ -76,42 +76,6 @@ match_actual <- function(x, pred, actual) {
 }
 ```
 
-```{r kludgy-bandaid-for-weird-data-issues}
-# OOOOOOOF OH NO for some reason PTS_lead1 and all leaded V-Dem values missing
-# for 2013 (i.e. 2014 values) and I don't want to go back and rerun all these
-# models yet, so we do a temporary fix here and manually add the values from
-# pts_clean and vdem_clean
-withr::with_dir(here::here(), {
-  tar_load(pts_clean)
-  tar_load(vdem_clean)
-})
-
-pts_2014 <- pts_clean %>% 
-  group_by(gwcode) %>% 
-  mutate(across(c(PTS, PTS_factor),
-                  list(lead1_2014 = ~lead(., 1)))) %>% 
-  ungroup() %>% 
-  filter(year == 2013) %>% 
-  select(-PTS, -PTS_factor)
-
-vdem_2014 <- vdem_clean %>% 
-  group_by(gwcode) %>% 
-  mutate(across(c(v2x_clphy, v2x_clpriv),
-                  list(lead1_2014 = ~lead(., 1)))) %>% 
-  ungroup() %>% 
-  filter(year == 2013) %>% 
-  select(gwcode, year, v2x_clphy_lead1_2014, v2x_clpriv_lead1_2014)
-
-canary_testing_lagged <- canary_testing_lagged %>% 
-  left_join(pts_2014, by = c("year", "gwcode")) %>% 
-  left_join(vdem_2014, by = c("year", "gwcode")) %>% 
-  mutate(PTS_lead1 = coalesce(PTS_lead1, PTS_lead1_2014),
-         PTS_factor_lead1 = coalesce(PTS_factor_lead1, PTS_factor_lead1_2014),
-         v2x_clphy_lead1 = coalesce(v2x_clphy_lead1, v2x_clphy_lead1_2014),
-         v2x_clpriv_lead1 = coalesce(v2x_clpriv_lead1, v2x_clpriv_lead1_2014)) %>% 
-  select(-contains("_2014"))
-```
-
 # E~1a~: NGO laws and political terror
 
 ```{r e1a-predictions, warning=FALSE}

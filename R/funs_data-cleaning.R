@@ -446,8 +446,6 @@ combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
   testthat::expect_equal(nrow(panel_skeleton),
                          nrow(panel_done))
 
-  panel_done <- panel_done %>% filter(year < 2014)
-
   return(panel_done)
 }
 
@@ -487,6 +485,10 @@ create_training <- function(df) {
 
 create_testing <- function(df) {
   df %>% filter(pred_group == "Testing")
+}
+
+trim_data <- function(df) {
+  df %>% filter(year < 2014)
 }
 
 
