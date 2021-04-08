@@ -34,7 +34,8 @@ render_html <- function(input, output, csl, support_folder, ...) {
       theme = NULL,
       extra_dependencies = extra_dependencies,
       lib_dir = support_folder
-    )
+    ),
+    encoding = "UTF-8"
   )
 
   return(fs::path_rel(out))
@@ -56,7 +57,8 @@ render_pdf <- function(input, output, bibstyle, ...) {
       toc = FALSE,
       keep_tex = FALSE,
       citation_package = "biblatex"
-    )
+    ),
+    encoding = "UTF-8"
   )
 
   return(fs::path_rel(out))
@@ -77,7 +79,8 @@ render_pdf_ms <- function(input, output, bibstyle, ...) {
       toc = FALSE,
       keep_tex = FALSE,
       citation_package = "biblatex"
-    )
+    ),
+    encoding = "UTF-8"
   )
 
   return(fs::path_rel(out))
@@ -93,11 +96,13 @@ render_docx <- function(input, output, csl, ...) {
       md_extensions = "+raw_tex+smart-autolink_bare_uris",
       toc = FALSE,
       number_sections = FALSE
-    )
+    ),
+    encoding = "UTF-8"
   )
 
   return(fs::path_rel(out))
 }
+
 
 extract_bib <- function(input_rmd, input_bib, output, ...) {
   # Load the document
