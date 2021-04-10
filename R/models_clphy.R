@@ -64,6 +64,28 @@ f_clphy_total <- function(dat) {
   return(model)
 }
 
+f_clphy_total_new <- function(dat) {
+  dat <- dat %>% filter(laws)
+
+  model <- brm(
+    bf(v2x_clphy_lead1 ~ barriers_total_new + barriers_total_new_lag1 +
+         v2x_clphy +
+         v2x_polyarchy +
+         gdpcap_log +
+         un_trade_pct_gdp +
+         armed_conflict +
+         (1 | gwcode)
+    ),
+    family = gaussian(),
+    prior = clphy_settings$priors_vague,
+    control = list(adapt_delta = 0.9),
+    data = dat,
+    chains = clphy_settings$chains, iter = clphy_settings$iter,
+    warmup = clphy_settings$warmup, seed = clphy_settings$seed)
+
+  return(model)
+}
+
 f_clphy_advocacy <- function(dat) {
   dat <- dat %>% filter(laws)
 
