@@ -8,6 +8,14 @@ bibstyle <- "bibstyle-chicago-authordate"
 
 suppressPackageStartupMessages(library(brms))
 
+
+# Bayes-specific stuff
+options(mc.cores = 4,
+        brms.backend = "cmdstanr")
+
+options(tidyverse.quiet = TRUE,
+        dplyr.summarise.inform = FALSE)
+
 # By default, R uses polynomial contrasts for ordered factors in linear models
 # options("contrasts")
 # So make ordered factors use treatment contrasts instead
@@ -15,23 +23,32 @@ options(contrasts = rep("contr.treatment", 2))
 # Or do it on a single variable:
 # contrasts(df$x) <- "contr.treatment"
 
+# Things that get set in options() are not passed down to workers in future (see
+# https://github.com/HenrikBengtsson/future/issues/134), which means all these
+# neat options we set here disappear when running tar_make_future() (like
+# ordered treatment contrasts and the number of cores used, etc.). The official
+# recommendation is to add options() calls to the individual workers.
+#
+# We do this by including options() in the functions where we define model
+# priors and other settings (i.e. pts_settings()). But setting options there
+# inside a bunch of files can get tedious, since the number of cores, workers,
+# etc. depends on the computer we run this on (i.e. my 4-core personal laptop
+# vs. my 16-core work laptop).
+
+# Pass these options to workers using options(worker_options)
+worker_options <- options()[c("mc.cores", "brms.backend",
+                              "contrasts", "tidyverse.quiet",
+                              "dplyr.summarise.inform")]
+
 set.seed(9936)  # From random.org
-
-# Bayes-specific stuff
-options(mc.cores = parallel::detectCores(),
-        brms.backend = "cmdstanr")
-
-options(tidyverse.quiet = TRUE,
-        dplyr.summarise.inform = FALSE)
 
 future::plan(future::multisession)
 
 tar_option_set(packages = c("tidyverse", "countrycode", "states", "WDI", "here", "fs",
-                            "readxl", "haven", "sf", "lubridate", "scales", "naniar",
+                            "readxl", "haven", "sf", "lubridate", "scales",
                             "janitor", "kableExtra", "huxtable", "modelsummary",
                             "knitr", "withr", "flextable", "testthat", "DT",
-                            "brms", "tidybayes", "broom", "broom.mixed", "scico",
-                            "ggtext", "colorspace", "lme4", "cmdstanr", "jsonlite"))
+                            "brms", "tidybayes", "broom", "cmdstanr", "jsonlite"))
 
 source("R/funs_data-cleaning.R")
 source("R/funs_knitting.R")
@@ -41,6 +58,7 @@ source("R/models_analysis.R")
 source("R/models_pts.R")
 source("R/models_clphy.R")
 source("R/models_clpriv.R")
+source("R/models_lhr.R")
 
 # here::here() returns an absolute path, which then gets stored in tar_meta and
 # becomes computer-specific (i.e. /Users/andrew/Research/blah/thing.Rmd).
@@ -57,6 +75,10 @@ list(
              format = "file"),
   tar_target(pts_raw_file,
              here_rel("data", "raw_data", "Political Terror Scale", "PTS-2019.RData"),
+             format = "file"),
+  tar_target(latent_hr_raw_file,
+             here_rel("data", "raw_data", "Latent Human Rights Protection Scores",
+                      "HumanRightsProtectionScores_v4.01.csv"),
              format = "file"),
   tar_target(journalists_raw_file,
              here_rel("data", "raw_data", "Gohdes Carey journalists",
@@ -101,6 +123,7 @@ list(
   tar_target(wdi_clean, load_clean_wdi(skeleton)),
   tar_target(chaudhry_clean, load_clean_chaudhry(chaudhry_raw_file)),
   tar_target(pts_clean, load_clean_pts(pts_raw_file, skeleton)),
+  tar_target(latent_hr_clean, load_clean_latent_hr(latent_hr_raw_file, skeleton)),
   tar_target(killings_all, load_clean_journalists(journalists_raw_file)),
   tar_target(ucdp_prio_clean, load_clean_ucdp(ucdp_raw_file)),
   tar_target(vdem_clean, load_clean_vdem(vdem_raw_file)),
@@ -109,8 +132,9 @@ list(
                                        un_gdp_current_raw_file, skeleton)),
   # Combine data
   # This includes 2014 for lagging/leading
-  tar_target(panel_with_2014, combine_data(skeleton, chaudhry_clean, pts_clean,
-                                           killings_all, ucdp_prio_clean, vdem_clean,
+  tar_target(panel_with_2014, combine_data(skeleton, chaudhry_clean,
+                                           pts_clean, latent_hr_clean, killings_all,
+                                           ucdp_prio_clean, vdem_clean,
                                            un_pop, un_gdp)),
   # THIS is the final 2014-less data
   tar_target(panel, trim_data(panel_with_2014)),
@@ -128,6 +152,7 @@ list(
   ## Models using full data
   tar_target(m_pts_baseline, f_pts_baseline(panel_lagged)),
   tar_target(m_pts_total, f_pts_total(panel_lagged)),
+  tar_target(m_pts_total_new, f_pts_total_new(panel_lagged)),
   tar_target(m_pts_advocacy, f_pts_advocacy(panel_lagged)),
   tar_target(m_pts_entry, f_pts_entry(panel_lagged)),
   tar_target(m_pts_funding, f_pts_funding(panel_lagged)),
@@ -159,6 +184,7 @@ list(
   ## Models using full data
   tar_target(m_clphy_baseline, f_clphy_baseline(panel_lagged)),
   tar_target(m_clphy_total, f_clphy_total(panel_lagged)),
+  tar_target(m_clphy_total_new, f_clphy_total_new(panel_lagged)),
   tar_target(m_clphy_advocacy, f_clphy_advocacy(panel_lagged)),
   tar_target(m_clphy_entry, f_clphy_entry(panel_lagged)),
   tar_target(m_clphy_funding, f_clphy_funding(panel_lagged)),
@@ -190,6 +216,7 @@ list(
   ## Models using full data
   tar_target(m_clpriv_baseline, f_clpriv_baseline(panel_lagged)),
   tar_target(m_clpriv_total, f_clpriv_total(panel_lagged)),
+  tar_target(m_clpriv_total_new, f_clpriv_total_new(panel_lagged)),
   tar_target(m_clpriv_advocacy, f_clpriv_advocacy(panel_lagged)),
   tar_target(m_clpriv_entry, f_clpriv_entry(panel_lagged)),
   tar_target(m_clpriv_funding, f_clpriv_funding(panel_lagged)),
@@ -216,6 +243,16 @@ list(
   tar_target(m_clpriv_entry_rewb_train, f_clpriv_entry_rewb(panel_training_lagged)),
   tar_target(m_clpriv_funding_rewb_train, f_clpriv_funding_rewb(panel_training_lagged)),
   tar_target(m_clpriv_v2csreprss_rewb_train, f_clpriv_v2csreprss_rewb(panel_training_lagged)),
+
+  # Models for latent respect for human rights (latent_hr_mean)
+  ## Models using full data
+  tar_target(m_lhr_baseline, f_lhr_baseline(panel_lagged)),
+  tar_target(m_lhr_total, f_lhr_total(panel_lagged)),
+  tar_target(m_lhr_total_new, f_lhr_total_new(panel_lagged)),
+  tar_target(m_lhr_advocacy, f_lhr_advocacy(panel_lagged)),
+  tar_target(m_lhr_entry, f_lhr_entry(panel_lagged)),
+  tar_target(m_lhr_funding, f_lhr_funding(panel_lagged)),
+  tar_target(m_lhr_v2csreprss, f_lhr_v2csreprss(panel_lagged)),
 
   # Big dataframe of model names for full models
   tar_target(model_df, create_model_df()),
@@ -263,7 +300,7 @@ list(
 
   # Expectation 1
   tar_target(models_tbl_e1a_re,
-             build_modelsummary(lst(m_pts_baseline, m_pts_total,
+             build_modelsummary(lst(m_pts_baseline, m_pts_total, m_pts_total_new,
                                     m_pts_advocacy, m_pts_entry,
                                     m_pts_funding))),
   tar_target(models_tbl_e1a_rewb,
@@ -271,13 +308,17 @@ list(
                                     m_pts_advocacy_rewb, m_pts_entry_rewb,
                                     m_pts_funding_rewb))),
   tar_target(models_tbl_e1b_re,
-             build_modelsummary(lst(m_clphy_baseline, m_clphy_total,
+             build_modelsummary(lst(m_clphy_baseline, m_clphy_total, m_clphy_total_new,
                                     m_clphy_advocacy, m_clphy_entry,
                                     m_clphy_funding))),
   tar_target(models_tbl_e1c_re,
-             build_modelsummary(lst(m_clpriv_baseline, m_clpriv_total,
+             build_modelsummary(lst(m_clpriv_baseline, m_clpriv_total, m_clpriv_total_new,
                                     m_clpriv_advocacy, m_clpriv_entry,
                                     m_clpriv_funding))),
+  tar_target(models_tbl_e1d_re,
+             build_modelsummary(lst(m_lhr_baseline, m_lhr_total, m_lhr_total_new,
+                                    m_lhr_advocacy, m_lhr_entry,
+                                    m_lhr_funding))),
   # Expectation 2
   tar_target(models_tbl_e2a,
              build_modelsummary(lst(m_pts_baseline, m_pts_v2csreprss,
@@ -288,6 +329,8 @@ list(
   tar_target(models_tbl_e2c,
              build_modelsummary(lst(m_clpriv_baseline, m_clpriv_v2csreprss,
                                     m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb))),
+  tar_target(models_tbl_e2d,
+             build_modelsummary(lst(m_lhr_baseline, m_lhr_v2csreprss))),
 
   # Models for paper
   tar_target(models_paper_pts,
