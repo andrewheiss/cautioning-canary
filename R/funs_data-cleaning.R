@@ -406,8 +406,25 @@ load_clean_un_gdp <- function(path_constant, path_current, skeleton) {
 }
 
 
-combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
-                         ucdp_prio_clean, vdem_clean, un_pop, un_gdp) {
+load_clean_latent_hr <- function(path, skeleton) {
+  latent_hr_raw <- read_csv(path, col_types = cols())
+
+  latent_hr <- latent_hr_raw %>%
+    filter(YEAR >= 1990, COW %in% c(skeleton$skeleton_lookup$cowcode, 679),
+           COW != 678) %>%
+    # Deal with Yemen and Vietnam
+    mutate(gwcode = countrycode(COW, "cown", "gwn",
+                                custom_match = c("679" = 678L, "816" = 816))) %>%
+    select(year = YEAR, gwcode,
+           latent_hr_mean = theta_mean, latent_hr_sd = theta_sd)
+
+  return(latent_hr)
+}
+
+
+combine_data <- function(skeleton, chaudhry_clean,
+                         pts_clean, latent_hr, killings_all, ucdp_prio_clean,
+                         vdem_clean, un_pop, un_gdp) {
   # Only look at countries in Suparna's data
   chaudhry_countries <- chaudhry_clean %>% distinct(gwcode)
 
@@ -434,6 +451,7 @@ combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
       TRUE ~ laws  # Otherwise, use FALSE
     )) %>%
     left_join(pts_clean, by = c("gwcode", "year")) %>%
+    left_join(latent_hr, by = c("gwcode", "year")) %>%
     left_join(killings_all, by = c("gwcode", "year")) %>%
     mutate(across(starts_with("gh"), ~coalesce(., 0L))) %>%
     mutate(gh_range = year >= 2002) %>%
@@ -453,6 +471,15 @@ combine_data <- function(skeleton, chaudhry_clean, pts_clean, killings_all,
 lag_data <- function(df) {
   panel_lagged <- df %>%
     group_by(gwcode) %>%
+    # Indicate changes in laws
+    mutate(across(c(advocacy, entry, funding, barriers_total),
+                  list(new = ~. - lag(.),
+                       worse = ~(. - lag(.)) > 0,
+                       cat = ~cut(. - lag(.),
+                                  breaks = c(-Inf, -1, 0, Inf),
+                                  labels = c("New better law", "No new laws",
+                                             "New worse law"),
+                                  ordered_result = TRUE)))) %>%
     # Lag all the time-varying variables
     mutate(across(c(starts_with("advocacy"), starts_with("entry"),
                     starts_with("funding"), starts_with("barriers"),
@@ -462,7 +489,7 @@ lag_data <- function(df) {
                     starts_with("armed_"), starts_with("gdp")),
                   list(lag1 = ~lag(., 1), lag2 = ~lag(., 2)))) %>%
     # Lead outcome variables so we can use DV_lead1 instead of IVs_lag1
-    mutate(across(c(PTS, PTS_factor, v2x_clphy, v2x_clpriv),
+    mutate(across(c(PTS, PTS_factor, v2x_clphy, v2x_clpriv, starts_with("latent_hr")),
                   list(lead1 = ~lead(., 1), lead2 = ~lead(., 2)))) %>%
     # To do fancy Bell and Jones adjustment (https://doi.org/10.1017/psrm.2014.7)
     # (aka Mundlak devices), we split explanatory variables into a meaned
@@ -471,7 +498,8 @@ lag_data <- function(df) {
     mutate(across(c(starts_with("advocacy"), starts_with("entry"),
                     starts_with("funding"), starts_with("barriers"),
                     starts_with("population"), starts_with("gh"),
-                    starts_with("v2"), starts_with("gdp"), un_trade_pct_gdp),
+                    starts_with("v2"), starts_with("gdp"), un_trade_pct_gdp,
+                    -contains("_worse"), -contains("_cat")),  # Not the categorical stuff
                   list(between = ~mean(., na.rm = TRUE),  # Between
                        within = ~. - mean(., na.rm = TRUE)))) %>%  # Within
     ungroup()

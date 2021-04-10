@@ -51,6 +51,7 @@ withr::with_dir(here::here(), {
   tar_load(skeleton)
   tar_load(chaudhry_clean)
   tar_load(pts_clean)
+  tar_load(latent_hr_clean)
   tar_load(killings_all)
   tar_load(vdem_clean)
   tar_load(wdi_clean)
@@ -127,6 +128,25 @@ Following Gohdes and Carey, we use the State Department score, unless it's missi
 
 ```{r glimpse-pts}
 glimpse(pts_clean)
+```
+
+## Latent Human Rights Protection Scores
+
+We also use Chris Fariss's [Latent Human Rights Protection Scores](https://doi.org/10.7910/DVN/RQ85GK), which are estimates from fancy Bayesian models that capture a country's respect for physical integrity rights. We use the posterior mean of the latent variable from the model (θ), and we keep the standard deviation of θ just in case we want to fancier things in the future and incorporate the uncertainty of θ in the models. We rename θ to `latent_hr_mean`.
+
+In this measure, high values represent strong respect for physical integrity rights:
+
+```{r showh-lhr-min-max}
+latent_hr_clean %>% 
+  filter(latent_hr_mean == max(latent_hr_mean) | 
+           latent_hr_mean == min(latent_hr_mean)) %>% 
+  left_join(select(skeleton$skeleton_lookup, gwcode, country),
+            by = "gwcode") %>% 
+  select(country, everything())
+```
+
+```{r glimpse-lhr}
+glimpse(latent_hr_clean)
 ```
 
 ## Gohdes and Carey journalist deaths
