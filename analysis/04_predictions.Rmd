@@ -61,7 +61,10 @@ withr::with_dir(here::here(), {
              m_clphy_entry_train, m_clphy_funding_train,
              m_clpriv_baseline_train, m_clpriv_v2csreprss_train,
              m_clpriv_total_train, m_clpriv_advocacy_train, 
-             m_clpriv_entry_train, m_clpriv_funding_train))
+             m_clpriv_entry_train, m_clpriv_funding_train,
+             m_lhr_baseline_train, m_lhr_v2csreprss_train,
+             m_lhr_total_train, m_lhr_advocacy_train, 
+             m_lhr_entry_train, m_lhr_funding_train))
 })
 
 pts_levels <- levels(canary_testing_lagged$PTS_factor)
@@ -642,7 +645,7 @@ nrow(most_improved_clphy_total)
 
 most_improved_clphy_total %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clphy_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_total,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -673,7 +676,7 @@ nrow(most_improved_clphy_advocacy)
 
 most_improved_clphy_advocacy %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clphy_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_advocacy,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -704,7 +707,7 @@ nrow(most_improved_clphy_entry)
 
 most_improved_clphy_entry %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clphy_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_entry,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -735,7 +738,7 @@ nrow(most_improved_clphy_funding)
 
 most_improved_clphy_funding %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clphy_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_funding,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -909,7 +912,7 @@ nrow(most_improved_clpriv_total)
 
 most_improved_clpriv_total %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clpriv_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_total,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -940,7 +943,7 @@ nrow(most_improved_clpriv_advocacy)
 
 most_improved_clpriv_advocacy %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clpriv_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_advocacy,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -971,7 +974,7 @@ nrow(most_improved_clpriv_entry)
 
 most_improved_clpriv_entry %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clpriv_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_entry,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -1002,7 +1005,274 @@ nrow(most_improved_clpriv_funding)
 
 most_improved_clpriv_funding %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clpriv_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
+         `Predicted (baseline)` = estimate_baseline,
+         `Predicted (CS repression)` = estimate_funding,
+         `|CS repression − baseline|` = abs_diff) %>% 
+  head(5) %>% 
+  kbl(digits = 3, align = "lccccc") %>% 
+  kable_styling()
+```
+
+\ 
+
+# E~1d~: NGO laws and latent human rights
+
+```{r e1d-predictions, warning=FALSE}
+seed_lhr_prediction <- 3207  # From random.org
+
+set.seed(seed_lhr_prediction)
+pred_lhr_baseline <- predict(m_lhr_baseline_train, 
+                             newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                             allow_new_levels = TRUE)
+
+set.seed(seed_lhr_prediction)
+pred_lhr_total <- predict(m_lhr_total_train, 
+                          newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                          allow_new_levels = TRUE)
+
+set.seed(seed_lhr_prediction)
+pred_lhr_advocacy <- predict(m_lhr_advocacy_train, 
+                             newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                             allow_new_levels = TRUE)
+
+set.seed(seed_lhr_prediction)
+pred_lhr_entry <- predict(m_lhr_entry_train, 
+                          newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                          allow_new_levels = TRUE)
+
+set.seed(seed_lhr_prediction)
+pred_lhr_funding <- predict(m_lhr_funding_train, 
+                            newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                            allow_new_levels = TRUE)
+
+pred_lhr_baseline_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_baseline)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+
+pred_lhr_total_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_total)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+
+pred_lhr_advocacy_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_advocacy)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+
+pred_lhr_entry_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_entry)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+
+pred_lhr_funding_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_funding)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+```
+
+## Improvement from baseline models
+
+```{r e1d-pred-plots, warning=FALSE}
+plot_baseline <- ggplot(pred_lhr_baseline_test, 
+                        aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Baseline",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_total <- ggplot(pred_lhr_total_test, 
+                     aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Total legal barriers",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_advocacy <- ggplot(pred_lhr_advocacy_test, 
+                        aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Barriers to advocacy",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_entry <- ggplot(pred_lhr_entry_test, 
+                     aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Barriers to entry",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_funding <- ggplot(pred_lhr_funding_test, 
+                       aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Barriers to funding",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+(plot_baseline | plot_total) / (plot_advocacy | plot_entry | plot_funding)
+```
+
+```{r e1d-metrics}
+lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
+
+bind_rows(lotsa_metrics(pred_lhr_baseline_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Baseline"),
+          lotsa_metrics(pred_lhr_total_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Total legal barriers"),
+          lotsa_metrics(pred_lhr_advocacy_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Barriers to advocacy"),
+          lotsa_metrics(pred_lhr_entry_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Barriers to entry"),
+          lotsa_metrics(pred_lhr_funding_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Barriers to funding")) %>% 
+  select(Model, .metric, .estimate) %>% 
+  pivot_wider(names_from = ".metric", values_from = ".estimate")
+```
+
+## Most improved countries
+
+### Total legal barriers
+
+```{r e1d-most-improved-total}
+most_improved_lhr_total <- bind_cols(
+  pred_lhr_baseline_test %>% 
+    mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 
+    select(country, gwcode, year, latent_hr_mean_lead1, 
+           estimate_baseline = Estimate, error_baseline),
+  pred_lhr_total_test %>% 
+    mutate(error_total = Estimate - latent_hr_mean_lead1) %>% 
+    select(estimate_total = Estimate, error_total)
+) %>% 
+  mutate(improved = error_total < 0 & abs(error_total) < abs(error_baseline)) %>% 
+  mutate(diff = error_total - error_baseline) %>% 
+  mutate(abs_diff = abs(diff)) %>% 
+  filter(improved) %>% 
+  arrange(desc(abs_diff))
+
+nrow(most_improved_lhr_total)
+
+most_improved_lhr_total %>% 
+  select(Country = country, Year = year, 
+         `Actual latent human rights value (t + 1)` = latent_hr_mean_lead1,
+         `Predicted (baseline)` = estimate_baseline,
+         `Predicted (CS repression)` = estimate_total,
+         `|CS repression − baseline|` = abs_diff) %>% 
+  head(5) %>% 
+  kbl(digits = 3, align = "lccccc") %>% 
+  kable_styling()
+```
+
+### Barriers to advocacy
+
+```{r e1d-most-improved-advocacy}
+most_improved_lhr_advocacy <- bind_cols(
+  pred_lhr_baseline_test %>% 
+    mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 
+    select(country, gwcode, year, latent_hr_mean_lead1, 
+           estimate_baseline = Estimate, error_baseline),
+  pred_lhr_advocacy_test %>% 
+    mutate(error_advocacy = Estimate - latent_hr_mean_lead1) %>% 
+    select(estimate_advocacy = Estimate, error_advocacy)
+) %>% 
+  mutate(improved = error_advocacy < 0 & abs(error_advocacy) < abs(error_baseline)) %>% 
+  mutate(diff = error_advocacy - error_baseline) %>% 
+  mutate(abs_diff = abs(diff)) %>% 
+  filter(improved) %>% 
+  arrange(desc(abs_diff))
+
+nrow(most_improved_lhr_advocacy)
+
+most_improved_lhr_advocacy %>% 
+  select(Country = country, Year = year, 
+         `Actual latent human rights value (t + 1)` = latent_hr_mean_lead1,
+         `Predicted (baseline)` = estimate_baseline,
+         `Predicted (CS repression)` = estimate_advocacy,
+         `|CS repression − baseline|` = abs_diff) %>% 
+  head(5) %>% 
+  kbl(digits = 3, align = "lccccc") %>% 
+  kable_styling()
+```
+
+### Barriers to entry
+
+```{r e1d-most-improved-entry}
+most_improved_lhr_entry <- bind_cols(
+  pred_lhr_baseline_test %>% 
+    mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 
+    select(country, gwcode, year, latent_hr_mean_lead1, 
+           estimate_baseline = Estimate, error_baseline),
+  pred_lhr_entry_test %>% 
+    mutate(error_entry = Estimate - latent_hr_mean_lead1) %>% 
+    select(estimate_entry = Estimate, error_entry)
+) %>% 
+  mutate(improved = error_entry < 0 & abs(error_entry) < abs(error_baseline)) %>% 
+  mutate(diff = error_entry - error_baseline) %>% 
+  mutate(abs_diff = abs(diff)) %>% 
+  filter(improved) %>% 
+  arrange(desc(abs_diff))
+
+nrow(most_improved_lhr_entry)
+
+most_improved_lhr_entry %>% 
+  select(Country = country, Year = year, 
+         `Actual latent human rights value (t + 1)` = latent_hr_mean_lead1,
+         `Predicted (baseline)` = estimate_baseline,
+         `Predicted (CS repression)` = estimate_entry,
+         `|CS repression − baseline|` = abs_diff) %>% 
+  head(5) %>% 
+  kbl(digits = 3, align = "lccccc") %>% 
+  kable_styling()
+```
+
+### Barriers to funding
+
+```{r e1d-most-improved-funding}
+most_improved_lhr_funding <- bind_cols(
+  pred_lhr_baseline_test %>% 
+    mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 
+    select(country, gwcode, year, latent_hr_mean_lead1, 
+           estimate_baseline = Estimate, error_baseline),
+  pred_lhr_funding_test %>% 
+    mutate(error_funding = Estimate - latent_hr_mean_lead1) %>% 
+    select(estimate_funding = Estimate, error_funding)
+) %>% 
+  mutate(improved = error_funding < 0 & abs(error_funding) < abs(error_baseline)) %>% 
+  mutate(diff = error_funding - error_baseline) %>% 
+  mutate(abs_diff = abs(diff)) %>% 
+  filter(improved) %>% 
+  arrange(desc(abs_diff))
+
+nrow(most_improved_lhr_funding)
+
+most_improved_lhr_funding %>% 
+  select(Country = country, Year = year, 
+         `Actual latent human rights value (t + 1)` = latent_hr_mean_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_funding,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -1436,7 +1706,7 @@ nrow(most_improved_clphy)
 
 most_improved_clphy %>% 
   select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` =  v2x_clphy_lead1,
+         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_v2csreprss,
          `|CS repression − baseline|` = abs_diff) %>% 
@@ -1543,7 +1813,108 @@ nrow(most_improved_clpriv)
 
 most_improved_clpriv %>% 
   select(Country = country, Year = year, 
-         `Actual private civil liberties index (t + 1)` =  v2x_clpriv_lead1,
+         `Actual private civil liberties index (t + 1)` = v2x_clpriv_lead1,
+         `Predicted (baseline)` = estimate_baseline,
+         `Predicted (CS repression)` = estimate_v2csreprss,
+         `|CS repression − baseline|` = abs_diff) %>% 
+  head(5) %>% 
+  kbl(digits = 3, align = "lccccc") %>% 
+  kable_styling()
+```
+
+\ 
+
+# E~2d~: Civil society environment and latent human rights
+
+```{r e2d-predictions, warning=FALSE}
+seed_lhr_prediction <- 3207  # From random.org
+
+set.seed(seed_lhr_prediction)
+pred_lhr_baseline <- predict(m_lhr_baseline_train, 
+                                newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                                allow_new_levels = TRUE)
+
+set.seed(seed_lhr_prediction)
+pred_lhr_v2csreprss <- predict(m_lhr_v2csreprss_train, 
+                                  newdata = select(canary_testing_lagged, -latent_hr_mean_lead1),
+                                  allow_new_levels = TRUE)
+
+pred_lhr_baseline_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_baseline)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+
+pred_lhr_v2csreprss_test <- canary_testing_lagged %>% 
+  select(country, gwcode, year, latent_hr_mean_lead1) %>% 
+  bind_cols(as_tibble(pred_lhr_v2csreprss)) %>% 
+  filter(!is.na(latent_hr_mean_lead1))
+```
+
+## Improvement from baseline models
+
+```{r e2d-pred-plots, warning=FALSE}
+plot_baseline <- ggplot(pred_lhr_baseline_test, 
+                        aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Baseline",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_v2csreprss <- ggplot(pred_lhr_v2csreprss_test, 
+                          aes(x = latent_hr_mean_lead1, y = Estimate)) +
+  geom_abline(lty = 2) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Added predictor",
+       x = "Actual latent human rights value (t + 1)",
+       y = "Predicted latent human rights value (t + 1)") +
+  coord_equal() +
+  theme_ngo()
+
+plot_baseline | plot_v2csreprss
+```
+
+```{r e2d-metrics}
+lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
+
+bind_rows(lotsa_metrics(pred_lhr_baseline_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Baseline"),
+          lotsa_metrics(pred_lhr_v2csreprss_test, 
+                        truth = latent_hr_mean_lead1, 
+                        estimate = Estimate) %>% 
+            mutate(Model = "Added predictor")) %>% 
+  select(Model, .metric, .estimate) %>% 
+  pivot_wider(names_from = ".metric", values_from = ".estimate")
+```
+
+## Most improved countries
+
+```{r e2d-most-improved}
+most_improved_lhr <- bind_cols(
+  pred_lhr_baseline_test %>% 
+    mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 
+    select(country, gwcode, year, latent_hr_mean_lead1, 
+           estimate_baseline = Estimate, error_baseline),
+  pred_lhr_v2csreprss_test %>% 
+    mutate(error_v2csreprss = Estimate - latent_hr_mean_lead1) %>% 
+    select(estimate_v2csreprss = Estimate, error_v2csreprss)
+) %>% 
+  # mutate(across(starts_with("error"), ~round(., 4))) %>% 
+  mutate(improved = error_v2csreprss < 0 & abs(error_v2csreprss) < abs(error_baseline)) %>% 
+  mutate(diff = error_v2csreprss - error_baseline) %>% 
+  mutate(abs_diff = abs(diff)) %>% 
+  filter(improved) %>% 
+  arrange(desc(abs_diff))
+
+nrow(most_improved_lhr)
+
+most_improved_lhr %>% 
+  select(Country = country, Year = year, 
+         `Actual latent human rights value (t + 1)` = latent_hr_mean_lead1,
          `Predicted (baseline)` = estimate_baseline,
          `Predicted (CS repression)` = estimate_v2csreprss,
          `|CS repression − baseline|` = abs_diff) %>% 

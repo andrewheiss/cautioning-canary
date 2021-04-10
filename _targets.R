@@ -254,6 +254,14 @@ list(
   tar_target(m_lhr_funding, f_lhr_funding(panel_lagged)),
   tar_target(m_lhr_v2csreprss, f_lhr_v2csreprss(panel_lagged)),
 
+  tar_target(m_lhr_baseline_train, f_lhr_baseline(panel_training_lagged)),
+  tar_target(m_lhr_total_train, f_lhr_total(panel_training_lagged)),
+  tar_target(m_lhr_total_new_train, f_lhr_total_new(panel_training_lagged)),
+  tar_target(m_lhr_advocacy_train, f_lhr_advocacy(panel_training_lagged)),
+  tar_target(m_lhr_entry_train, f_lhr_entry(panel_training_lagged)),
+  tar_target(m_lhr_funding_train, f_lhr_funding(panel_training_lagged)),
+  tar_target(m_lhr_v2csreprss_train, f_lhr_v2csreprss(panel_training_lagged)),
+
   # Big dataframe of model names for full models
   tar_target(model_df, create_model_df()),
 
