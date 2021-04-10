@@ -52,7 +52,8 @@ withr::with_dir(here::here(), {
   
   # Load big list of models
   model_df <- tar_read(model_df) %>% 
-    filter(str_detect(model, "baseline") | str_detect(model, "v2csreprss"))
+    filter(str_detect(model, "baseline") | str_detect(model, "v2csreprss")) %>% 
+    filter(!str_detect(model, "_train"))
   
   # Load actual model objects
   tar_load(c(m_pts_baseline, m_pts_v2csreprss, 
@@ -60,10 +61,11 @@ withr::with_dir(here::here(), {
              m_clphy_baseline, m_clphy_v2csreprss, 
              m_clphy_baseline_rewb, m_clphy_v2csreprss_rewb, 
              m_clpriv_baseline, m_clpriv_v2csreprss, 
-             m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb))
+             m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb,
+             m_lhr_baseline, m_lhr_v2csreprss))
   
   # Load regression tables
-  tar_load(c(models_tbl_e2a, models_tbl_e2b, models_tbl_e2c))
+  tar_load(c(models_tbl_e2a, models_tbl_e2b, models_tbl_e2c, models_tbl_e2d))
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
@@ -359,5 +361,81 @@ mfx %>%
   geom_line(size = 1, color = "#FF4136") +
   labs(x = "Difference from average level of civil society repression\n(higher values = less repression)",
        y = "Predicted civil liberties index\n(higher values = less violence)") +
+  theme_ngo()
+```
+
+\ 
+
+# E~2d~: Civil society environment and latent physical integrity rights
+
+```{r tbl-e2d}
+# Build nicer column names
+models_for_table_e2d <- models %>% 
+  filter(outcome_var == "Latent human rights") %>% 
+  mutate(explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+
+# Make a named vector of original model names and nice names
+model_names_tbl_e2d <- models_for_table_e2d %>% 
+  pull(model_name) %>% 
+  set_names(models_for_table_e2d$model)
+
+# Rename the columns
+names(models_tbl_e2d) <- recode(names(models_tbl_e2d), !!!model_names_tbl_e2d)
+
+modelsummary(models_tbl_e2d,
+             statistic = "[{conf.low}, {conf.high}]",
+             coef_map = coef_list,
+             gof_omit = "ELPD",
+             escape = FALSE,
+             notes = list("Posterior means; 95% credible intervals in brackets"))
+```
+
+## Coefficients
+
+```{r plot-coefs-e2d}
+coef_plots <- models %>% 
+  filter(str_detect(model, "m_lhr_v2csreprss")) %>% 
+  mutate(re_fancy = case_when(
+    re == "RE" ~ "Random effects models",
+    re == "REWB" ~ "Random effects—within/between models"
+  )) %>% 
+  mutate(coef_draws = map(
+    actual_model, 
+    ~gather_draws(model = ., `b_v2csreprss.*`, regex = TRUE))) %>% 
+  select(-actual_model) %>% 
+  unnest(coef_draws) %>% 
+  filter(!str_detect(.variable, "between")) %>% 
+  left_join(coefs_clean, by = c(".variable" = "coef"))
+
+coef_plots %>% 
+  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
+  geom_vline(xintercept = 0) +
+  guides(fill = FALSE, alpha = FALSE) +
+  scale_alpha_manual(values = c(1, 0.4)) +
+  labs(x = "Coefficient", y = NULL) +
+  facet_wrap(vars(re_fancy), ncol = 1, scales = "free_y") +
+  theme_ngo()
+```
+
+## Marginal effects
+
+```{r plot-mfx-e2d}
+mfx <- models %>% 
+  filter(str_detect(model, "m_lhr_v2csreprss")) %>% 
+  mutate(fx = map2(actual_model, "v2csreprss",
+                   ~conditional_effects(.x, effects = .y)[[1]])) %>% 
+  select(-actual_model) %>% 
+  unnest(fx)
+
+mfx %>% 
+  filter(model == "m_lhr_v2csreprss") %>% 
+  ggplot(aes(x = effect1__, y = estimate__)) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
+              fill = "#FF4136", color = NA) +
+  geom_line(size = 1, color = "#FF4136") +
+  labs(x = "Civil society repression\n(higher values = less repression)",
+       y = "Predicted latent human rights\n(higher values = less violence)") +
   theme_ngo()
 ```

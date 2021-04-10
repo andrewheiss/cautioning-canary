@@ -56,16 +56,24 @@ withr::with_dir(here::here(), {
     filter(!str_detect(model, "v2csreprss"))
   
   # Load actual model objects
-  tar_load(c(m_pts_baseline, m_pts_total, m_pts_advocacy, m_pts_entry, m_pts_funding, 
-             m_pts_baseline_rewb, m_pts_total_rewb, m_pts_advocacy_rewb, m_pts_entry_rewb, m_pts_funding_rewb, 
-             m_clphy_baseline, m_clphy_total, m_clphy_advocacy, m_clphy_entry, m_clphy_funding, 
-             m_clphy_baseline_rewb, m_clphy_total_rewb, m_clphy_advocacy_rewb, m_clphy_entry_rewb, m_clphy_funding_rewb, 
-             m_clpriv_baseline, m_clpriv_total, m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding, 
-             m_clpriv_baseline_rewb, m_clpriv_total_rewb, m_clpriv_advocacy_rewb, m_clpriv_entry_rewb, m_clpriv_funding_rewb))
+  tar_load(c(m_pts_baseline, m_pts_total, m_pts_total_new, 
+             m_pts_advocacy, m_pts_entry, m_pts_funding, 
+             m_pts_baseline_rewb, m_pts_total_rewb, 
+             m_pts_advocacy_rewb, m_pts_entry_rewb, m_pts_funding_rewb, 
+             m_clphy_baseline, m_clphy_total, m_clphy_total_new, 
+             m_clphy_advocacy, m_clphy_entry, m_clphy_funding, 
+             m_clphy_baseline_rewb, m_clphy_total_rewb, 
+             m_clphy_advocacy_rewb, m_clphy_entry_rewb, m_clphy_funding_rewb, 
+             m_clpriv_baseline, m_clpriv_total, m_clpriv_total_new,
+             m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding, 
+             m_clpriv_baseline_rewb, m_clpriv_total_rewb, 
+             m_clpriv_advocacy_rewb, m_clpriv_entry_rewb, m_clpriv_funding_rewb,
+             m_lhr_baseline, m_lhr_total, m_lhr_total_new, 
+             m_lhr_advocacy, m_lhr_entry, m_lhr_funding))
   
   # Load regression tables
   tar_load(c(models_tbl_e1a_re, models_tbl_e1a_rewb, 
-             models_tbl_e1b_re, models_tbl_e1c_re))
+             models_tbl_e1b_re, models_tbl_e1c_re, models_tbl_e1d_re))
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
@@ -74,6 +82,7 @@ withr::with_dir(here::here(), {
 
 ```{r clean-data}
 models <- model_df %>% 
+  filter(!str_detect(model, "train")) %>% 
   mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
   mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
 
@@ -81,6 +90,8 @@ coefs_clean <- tribble(
   ~coef, ~coef_clean,
   "b_barriers_total", "Total legal barriers",
   "b_barriers_total_lag1", "Total legal barriers (t - 1)",
+  "b_barriers_total_new", "New legal barriers",
+  "b_barriers_total_new_lag1", "New legal barriers (t - 1)",
   "b_advocacy", "Barriers to advocacy",
   "b_advocacy_lag1", "Barriers to advocacy (t - 1)",
   "b_entry", "Barriers to entry",
@@ -198,6 +209,7 @@ coef_plots %>%
 plot_pts_vars_lookup <- tribble(
   ~model, ~plot_var, ~plot_var_nice,
   "m_pts_total", "barriers_total", "Total legal barriers",
+  "m_pts_total_new", "barriers_total_new", "New legal barriers",
   "m_pts_advocacy", "advocacy", "Barriers to advocacy",
   "m_pts_entry", "entry", "Barriers to entry",
   "m_pts_funding", "funding", "Barriers to funding"
@@ -293,6 +305,7 @@ coef_plots %>%
 plot_clphy_vars_lookup <- tribble(
   ~model, ~plot_var, ~plot_var_nice,
   "m_clphy_total", "barriers_total", "Total legal barriers",
+  "m_clphy_total_new", "barriers_total_new", "New legal barriers",
   "m_clphy_advocacy", "advocacy", "Advocacy",
   "m_clphy_entry", "entry", "Entry",
   "m_clphy_funding", "funding", "Funding"
@@ -386,6 +399,7 @@ coef_plots %>%
 plot_clpriv_vars_lookup <- tribble(
   ~model, ~plot_var, ~plot_var_nice,
   "m_clpriv_total", "barriers_total", "Total legal barriers",
+  "m_clpriv_total_new", "barriers_total_new", "New legal barriers",
   "m_clpriv_advocacy", "advocacy", "Advocacy",
   "m_clpriv_entry", "entry", "Entry",
   "m_clpriv_funding", "funding", "Funding"
@@ -414,6 +428,100 @@ mfx %>%
   guides(color = FALSE) +
   labs(x = "Count of legal barriers",
        y = "Predicted civil liberties index\n(higher values = better protection)") +
+  facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
+  theme_ngo() +
+  theme(panel.grid.major.x = element_blank())
+```
+
+\ 
+
+# E~1d~: NGO laws and latent physical integrity rights
+
+## Results table
+
+```{r tbl-e1d-re}
+models_for_table_e1d_re <- models %>% 
+  filter(outcome_var == "Latent human rights", re == "RE") %>% 
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+
+model_names_tbl_e1d_re <- models_for_table_e1d_re %>% 
+  pull(model_name) %>% 
+  set_names(models_for_table_e1d_re$model)
+
+names(models_tbl_e1d_re) <- recode(names(models_tbl_e1d_re), 
+                                   !!!model_names_tbl_e1d_re)
+
+modelsummary(models_tbl_e1d_re,
+             statistic = "[{conf.low}, {conf.high}]",
+             coef_map = coef_list,
+             gof_omit = "ELPD",
+             escape = FALSE,
+             notes = list("Posterior means; 95% credible intervals in brackets"))
+```
+
+## Coefficients
+
+```{r plot-coefs-e1d}
+coef_plots <- models %>% 
+  filter(str_detect(model, "lhr"), !str_detect(model, "baseline")) %>% 
+  mutate(re_fancy = case_when(
+    re == "RE" ~ "Random effects models",
+    re == "REWB" ~ "Random effects—within/between models"
+  )) %>% 
+  mutate(coef_draws = map(
+    actual_model, 
+    ~gather_draws(model = ., `.*barriers.*|.*advocacy.*|.*entry.*|.*funding.*`, regex = TRUE))) %>% 
+  select(-actual_model) %>% 
+  unnest(coef_draws) %>% 
+  filter(!str_detect(.variable, "between")) %>% 
+  left_join(coefs_clean, by = c(".variable" = "coef"))
+
+coef_plots %>% 
+  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
+  geom_vline(xintercept = 0) +
+  guides(fill = FALSE, alpha = FALSE) +
+  scale_alpha_manual(values = c(1, 0.4)) +
+  labs(x = "Coefficient", y = NULL) +
+  facet_wrap(vars(re_fancy), ncol = 2, scales = "free_y") +
+  theme_ngo()
+```
+
+## Marginal effects
+
+```{r plot-mfx-e1d}
+plot_lhr_vars_lookup <- tribble(
+  ~model, ~plot_var, ~plot_var_nice,
+  "m_lhr_total", "barriers_total", "Total legal barriers",
+  "m_lhr_total_new", "barriers_total_new", "New legal barriers",
+  "m_lhr_advocacy", "advocacy", "Advocacy",
+  "m_lhr_entry", "entry", "Entry",
+  "m_lhr_funding", "funding", "Funding"
+) %>% 
+  mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
+
+mfx <- models %>% 
+  filter(str_detect(model, "lhr"), !str_detect(model, "rewb|baseline")) %>% 
+  left_join(plot_lhr_vars_lookup, by = "model") %>% 
+  mutate(fx = map2(actual_model, plot_var, 
+                   ~conditional_effects(.x, effects = .y)[[1]])) %>% 
+  select(-actual_model) %>% 
+  unnest(fx)
+
+mfx %>% 
+  mutate(x_rounded = floor(effect1__)) %>% 
+  group_by(x_rounded, plot_var_nice) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
+  geom_line(size = 0.5, color = "grey90") +
+  geom_pointrange(aes(ymin = lower__, ymax = upper__),
+                  fatten = 1) +
+  scale_x_continuous(breaks = 0:9) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = FALSE) +
+  labs(x = "Count of legal barriers",
+       y = "Predicted latent human rights value\n(higher values = better human rights)") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())

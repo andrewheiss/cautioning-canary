@@ -122,7 +122,7 @@ icc(m0_clpriv, by_group = TRUE)
 
 It looks like pretty much all the variability in PTS is explained at a country level and not at a year level, which makes sense, since there's probably a ton of autocorrelation in human rights practices within a country, while global human rights levels probably don't move simultaneously across years.
 
-Just because the bulk of the relative variation is at at the country level doesn't mean that there isn't significant variability within countries over time. Thus, we should really used a multilevel model because the country-year structure matters *a lot* when explaining human rights abuses
+Just because the bulk of the relative variation is at at the country level doesn't mean that there isn't significant variability within countries over time. However, the lagged DV seems to soak up pretty much all year-based variability, so we should really use a multilevel model because the country structure matters *a lot* when explaining human rights abuses. There aren't really too many gains in efficiency or predictive power when including `(1 | year)` though.
 
 
 # Gradually build up the model
