@@ -1,6 +1,8 @@
 # Settings ----------------------------------------------------------------
 
 lhr_setup <- function() {
+  options(worker_options)
+
   # Settings
   CHAINS <- 4
   ITER <- 2000
@@ -16,12 +18,12 @@ lhr_setup <- function() {
               priors_vague = priors_vague))
 }
 
-lhr_settings <- lhr_setup()
-
 
 # Regular models ----------------------------------------------------------
 
 f_lhr_baseline <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -43,6 +45,8 @@ f_lhr_baseline <- function(dat) {
 }
 
 f_lhr_total <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -65,6 +69,8 @@ f_lhr_total <- function(dat) {
 }
 
 f_lhr_total_new <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -87,6 +93,8 @@ f_lhr_total_new <- function(dat) {
 }
 
 f_lhr_advocacy <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -109,6 +117,8 @@ f_lhr_advocacy <- function(dat) {
 }
 
 f_lhr_entry <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -131,6 +141,8 @@ f_lhr_entry <- function(dat) {
 }
 
 f_lhr_funding <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -153,6 +165,8 @@ f_lhr_funding <- function(dat) {
 }
 
 f_lhr_v2csreprss <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   model <- brm(
     bf(latent_hr_mean_lead1 ~ v2csreprss + v2csreprss_lag1 +
          latent_hr_mean +
@@ -176,6 +190,8 @@ f_lhr_v2csreprss <- function(dat) {
 # REWB models -------------------------------------------------------------
 
 f_lhr_baseline_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -197,6 +213,8 @@ f_lhr_baseline_rewb <- function(dat) {
 }
 
 f_lhr_total_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -220,6 +238,8 @@ f_lhr_total_rewb <- function(dat) {
 }
 
 f_lhr_advocacy_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -243,6 +263,8 @@ f_lhr_advocacy_rewb <- function(dat) {
 }
 
 f_lhr_entry_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -266,6 +288,8 @@ f_lhr_entry_rewb <- function(dat) {
 }
 
 f_lhr_funding_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -289,6 +313,8 @@ f_lhr_funding_rewb <- function(dat) {
 }
 
 f_lhr_v2csreprss_rewb <- function(dat) {
+  lhr_settings <- lhr_setup()
+
   model <- brm(
     bf(latent_hr_mean_lead1 ~ v2csreprss_within + v2csreprss_between +
          v2csreprss_lag1_within + v2csreprss_lag1_between +

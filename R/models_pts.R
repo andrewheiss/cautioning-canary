@@ -40,8 +40,7 @@ f_pts_baseline <- function(dat) {
     prior = pts_settings$priors_vague,
     data = dat,
     chains = pts_settings$chains, iter = pts_settings$iter,
-    warmup = pts_settings$warmup, seed = pts_settings$seed,
-    threads = threading(getOption("n.threads", default = 1)))
+    warmup = pts_settings$warmup, seed = pts_settings$seed)
 
   return(model)
 }
@@ -64,8 +63,7 @@ f_pts_total <- function(dat) {
     prior = pts_settings$priors_vague,
     data = dat,
     chains = pts_settings$chains, iter = pts_settings$iter,
-    warmup = pts_settings$warmup, seed = pts_settings$seed,
-    threads = threading(getOption("n.threads", default = 1)))
+    warmup = pts_settings$warmup, seed = pts_settings$seed)
 
   return(model)
 }
@@ -88,8 +86,7 @@ f_pts_total_new <- function(dat) {
     prior = pts_settings$priors_vague,
     data = dat,
     chains = pts_settings$chains, iter = pts_settings$iter,
-    warmup = pts_settings$warmup, seed = pts_settings$seed,
-    threads = threading(getOption("n.threads", default = 1)))
+    warmup = pts_settings$warmup, seed = pts_settings$seed)
 
   return(model)
 }
@@ -112,8 +109,7 @@ f_pts_advocacy <- function(dat) {
     prior = pts_settings$priors_vague,
     data = dat,
     chains = pts_settings$chains, iter = pts_settings$iter,
-    warmup = pts_settings$warmup, seed = pts_settings$seed,
-    threads = threading(getOption("n.threads", default = 1)))
+    warmup = pts_settings$warmup, seed = pts_settings$seed)
 
   return(model)
 }

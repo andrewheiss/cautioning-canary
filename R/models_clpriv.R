@@ -1,6 +1,8 @@
 # Settings ----------------------------------------------------------------
 
 clpriv_setup <- function() {
+  options(worker_options)
+
   # Settings
   CHAINS <- 4
   ITER <- 2000
@@ -16,12 +18,12 @@ clpriv_setup <- function() {
               priors_vague = priors_vague))
 }
 
-clpriv_settings <- clpriv_setup()
-
 
 # Regular models ----------------------------------------------------------
 
 f_clpriv_baseline <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -43,6 +45,8 @@ f_clpriv_baseline <- function(dat) {
 }
 
 f_clpriv_total <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -65,6 +69,8 @@ f_clpriv_total <- function(dat) {
 }
 
 f_clpriv_total_new <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -87,6 +93,8 @@ f_clpriv_total_new <- function(dat) {
 }
 
 f_clpriv_advocacy <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -109,6 +117,8 @@ f_clpriv_advocacy <- function(dat) {
 }
 
 f_clpriv_entry <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -131,6 +141,8 @@ f_clpriv_entry <- function(dat) {
 }
 
 f_clpriv_funding <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -153,6 +165,8 @@ f_clpriv_funding <- function(dat) {
 }
 
 f_clpriv_v2csreprss <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   model <- brm(
     bf(v2x_clpriv_lead1 ~ v2csreprss + v2csreprss_lag1 +
          v2x_clpriv +
@@ -176,6 +190,8 @@ f_clpriv_v2csreprss <- function(dat) {
 # REWB models -------------------------------------------------------------
 
 f_clpriv_baseline_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -197,6 +213,8 @@ f_clpriv_baseline_rewb <- function(dat) {
 }
 
 f_clpriv_total_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -220,6 +238,8 @@ f_clpriv_total_rewb <- function(dat) {
 }
 
 f_clpriv_advocacy_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -243,6 +263,8 @@ f_clpriv_advocacy_rewb <- function(dat) {
 }
 
 f_clpriv_entry_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -266,6 +288,8 @@ f_clpriv_entry_rewb <- function(dat) {
 }
 
 f_clpriv_funding_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   dat <- dat %>% filter(laws)
 
   model <- brm(
@@ -289,6 +313,8 @@ f_clpriv_funding_rewb <- function(dat) {
 }
 
 f_clpriv_v2csreprss_rewb <- function(dat) {
+  clpriv_settings <- clpriv_setup()
+
   model <- brm(
     bf(v2x_clpriv_lead1 ~ v2csreprss_within + v2csreprss_between +
          v2csreprss_lag1_within + v2csreprss_lag1_between +
