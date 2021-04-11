@@ -285,6 +285,12 @@ list(
            plot_var_nice = c("Total legal barriers", "Barriers to advocacy",
                              "Barriers to entry", "Barriers to funding")))),
 
+  tar_target(mfx_e1d_lhr, generate_mfx(
+    tibble(model = list(m_lhr_total, m_lhr_advocacy, m_lhr_entry, m_lhr_funding),
+           plot_var = c("barriers_total", "advocacy", "entry", "funding"),
+           plot_var_nice = c("Total legal barriers", "Barriers to advocacy",
+                             "Barriers to entry", "Barriers to funding")))),
+
   tar_target(mfx_e2a_pts, generate_mfx(
     tibble(model = list(m_pts_v2csreprss),
            plot_var = c("v2csreprss"),
@@ -298,6 +304,11 @@ list(
 
   tar_target(mfx_e2c_clpriv, generate_mfx(
     tibble(model = list(m_clpriv_v2csreprss),
+           plot_var = c("v2csreprss"),
+           plot_var_nice = c("Civil society repression")))),
+
+  tar_target(mfx_e2d_lhr, generate_mfx(
+    tibble(model = list(m_lhr_v2csreprss),
            plot_var = c("v2csreprss"),
            plot_var_nice = c("Civil society repression")))),
 
@@ -350,6 +361,9 @@ list(
   tar_target(models_paper_clpriv,
              build_modelsummary(lst(m_clpriv_total, m_clpriv_advocacy, m_clpriv_entry,
                                     m_clpriv_funding, m_clpriv_v2csreprss))),
+  tar_target(models_paper_lhr,
+             build_modelsummary(lst(m_lhr_total, m_lhr_advocacy, m_lhr_entry,
+                                    m_lhr_funding, m_lhr_v2csreprss))),
 
   # Render the analysis notebook
   tar_notebook_pages(),

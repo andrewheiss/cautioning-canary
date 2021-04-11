@@ -10,11 +10,11 @@ author:
   affiliation: Georgia State University
   email: aheiss@gsu.edu
   url: https://www.andrewheiss.com/
-date: "April 3, 2021"
+date: "April 10, 2021"
 published: This is an early draft of a working paper.
 code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/canary-ngos/>"
 abstract: >-
-  Many countries across the globe are increasingly cracking down on civil society groups through legal restrictions. This new wave of attempts to repress civil society organizations—many of which are sanctioned by law—represent a bureaucratic form of repression that could indicate more severe human rights abuses and democratic backsliding. This is especially the case for electoral democracies, which unlike autocracies do not aggressively and openly attack civic space. In this paper, we ask: do crackdowns on NGOs predict broader human rights repression? We argue that this is the case because anti-NGO laws are among the most subtle means of repression and attract the least least domestic and international condemnation, as many audiences mistake this repression as regulation and are not personally affected by it. These laws also make it easier for states to prevent and deter future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, physical violence, and violations of private civil liberties. This project has important implications: if crackdown on NGOs is indeed an early warning, it can potentially prevent further deteriorations in space for civil society. 
+  Many countries across the globe use legal restrictions to crack down and limit civil society. These attempts to repress civil society organizations—many of which are sanctioned by law—represent a bureaucratic form of repression that could indicate more severe human rights abuses and democratic backsliding. This is especially the case for electoral democracies, which unlike autocracies do not aggressively and openly attack civic space. In this paper, we explore if crackdowns on NGOs predict broader human rights repression. We argue that this is the case because anti-NGO laws are among the most subtle means of repression and attract the least least domestic and international condemnation, as many audiences mistake this repression as regulation and are not personally affected by it. These laws also make it easier for states to prevent and deter future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, physical violence, and violations of private civil liberties. This project has important implications: if crackdown on NGOs is indeed an early warning, it can potentially prevent further deterioration in space for civil society.
 keywords: "civil society restrictions, human rights, political terror, civil liberties"
 reference-section-title: References
 bibliography: bibliography.bib
@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
   tidy.opts = list(width.cutoff = 120),  # Code width
   fig.retina = 3, dpi = conditional_dpi,
   fig.width = 7, fig.asp = 0.618,
-  fig.align = conditional_align, out.width = "85%",
+  fig.align = conditional_align, out.width = "100%",
   fig.path = "output/figures/",
   cache.path = "output/_cache/",
   fig.process = function(x) {  # Remove "-1" from figure names
@@ -88,14 +88,15 @@ withr::with_dir(here::here(), {
              m_pts_v2csreprss, m_clphy_v2csreprss, m_clpriv_v2csreprss))
   
   # Model tables
-  tar_load(c(models_paper_pts, models_paper_clphy, models_paper_clpriv))
+  tar_load(c(models_paper_pts, models_paper_clphy, 
+             models_paper_clpriv, models_paper_lhr))
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
   
   # Load marginal effects
-  tar_load(c(mfx_e1a_pts, mfx_e1b_clphy, mfx_e1c_clpriv,
-             mfx_e2a_pts, mfx_e2b_clphy, mfx_e2c_clpriv))
+  tar_load(c(mfx_e1a_pts, mfx_e1b_clphy, mfx_e1c_clpriv, mfx_e1d_lhr,
+             mfx_e2a_pts, mfx_e2b_clphy, mfx_e2c_clpriv, mfx_e2d_lhr))
 })
 ```
 
@@ -163,6 +164,8 @@ To test these empirical expectations, we use a new dataset of civil society laws
 
 (ref:vdem) @vdem-v10
 
+(ref:lhr) @FarissKenwickReuning:2020
+
 (ref:chaudhry) @Chaudhry:2016
 
 ```{r var-summary}
@@ -221,6 +224,7 @@ tbl_var_summary <- tribble(
   "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "(ref:pts)",
   "Physical violence index", NA, "0–1; higher values indicate less violence", "(ref:vdem); v2x_clphy",
   "Private civil liberties index", NA, "0–1; higher values indicate greater respect for civil liberties", "(ref:vdem); v2x_clpriv",
+  "Latent human rights values", NA, "≈ -3–5; higher values indicate greater respect for human rights", "(ref:lhr)",
   "Total legal barriers", "De jure laws", "Count of all anti-NGO legal barriers", "(ref:chaudhry)",
   "Barriers to advocacy", "De jure laws", "Count of laws restricting NGO advocacy", "(ref:chaudhry)",
   "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "(ref:chaudhry)",
@@ -231,13 +235,13 @@ tbl_var_summary <- tribble(
 if (!is_docx) {
   tbl_var_summary %>%
     kbl(caption = tbl_var_summary_caption,
-        booktabs = TRUE, linesep = "") %>% 
-    pack_rows(index = c("Outcomes" = 3, "Predictors" = 5)) %>% 
+        booktabs = TRUE, linesep = "\\addlinespace") %>% 
+    pack_rows(index = c("Outcomes" = 4, "Predictors" = 5),
+              indent = FALSE) %>% 
     kable_styling(font_size = ifelse(is_latex, 8.5, NA)) %>% 
-    row_spec(0, bold = TRUE) %>% 
-    column_spec(1, width = "0.14\\\\textwidth") %>% 
-    column_spec(2, width = "0.14\\\\textwidth") %>% 
-    column_spec(3, width = "0.5\\\\textwidth") %>% 
+    column_spec(1, width = "0.16\\\\textwidth") %>% 
+    column_spec(2, width = "0.1\\\\textwidth") %>% 
+    column_spec(3, width = "0.4\\\\textwidth") %>% 
     column_spec(4, width = "0.2\\\\textwidth")
 } else {
   tbl_var_summary %>% 
@@ -245,10 +249,10 @@ if (!is_docx) {
     set_font_size(10) %>%
     set_all_padding(3) %>% 
     insert_row("Outcomes", "", "", "", after = 1) %>% 
-    insert_row("Predictors", "", "", "", after = 5) %>% 
+    insert_row("Predictors", "", "", "", after = 6) %>% 
     set_bold(1, everywhere) %>%
-    set_bold(c(2, 6), everywhere) %>%
-    set_bottom_border(c(2, 6), everywhere) %>%
+    set_bold(c(2, 7), everywhere) %>%
+    set_bottom_border(c(2, 7), everywhere) %>%
     set_width(1) %>% 
     set_wrap(TRUE) %>% 
     huxtable::set_caption(tbl_var_summary_caption) %>% 
@@ -258,7 +262,7 @@ if (!is_docx) {
 
 ## Measuring de jure and de facto civil society repression
 
-@christensen2013 collected data on formal NGO regulations in 90 countries to explore the determinants of laws that restrict NGO foreign funding laws specifically. @Chaudhry:2016 expanded this data so that it now includes official NGO laws for 162 countries between 1990 and 2013. We create indexes of the total number of laws passed in each country based on three broad categories, and we also sum each of these indexes to create a count of total legal barriers:
+@christensen2013 collected data on formal NGO regulations in 90 countries to explore the determinants of laws that restrict NGO foreign funding laws specifically. @Chaudhry:2016 expanded this data so that it now includes official NGO laws for 162 countries between 1990 and 2013. We create indexes of the total number of laws passed in each country based on three broad categories, and we also sum each of these indexes to create a count of total legal barriers. We also create a yearly indicator variable to show if a country increased its count of anti-NGO laws (models using this outcome are included in the online appendix).
 
 - Barriers to advocacy (2 possible barriers): NGOs are restricted from engaging in political activities, and advocacy restrictions differ if the NGO receives foreign funding
 - Barriers to entry (3 possible barriers): registration is burdensome, NGOs are not allowed to appeal if denied registration, and entry requirements differ if the NGO receives foreign funding
@@ -304,20 +308,19 @@ num_countries <- length(unique(canary$gwcode))
 entry_plot <- ggplot(filter(df_barriers, 
                             barrier_group == "Barriers to entry"), 
                      aes(x = year, y = value, 
-                         color = barrier_display,
-                         linetype = barrier_display)) +
+                         color = barrier_display)) +
   geom_line(size = 0.75) +
   expand_limits(y = c(0, 90)) +
   scale_y_continuous(sec.axis = sec_axis(~ . / num_countries,
                                          labels = percent_format(accuracy = 1)),
                      expand = c(0, 0)) +
   scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
-  scale_linetype_manual(values = c("solid", "solid", "21"), name = NULL) +
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 90)) +
   guides(color = guide_legend(nrow = 2)) +
   labs(x = NULL, y = "Number of countries") +
   theme_ngo(9) + 
-  theme(legend.justification = "left") +
+  theme(legend.justification = "left",
+        legend.key.size = unit(0.7, "lines")) +
   facet_wrap(vars(barrier_group))
 
 funding_plot <- ggplot(filter(df_barriers, 
@@ -330,13 +333,14 @@ funding_plot <- ggplot(filter(df_barriers,
                                          labels = percent_format(accuracy = 1)),
                      expand = c(0, 0)) +
   scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
-  scale_linetype_manual(values = c("solid", "solid", "solid", "21", "21"), name = NULL) +
+  scale_linetype_manual(values = c("solid", "21", "solid", "21", "solid"), name = NULL) +
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 45)) +
   guides(color = guide_legend(nrow = 3),
          linetype = guide_legend(nrow = 3)) +
   labs(x = NULL, y = "Number of countries") +
   theme_ngo(9) + 
-  theme(legend.justification = "left") +
+  theme(legend.justification = "left",
+        legend.key.size = unit(0.7, "lines")) +
   facet_wrap(vars(barrier_group))
 
 advocacy_plot <- ggplot(filter(df_barriers, 
@@ -350,7 +354,8 @@ advocacy_plot <- ggplot(filter(df_barriers,
   scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 60)) +
   guides(color = guide_legend(nrow = 2)) +
-  labs(x = NULL, y = "Number of countries") +
+  labs(x = NULL, y = "Number of countries",
+       legend.key.size = unit(0.7, "lines")) +
   theme_ngo(9) + 
   theme(legend.justification = "left") +
   facet_wrap(vars(barrier_group))
@@ -377,7 +382,8 @@ csreprss_plot <- ggplot(df_csreprss_plot, aes(x = year, y = y)) +
   guides(color = guide_legend(nrow = 2)) +
   labs(y = "Average CSO repression", x = NULL) +
   theme_ngo(9) +
-  theme(legend.justification = "left") +
+  theme(legend.justification = "left",
+        legend.key.size = unit(0.7, "lines")) +
   facet_wrap(vars(fake_facet_title))
 
 barriers_summary <- 
@@ -394,9 +400,13 @@ As mentioned previously, simply counting the number of NGO laws does not necessa
 
 ## Measuring repression
 
-We measure general human rights repression in three different ways. First, following @GohdesCarey:2017, who use the killing of journalists to predict worsening human rights conditions, we use the Political Terror Scale (PTS), which assigns countries to five different categories of repression each year [@GibneyCornettWood:2019], with Level 5 representing widespread political violence, including arrests, political murders, disappearances, and torture. As seen in the left panel of Figure \@ref(fig:repression), the number of countries at Level 5 has decreased since the 1990s, while most countries are coded as Levels 2 and 3. To supplement the PTS, we also turn to two indicators from V-Dem: a physical violence index (`v2x_clphy`) that measures freedom from torture and political killings specifically, and a private civil liberties index (`v2x_clpriv`) that measures respect for property rights, labor rights, freedom of religion, freedom of movement, and other non-political human rights. V-Dem includes several other rights indicators, including one for political civil liberties that captures many of the same dimensions as the PTS, but civil society repression is included as a factor for these other indexes, making it inappropriate to use as an outcome variable. The right panel of Figure \@ref(fig:repression) shows that the average level of these two rights indexes has improved over time.
+To see how both de jure and de facto civil society restrictions influence general human rights repression, we use four different quantitative measures of repression, each of which capture different dimensions of political and civil violence. First, following @GohdesCarey:2017, who use the killing of journalists to predict worsening human rights conditions, we use the Political Terror Scale (PTS), which assigns countries to five different categories of repression each year [@GibneyCornettWood:2019], with Level 5 representing widespread political violence, including arrests, political murders, disappearances, and torture. As seen in the left panel of Figure \@ref(fig:repression), the number of countries at Level 5 has decreased since the 1990s, while most countries are coded as Levels 2 and 3. 
 
-```{r repression, fig.width=7, fig.height=3, fig.asp=NULL, fig.cap="Key measures of repression over time"}
+Because the PTS captures broad notions of political terror with only five possible categories, we also look at three continuous measures of repression. From V-Dem, we use a physical violence index (`v2x_clphy`) that measures freedom from torture and political killings specifically, and a private civil liberties index (`v2x_clpriv`) that measures respect for property rights, labor rights, freedom of religion, freedom of movement, and other non-political human rights. V-Dem includes several other rights indicators, including one for political civil liberties that captures many of the same dimensions as the PTS, but civil society repression is included as a factor for these other indexes, making it inappropriate to use as an outcome variable. The middle panel of Figure \@ref(fig:repression) shows that the average level of these two rights indexes has improved over time.
+
+Finally, looking at political terror, physical violence, and private civil liberties captures specific dimensions of a country's respect for human rights, but isolating these trends in repression can prove difficult. @SchnakenbergFariss:2014, @Fariss:2014, and others have argued that a country's latent and underlying human rights environment causes a state to engage in specific actions related to human rights, such as engaging in political violence, arresting activists, or restricting freedom of religion. Measuring this underlying respect for human rights is difficult, however, as it is by definition unobserved. @FarissKenwickReuning:2020 use a Bayesian measurement model to generate estimates of latent respect for physical integrity rights. We use the posterior mean of their latent variable ($\theta$) as our final measure of repression in order to see how civil society restrictions predict changes in a country's future underlying human rights environment. The right panel of Figure \@ref(fig:repression) demonstrates the global increase in average latent human rights values over time.
+
+```{r repression, fig.width=7.5, fig.height=2.5, fig.asp=NULL, fig.cap="Key measures of repression over time"}
 pts_plot <- canary %>% 
   filter(!is.na(PTS_factor)) %>% 
   group_by(PTS_factor, year) %>% 
@@ -409,7 +419,8 @@ pts_plot <- canary %>%
   guides(color = guide_legend(nrow = 2)) +
   labs(y = "Number of countries", x = NULL) +
   theme_ngo(9) +
-  theme(legend.justification = "left") +
+  theme(legend.justification = "left",
+        legend.key.size = unit(0.7, "lines")) +
   facet_wrap(vars(fake_facet_title))
 
 labs_lookup <- tribble(
@@ -440,10 +451,33 @@ vdem_outcome_plot <- ggplot(df_outcome_plot, aes(x = year, y = y)) +
          fill = guide_legend(nrow = 2, reverse = TRUE)) +
   labs(y = "Average index value\n(Higher values = less repression)", x = NULL) +
   theme_ngo(9) +
+  theme(legend.justification = "left",
+        legend.key.size = unit(0.7, "lines")) +
+  facet_wrap(vars(fake_facet_title))
+
+df_lhr_plot <- canary %>% 
+  as_tibble() %>% 
+  select(year, latent_hr_mean) %>% 
+  group_by(year) %>% 
+  nest() %>% 
+  mutate(cis = data %>% map(~ mean_cl_normal(.$latent_hr_mean))) %>% 
+  unnest(cis) %>% 
+  ungroup() %>% 
+  mutate(fake_facet_title = "Latent human rights")
+
+lhr_plot <- ggplot(df_lhr_plot, aes(x = year, y = y)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = 0.2, fill = "#433E85") +
+  geom_line(size = 0.75, color = "#433E85") +
+  coord_cartesian(xlim = c(1990, 2015)) +
+  guides(color = guide_legend(nrow = 2, reverse = TRUE),
+         fill = guide_legend(nrow = 2, reverse = TRUE)) +
+  labs(y = "Average value\n(Higher values = less repression)", x = NULL) +
+  theme_ngo(9) +
   theme(legend.justification = "left") +
   facet_wrap(vars(fake_facet_title))
 
-(pts_plot | vdem_outcome_plot) &
+
+(pts_plot | vdem_outcome_plot | lhr_plot) &
   theme(legend.text = element_text(size = rel(0.7)),
         axis.title.y = element_text(margin = margin(r = 3)),
         legend.box.margin = margin(t = -0.5, unit = "lines"))
@@ -460,13 +494,15 @@ We run multiple models for each of our empirical expectations, based on differen
 - **Expectation 1~a~**: Anti-NGO laws (total, advocacy, entry, funding separately) signal worsening political terror
 - **Expectation 1~b~**: Anti-NGO laws signal worsening physical violence
 - **Expectation 1~c~**: Anti-NGO laws signal constricting private civil liberties
+- **Expectation 1~d~**: Anti-NGO laws signal decreasing latent human rights
 - **Expectation 2~a~**: Civil society repression signals worsening political terror
 - **Expectation 2~b~**: Civil society repression signals worsening physical violence
 - **Expectation 2~c~**: Civil society repression signals constricting private civil liberties
+- **Expectation 2~d~**: Civil society repression signals decreasing latent human rights
 
-We generate our predictions with two families of Bayesian regression models. Because the Political Terror Scale is measured as an ordered category, we use ordered logistic regression to predict future values of the PTS. As V-Dem's physical violence index and private civil liberties index are both measured continuously, we predict these values with Gaussian models. We use median values from the models' posterior distributions as our point estimates and provide credible intervals using the 95% highest posterior density.[^bayes] We declare an effect statistically "significant" if the posterior probability of being different from zero exceeds 0.95.
+We generate our predictions with two families of Bayesian regression models. Because the Political Terror Scale is measured as an ordered category, we use ordered logistic regression to predict future values of the PTS. As V-Dem's physical violence index and private civil liberties index and latent human rights values are all measured continuously, we predict these values with Gaussian models. We use median values from the models' posterior distributions as our point estimates and provide credible intervals using the 95% highest posterior density.[^bayes] We declare an effect statistically "significant" if the posterior probability of being different from zero exceeds 0.95.
 
-[^bayes]: We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
+[^bayes]: We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
 
 Complete results from all the models (including REWB models), along with posterior predictive checks, goodness-of-fit measures, and prediction diagnostics are all available at a companion website at <https://stats.andrewheiss.com/canary-ngos/>. Our general modeling approach can be summarized as follows:
 
@@ -493,7 +529,7 @@ $$
 
 # Results and analysis
 
-We present the results of our models in two stages. First, in order to see how minor shifts in civil society laws and repression influence future human rights, we examine the marginal effects of our main explanatory variables when all other model covariates are held constant. These effects are by no means causal—rather, they demonstrate how much variation in predicted human rights is possible as the legal environment for civil society shifts up and down within a typical country. Second, we present predictive diagnostics for each of our models to examine the improvements in predictions. The results of the ordered logistic regression models can be unwieldy to interpret with plain numbers due to varying intercepts and thresholds between PTS levels. Accordingly, we present graphical results for all our models wherever possible and include complete tables of model results in the appendix (see Tables \@ref(tab:tbl-models-pts), \@ref(tab:tbl-models-clphy), and \@ref(tab:tbl-models-clpriv)). For the sake of making it easier to compare the count of NGO laws with civil society repression, we reverse the x-axis in the marginal effects plots for our second empirical expectation so that increasing the civil society repression represents *worse* repression rather than less.
+We present the results of our models in two stages. First, in order to see how minor shifts in civil society laws and repression influence future human rights, we examine the marginal effects of our main explanatory variables when all other model covariates are held constant. These effects are by no means causal—rather, they demonstrate how much variation in predicted human rights is possible as the legal environment for civil society shifts up and down within a typical country. Second, we present predictive diagnostics for each of our models to examine the improvements in predictions. The results of the ordered logistic regression models can be unwieldy to interpret with plain numbers due to varying intercepts and thresholds between PTS levels. Accordingly, we present graphical results for all our models wherever possible and include complete tables of model results in the appendix (see Tables \@ref(tab:tbl-models-pts), \@ref(tab:tbl-models-clphy), \@ref(tab:tbl-models-clpriv), and \@ref(tab:tbl-models-lhr)). For ease in comparing the count of NGO laws with civil society repression, we reverse the x-axis in the marginal effects plots for our second empirical expectation so that increasing the civil society repression represents *worse* repression rather than less.
 
 ## Marginal results
 
@@ -526,16 +562,17 @@ mfx_e1a_pts %>%
 
 As new laws are added, though, the distribution of probabilities for each of the PTS levels shifts. Adding new barriers to advocacy, entry, and funding decreases the likelihood of seeing Level 1 and increases the probability of a country turning to either Level 2 or Level 3 (with extensive political imprisonment and trial-free detention). The marginal effects of all forms of NGO laws results in this turn from Level 1 to Levels 2 or 3, but this switching effect is strongest following additional barriers to advocacy. Anti-NGO laws do not predict more dramatic shifts in the PTS. Across all counts of legal barriers, the overall probability of seeing Levels 4 and 5 is minuscule, and the adding new laws does little to shift that probability. 
 
-Figure \@ref(fig:plot-mfx-e1b-e1c) shows the marginal effects of additional NGO legislation on V-Dem's physical violence index and private civil liberties index. Across all four models for different categories of legal barriers, holding all other values constant, neither rights index moves much in response to new NGO laws. Each barrier-based posterior coefficient is essentially zero with narrow credible intervals that include large proportions of both negative and positive values. The marginal effects of additional laws on physical violence appear to show a positive relationship—that additional laws lead to less violence in the future—but the uncertainty in these estimates eliminates such an interpretation. Within the categories of anti-NGO laws, it appears that additional advocacy and entry laws might reduce future violence, but again, these predictions are indistinguishable from each other. The null effect of legal barriers on private civil liberties is even more stark—a typical country is predicted to have a score of 0.69 regardless of the addition of any kind of NGO law. 
+Figure \@ref(fig:plot-mfx-e1b-e1d) shows the marginal effects of additional NGO legislation on V-Dem's physical violence index and private civil liberties index. Across all four models for different categories of legal barriers, holding all other values constant, neither rights index moves much in response to new NGO laws. Each barrier-based posterior coefficient is essentially zero with narrow credible intervals that include large proportions of both negative and positive values. The marginal effects of additional laws on physical violence appear to show a positive relationship—that additional laws lead to less violence in the future—but the uncertainty in these estimates eliminates such an interpretation. Within the categories of anti-NGO laws, it appears that additional advocacy and entry laws might reduce future violence, but again, these predictions are indistinguishable from each other. The null effect of legal barriers on private civil liberties is even more stark—a typical country is predicted to have a score of 0.69 regardless of the addition of any kind of NGO law. However, when looking at latent human rights values, adding a new NGO law is associated with a -0.013 decline in the level of respect for human rights in the following year, on average. The marginal effect is larger (-0.02) for additional barriers to advocacy and entry, which represent more burdensome restrictions than limits to funding.
 
-At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal (albeit weakly) that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. When looking at other forms of political repression, though, such as physical violence and private civil liberties, NGO legal barriers do not change predicted values in any meaningful way.
+At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal (albeit weakly) that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. When looking at other specific forms of political repression, though, such as physical violence and private civil liberties, NGO legal barriers do not change predicted values in any meaningful way. But looking more broadly, civil society laws are associated with a worse predicted underlying human rights environment.
 
-```{r plot-mfx-e1b-e1c, fig.width=7.5, fig.height=5.5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on V-Dem rights indexes"}
+```{r plot-mfx-e1b-e1d, fig.width=7.5, fig.height=7.5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on V-Dem rights indexes and latent human rights"}
 out_mfx_e1b <- mfx_e1b_clphy %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
   ungroup() %>% 
+  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
@@ -556,6 +593,7 @@ out_mfx_e1c <- mfx_e1c_clpriv %>%
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
   ungroup() %>% 
+  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
@@ -564,14 +602,34 @@ out_mfx_e1c <- mfx_e1c_clpriv %>%
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   coord_cartesian(ylim = c(0.60, 0.71)) +
   guides(color = FALSE) +
-  labs(x = "Count of legal barriers",
+  labs(x = NULL,
        y = "Predicted civil liberties index\n(higher values = better protection)",
        title = "Private civil liberties index") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
 
-out_mfx_e1b / out_mfx_e1c
+out_mfx_e1d <- mfx_e1d_lhr %>% 
+  mutate(x_rounded = floor(effect1__)) %>% 
+  group_by(x_rounded, plot_var_nice) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
+  ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
+  geom_line(size = 0.5, color = "grey90") +
+  geom_pointrange(aes(ymin = lower__, ymax = upper__),
+                  fatten = 1) +
+  scale_x_continuous(breaks = 0:9) +
+  scale_color_viridis_d(option = "plasma", end = 0.8) +
+  guides(color = FALSE) +
+  labs(x = "Count of legal barriers",
+       y = "Predicted latent human rights value\n(higher values = better protection)",
+       title = "Latent human rights") +
+  facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
+  theme_ngo() +
+  theme(panel.grid.major.x = element_blank())
+
+out_mfx_e1b / out_mfx_e1c / out_mfx_e1d
 ```
 
 
@@ -581,7 +639,7 @@ The weak (or even non-existent) predictive power of formal NGO laws is likely at
 
 The effect of civil society repression on predicted values of the Political Terror Scale mirrors what we found previously with our first empirical expectation. As seen in Figure \@ref(fig:plot-mfx-e2a), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression.
 
-```{r plot-mfx-e2a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror"}
+```{r plot-mfx-e2a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror", out.width="75%"}
 out_mfx_e2a <- mfx_e2a_pts %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
@@ -598,11 +656,11 @@ out_mfx_e2a <- mfx_e2a_pts %>%
 out_mfx_e2a
 ```
 
-In contrast with formal laws, civil society repression does have a noticeable effect on the predicted values of the other rights indexes (see Figure \@ref(fig:plot-mfx-e2b-e2c)). When holding all other model parameters at their typical values, increased civil society repression predicts increases in both the physical violence index and the private civil liberties index: a one standard deviation change in civil society repression is associated with a 0.02 change in overall rights. In other words, a typical country with a civil society repression score of 0 is predicted to have a physical violence index of 0.62 and civil liberties index of 0.67. This implies that an increase in de facto NGO restrictions predicts a `r percent_format(accuracy = 1)((0.62 - (0.62 - 0.02)) / (0.62 - 0.02))` decline in both protection from physical violence and respect for private civil liberties in the following year.
+In contrast with formal laws, civil society repression does have a noticeable effect on the predicted values of the other rights indexes (see Figure \@ref(fig:plot-mfx-e2b-e2d)). When holding all other model parameters at their typical values, increased civil society repression predicts increases in both the physical violence index and private civil liberties index: a one standard deviation change in civil society repression is associated with a 0.02 change in overall rights. In other words, a typical country with a civil society repression score of 0 is predicted to have a physical violence index of 0.62 and civil liberties index of 0.67. This implies that an increase in de facto NGO restrictions predicts a `r percent_format(accuracy = 1)((0.62 - (0.62 - 0.02)) / (0.62 - 0.02))` decline in both protection from physical violence and respect for private civil liberties in the following year. Moreover, worsening civil society repression is strongly associated with a worse future human rights environment, as seen in the right panel of Figure \@ref(fig:plot-mfx-e2b-e2d)
 
-When holding all other factors equal, the de factor implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passing of formal de jure laws. Increasing civil society repression in countries with low levels of political terror can again potentially serve as a weak signal of more a more general increase in political violence in the future, while crackdowns on civil society predict more substantial changes in physical violence and threats to civil liberties. 
+When holding all other factors equal, the de factor implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passing of formal de jure laws. Increasing civil society repression in countries with low levels of political terror can again potentially serve as a weak signal of more a more general increase in political violence in the future, while crackdowns on civil society predict more substantial changes in physical violence, threats to civil liberties, and latent respect for human rights more broadly.
 
-```{r plot-mfx-e2b-e2c, fig.width=7.5, fig.height=3.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on V-Dem rights indexes"}
+```{r plot-mfx-e2b-e2d, fig.width=9.5, fig.height=3.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on V-Dem rights indexes and latent human rights"}
 out_mfx_e2b <- mfx_e2b_clphy %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
@@ -610,10 +668,10 @@ out_mfx_e2b <- mfx_e2b_clphy %>%
   geom_line(size = 0.75, color = "#433E85") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on the right)\n",
+  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
        y = "Predicted physical violence index\n(higher values = less violence)",
        title = "Physical violence index") +
-  theme_ngo()
+  theme_ngo(8)
 
 out_mfx_e2c <- mfx_e2c_clpriv %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
@@ -622,12 +680,23 @@ out_mfx_e2c <- mfx_e2c_clpriv %>%
   geom_line(size = 0.75, color = "#4DC36B") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on the right)\n",
-       y = "Predicted civil liberties index\n(higher values = less violence)",
+  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
+       y = "Predicted civil liberties index\n(higher values = better protection)",
        title = "Private civil liberties index") +
-  theme_ngo()
+  theme_ngo(8)
 
-out_mfx_e2b | out_mfx_e2c
+out_mfx_e2d <- mfx_e2d_lhr %>% 
+  ggplot(aes(x = effect1__, y = estimate__)) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
+              fill = "#FF4136", color = NA) +
+  geom_line(size = 0.75, color = "#FF4136") +
+  scale_x_reverse() +
+  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
+       y = "Predicted latent human rights value\n(higher values = better protection)",
+       title = "Latent human rights") +
+  theme_ngo(8)
+
+out_mfx_e2b | out_mfx_e2c | out_mfx_e2d
 ```
 
 
@@ -656,9 +725,9 @@ if (!is_docx) {
         caption = pts_pred_table_caption) %>% 
     kable_styling(font_size = ifelse(is_latex, 8.5, NA)) %>%
     kable_styling() %>% 
-    row_spec(0, bold = TRUE) %>% 
-    column_spec(1, width = "0.05\\\\textwidth") %>% 
-    column_spec(2:7, width = "0.14\\\\textwidth")
+    column_spec(1, width = "0.07\\\\textwidth") %>% 
+    column_spec(2, width = "0.05\\\\textwidth") %>% 
+    column_spec(3:7, width = "0.13\\\\textwidth")
 } else {
   pts_pred_table %>% 
     hux() %>% 
@@ -693,18 +762,26 @@ tbl_rmse <- tribble(
       "Barriers to advocacy", 0.0336028,                  "-0.90%",
          "Barriers to entry", 0.0334257,                  "-1.43%",
        "Barriers to funding", 0.0335855,                  "-0.95%",
-  "Civil society repression", 0.0332081,                  "-2.07%"
+  "Civil society repression", 0.0332081,                  "-2.07%",
+                  "Baseline", 0.1861944,                       "—",
+      "Total legal barriers", 0.1872427,                   "0.56%",
+      "Barriers to advocacy", 0.1871498,                   "0.51%",
+         "Barriers to entry", 0.1862244,                   "0.02%",
+       "Barriers to funding", 0.1879829,                   "0.96%",
+  "Civil society repression", 0.1856543,                  "-0.29%"
 ) %>% 
   mutate(RMSE = round(RMSE, 4))
 
-tbl_rmse_caption <- "Root mean squared error across models predicting physical violence and private civil liberties"
+tbl_rmse_caption <- "Root mean squared error across models predicting physical violence, private civil liberties, and latent human rights"
 
 if (!is_docx) {
   tbl_rmse %>% 
     kbl(align = "lcc",
         booktabs = TRUE, linesep = "",
         caption = tbl_rmse_caption) %>% 
-    pack_rows(index = c("Physical violence index" = 6, "Private civil liberties index" = 6)) %>% 
+    pack_rows(index = c("Physical violence index" = 6, 
+                        "Private civil liberties index" = 6,
+                        "Latent human rights values" = 6)) %>% 
     kable_styling()
 } else {
   tbl_rmse %>% 
@@ -715,9 +792,10 @@ if (!is_docx) {
     set_align(everywhere, 2:3, "center") %>% 
     insert_row("Physical violence index", "", "", after = 1) %>% 
     insert_row("Private civil liberties index", "", "", after = 8) %>% 
+    insert_row("Latent human rights values", "", "", after = 15) %>% 
     set_bold(1, everywhere) %>%
-    set_bold(c(2, 9), everywhere) %>%
-    set_bottom_border(c(2, 9), everywhere) %>%
+    set_bold(c(2, 9, 16), everywhere) %>%
+    set_bottom_border(c(2, 9, 16), everywhere) %>%
     set_width(1) %>% 
     set_wrap(TRUE) %>% 
     huxtable::set_caption(tbl_rmse_caption) %>% 
@@ -725,7 +803,7 @@ if (!is_docx) {
 }
 ```
 
-When looking at the level of physical violence in a country, including civil society laws and repression also does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for legal barriers and civil society repression only reduces the RMSE by at most 0.4% compared to the baseline model. This is likely related to the lack of improvements in predicting political terror—both indexes measure similar phenomena. However, including civil society-related predictors when modeling private civil liberties does result in small gains in accuracy, reducing the RMSE by as much as 2% compared to the baseline model. 
+When looking at the level of physical violence in a country, including civil society laws and repression also does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for legal barriers and civil society repression only reduces the RMSE by at most 0.4% compared to the baseline model. This is likely related to the lack of improvements in predicting political terror—both indexes measure similar phenomena. Similarly, accounting for civil society repression when modeling latent human rights only results in slight changes to the RMSE. However, including civil society-related predictors when modeling private civil liberties does result in small gains in accuracy, reducing the RMSE by as much as 2% compared to the baseline model. 
 
 While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases. 
 
@@ -903,6 +981,46 @@ if (!is_docx) {
     set_width(1) %>% 
     set_wrap(TRUE) %>% 
     huxtable::set_caption(tbl_reg_clpriv_caption) %>% 
+    huxtable::as_flextable()
+}
+```
+
+\clearpage
+
+```{r tbl-models-lhr}
+model_names_tbl_lhr <- c("Total barriers\n(t + 1)",
+                         "Barriers to advocacy\n(t + 1)",
+                         "Barriers to entry\n(t + 1)",
+                         "Barriers to funding\n(t + 1)",
+                         "Civil society repression\n(t + 1)")
+
+names(models_paper_lhr) <- model_names_tbl_lhr
+
+tbl_reg_lhr_caption <- "Full results from Gaussian regression models predicting latent human rights"
+
+tbl_reg_lhr <- modelsummary(models_paper_lhr,
+                            output = table_format,
+                            statistic = "[{conf.low}, {conf.high}]",
+                            coef_map = coef_list,
+                            gof_omit = "ELPD",
+                            escape = FALSE,
+                            caption = tbl_reg_lhr_caption,
+                            notes = list("Posterior means; 95% credible intervals in brackets"))
+
+if (!is_docx) {
+  tbl_reg_lhr %>% 
+    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    column_spec(1, width = "0.10\\\\textwidth") %>% 
+    column_spec(2:6, width = "0.14\\\\textwidth")
+} else {
+  tbl_reg_lhr %>% 
+    set_font_size(10) %>% 
+    set_all_padding(1) %>% 
+    set_align(everywhere, 2:6, "center") %>% 
+    set_bold(1, everywhere) %>% 
+    set_width(1) %>% 
+    set_wrap(TRUE) %>% 
+    huxtable::set_caption(tbl_reg_lhr_caption) %>% 
     huxtable::as_flextable()
 }
 ```
