@@ -107,7 +107,7 @@ $endif$
     \setsecnumdepth{chapter}
 
     % Change formatting in title block
-    \pretitle{\par\vskip 3em \flushleft\huge\sffamily\bfseries}
+    \pretitle{\par\vskip 0.5em \flushleft\LARGE\sffamily\bfseries}
     \posttitle{\par\vskip 0.75em}
     \preauthor{\flushleft\sffamily}
     \postauthor{}
@@ -202,6 +202,8 @@ $endif$
 % Tweak \thanks{} stuff
 \thanksheadextra{\small}{}  % Marker in title section
 \thanksmarkstyle{\footnotesize #1\,}  % Actual note down in footnotes
+\let\oldthanks\thanks
+\renewcommand{\thanks}[1]{\oldthanks{\sffamily \footnotesize #1}}
 
 % Wrap definition list terms
 % https://tex.stackexchange.com/a/9763/11851
@@ -232,6 +234,8 @@ $endif$
 \newcommand{\stgroup}{\begingroup}
 \newcommand{\fingroup}{\endgroup}
 
+\newcommand{\memSingle}{\setSingleSpace{1.15}\SingleSpacing}
+\newcommand{\memSingleSmall}{\setSingleSpace{0.9}\SingleSpacing}
 
 % --------
 % TABLES
@@ -345,12 +349,12 @@ $endif$
 
 % Add content from pandoc metadata
 $if(title)$
-\title{\bigskip \bigskip $title$$if(thanks)$\thanks{$thanks$}$endif$}
+\title{\bigskip $title$$if(thanks)$\thanks{$thanks$}$endif$}
 $endif$
 
 \author{
 $for(author)$
-  \Large $author.name$ \newline
+  \large $author.name$ \newline
   \footnotesize $author.affiliation$ \newline
   \footnotesize \url{$author.email$}\vspace*{1.1em}\newline
   $sep$  \and
