@@ -65,42 +65,24 @@ withr::with_dir(here::here(), {
   tar_load(c(m_pts_baseline, m_pts_total, m_pts_total_new, 
              m_pts_advocacy, m_pts_entry, m_pts_funding, 
              m_pts_v2csreprss, 
-             m_pts_baseline_rewb, m_pts_total_rewb, 
-             m_pts_advocacy_rewb, m_pts_entry_rewb, m_pts_funding_rewb, 
-             m_pts_v2csreprss_rewb, 
              m_clphy_baseline, m_clphy_total, m_clphy_total_new, 
              m_clphy_advocacy, m_clphy_entry, m_clphy_funding, 
              m_clphy_v2csreprss, 
-             m_clphy_baseline_rewb, m_clphy_total_rewb, 
-             m_clphy_advocacy_rewb, m_clphy_entry_rewb, m_clphy_funding_rewb, 
-             m_clphy_v2csreprss_rewb, 
              m_clpriv_baseline, m_clpriv_total, m_clpriv_total_new, 
              m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding, 
              m_clpriv_v2csreprss, 
-             m_clpriv_baseline_rewb, m_clpriv_total_rewb, 
-             m_clpriv_advocacy_rewb, m_clpriv_entry_rewb, m_clpriv_funding_rewb, 
-             m_clpriv_v2csreprss_rewb, 
              m_lhr_baseline, m_lhr_total, m_lhr_total_new, 
              m_lhr_advocacy, m_lhr_entry, m_lhr_funding, 
              m_lhr_v2csreprss, 
              m_pts_baseline_train, m_pts_total_train, 
              m_pts_advocacy_train, m_pts_entry_train, m_pts_funding_train, 
              m_pts_v2csreprss_train, 
-             m_pts_baseline_rewb_train, m_pts_total_rewb_train, 
-             m_pts_advocacy_rewb_train, m_pts_entry_rewb_train, m_pts_funding_rewb_train, 
-             m_pts_v2csreprss_rewb_train, 
              m_clphy_baseline_train, m_clphy_total_train, 
              m_clphy_advocacy_train, m_clphy_entry_train, m_clphy_funding_train, 
              m_clphy_v2csreprss_train, 
-             m_clphy_baseline_rewb_train, m_clphy_total_rewb_train, 
-             m_clphy_advocacy_rewb_train, m_clphy_entry_rewb_train, m_clphy_funding_rewb_train, 
-             m_clphy_v2csreprss_rewb_train, 
              m_clpriv_baseline_train, m_clpriv_total_train, 
              m_clpriv_advocacy_train, m_clpriv_entry_train, m_clpriv_funding_train, 
-             m_clpriv_v2csreprss_train, 
-             m_clpriv_baseline_rewb_train, m_clpriv_total_rewb_train, 
-             m_clpriv_advocacy_rewb_train, m_clpriv_entry_rewb_train, m_clpriv_funding_rewb_train, 
-             m_clpriv_v2csreprss_rewb_train))
+             m_clpriv_v2csreprss_train))
 })
 ```
 
@@ -128,7 +110,7 @@ We ran these models on a `r computer_details`.
 models_e1 <- model_df %>% 
   filter(!str_detect(model, "v2csreprss")) %>% 
   mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
-  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+  mutate(across(c(outcome_var, explan_var, family), ~fct_inorder(., ordered = TRUE)))
 
 model_time_e1 <- models_e1 %>% 
   filter(training == "Full data") %>% 
@@ -137,11 +119,11 @@ model_time_e1 <- models_e1 %>%
   select(-actual_model) %>% 
   unnest(duration) %>% 
   mutate(model = glue("<code>{model}</code>")) %>% 
-  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
-           `Random effects` = re, `Family` = family) %>% 
+  group_by(Model = model, Outcome = outcome_var, 
+           `Main predictor` = explan_var, `Family` = family) %>% 
   summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
   ungroup() %>% 
-  arrange(Outcome, `Main predictor`, `Random effects`)
+  arrange(Outcome, `Main predictor`)
 
 total_row_e1 <- tibble(Outcome = "Total", 
                        `Total time (i.e. longest chain)` = 
@@ -167,11 +149,11 @@ model_time_e1 <- models_e1 %>%
   select(-actual_model) %>% 
   unnest(duration) %>% 
   mutate(model = glue("<code>{model}</code>")) %>% 
-  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
-           `Random effects` = re, `Family` = family) %>% 
+  group_by(Model = model, Outcome = outcome_var, 
+           `Main predictor` = explan_var, `Family` = family) %>% 
   summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
   ungroup() %>% 
-  arrange(Outcome, `Main predictor`, `Random effects`)
+  arrange(Outcome, `Main predictor`)
 
 total_row_e1 <- tibble(Outcome = "Total", 
                        `Total time (i.e. longest chain)` = 
@@ -196,7 +178,7 @@ model_time_e1 %>%
 models_e2 <- model_df %>% 
   filter(str_detect(model, "baseline") | str_detect(model, "v2csreprss")) %>% 
   mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
-  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+  mutate(across(c(outcome_var, explan_var, family), ~fct_inorder(., ordered = TRUE)))
 
 model_time_e2 <- models_e2 %>% 
   filter(training == "Full data") %>% 
@@ -205,11 +187,11 @@ model_time_e2 <- models_e2 %>%
   select(-actual_model) %>% 
   unnest(duration) %>% 
   mutate(model = glue("<code>{model}</code>")) %>% 
-  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
-           `Random effects` = re, `Family` = family) %>% 
+  group_by(Model = model, Outcome = outcome_var, 
+           `Main predictor` = explan_var, `Family` = family) %>% 
   summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
   ungroup() %>% 
-  arrange(Outcome, `Main predictor`, `Random effects`)
+  arrange(Outcome, `Main predictor`)
 
 total_row_e2 <- tibble(Outcome = "Total", 
                        `Total time (i.e. longest chain)` = 
@@ -235,11 +217,11 @@ model_time_e2 <- models_e2 %>%
   select(-actual_model) %>% 
   unnest(duration) %>% 
   mutate(model = glue("<code>{model}</code>")) %>% 
-  group_by(Model = model, Outcome = outcome_var, `Main predictor` = explan_var, 
-           `Random effects` = re, `Family` = family) %>% 
+  group_by(Model = model, Outcome = outcome_var, 
+           `Main predictor` = explan_var, `Family` = family) %>% 
   summarize(`Total time (i.e. longest chain)` = as.duration(max(warmup + sample))) %>%
   ungroup() %>% 
-  arrange(Outcome, `Main predictor`, `Random effects`)
+  arrange(Outcome, `Main predictor`)
 
 total_row_e2 <- tibble(Outcome = "Total", 
                        `Total time (i.e. longest chain)` = 

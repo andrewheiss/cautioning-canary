@@ -62,19 +62,6 @@ withr::with_dir(here::here(), {
   
   canary <- tar_read(panel_lagged)
 })
-
-# canary <- canary %>%
-#   mutate(gwcode = as.factor(gwcode), year = as.factor(year)) %>%  # Make a factor
-#   mutate(PTS_factor_lead1 = ordered(PTS_factor_lead1)) %>%  # Make this ordered
-#   # To do fancy Bell and Jones adjustment (https://doi.org/10.1017/psrm.2014.7)
-#   # (aka Mundlak devices), explanatory variables should be split into a meaned
-#   # version (\bar{x}) and a de-meaned version (x - \bar{x}) so that they can
-#   # explain the within-group and between-group variation. We de-mean three variables here:
-#   group_by(gwcode) %>%
-#   mutate_at(vars(v2csreprss, v2x_polyarchy, gdpcap_log),
-#             list(between = ~mean(., na.rm = TRUE),  # Between, for countries
-#                  within = ~. - mean(., na.rm = TRUE))) %>%   # Within, for countries
-#   ungroup()
 ```
 
 # Interpretation reminders
@@ -190,3 +177,5 @@ lrtest(m1, m2) %>% as_tibble()
 # Thus…
 
 So, using a Mundlak within/between split of time-varying covariates is warranted, as is using a country/year random effects structure. Woot.
+
+BUT for the sake of computational efficiency, we omit the within/between split. It takes 30-120 minutes to run one within/between model, and running dozens can take all day. The predictive results are nearly identical to models without the split, and since we're more interested in prediction than in individual coefficient effects, we don't need to wait hours for the same results we'd get with the original non-demeaned values. 

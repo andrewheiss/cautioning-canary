@@ -272,7 +272,7 @@ panel %>%
         panel.grid.major = element_blank())
 ```
 
-There are only a tiny handful of rows with missing data: Serbia pre-2006.
+There are only a tiny handful of rows with missing NGO law data: Serbia pre-2006 and Russia pre-1992
 
 ```{r show-missing-rows, class.source="fold-show"}
 panel %>% 
@@ -282,7 +282,7 @@ panel %>%
 
 That's because our anti-NGO data doesn't include data for those years. That's fine, though. In models where we look at anti-NGO laws, we exclude those rows and only include rows where our `laws` indicator variable is TRUE. In models where we look at the general civil society environment, we do include these rows because V-Dem has data for them.
 
-There are just two instances of missing data with PTS scores:
+There are a handful of instances of missing data with PTS scores:
 
 ```{r show-missing-pts, class.source="fold-show"}
 panel %>% 

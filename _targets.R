@@ -158,13 +158,6 @@ list(
   tar_target(m_pts_funding, f_pts_funding(panel_lagged)),
   tar_target(m_pts_v2csreprss, f_pts_v2csreprss(panel_lagged)),
 
-  tar_target(m_pts_baseline_rewb, f_pts_baseline_rewb(panel_lagged)),
-  tar_target(m_pts_total_rewb, f_pts_total_rewb(panel_lagged)),
-  tar_target(m_pts_advocacy_rewb, f_pts_advocacy_rewb(panel_lagged)),
-  tar_target(m_pts_entry_rewb, f_pts_entry_rewb(panel_lagged)),
-  tar_target(m_pts_funding_rewb, f_pts_funding_rewb(panel_lagged)),
-  tar_target(m_pts_v2csreprss_rewb, f_pts_v2csreprss_rewb(panel_lagged)),
-
   ## Models using training data
   tar_target(m_pts_baseline_train, f_pts_baseline(panel_training_lagged)),
   tar_target(m_pts_total_train, f_pts_total(panel_training_lagged)),
@@ -172,13 +165,6 @@ list(
   tar_target(m_pts_entry_train, f_pts_entry(panel_training_lagged)),
   tar_target(m_pts_funding_train, f_pts_funding(panel_training_lagged)),
   tar_target(m_pts_v2csreprss_train, f_pts_v2csreprss(panel_training_lagged)),
-
-  tar_target(m_pts_baseline_rewb_train, f_pts_baseline_rewb(panel_training_lagged)),
-  tar_target(m_pts_total_rewb_train, f_pts_total_rewb(panel_training_lagged)),
-  tar_target(m_pts_advocacy_rewb_train, f_pts_advocacy_rewb(panel_training_lagged)),
-  tar_target(m_pts_entry_rewb_train, f_pts_entry_rewb(panel_training_lagged)),
-  tar_target(m_pts_funding_rewb_train, f_pts_funding_rewb(panel_training_lagged)),
-  tar_target(m_pts_v2csreprss_rewb_train, f_pts_v2csreprss_rewb(panel_training_lagged)),
 
   # Models for physical violence (v2x_clphy)
   ## Models using full data
@@ -190,13 +176,6 @@ list(
   tar_target(m_clphy_funding, f_clphy_funding(panel_lagged)),
   tar_target(m_clphy_v2csreprss, f_clphy_v2csreprss(panel_lagged)),
 
-  tar_target(m_clphy_baseline_rewb, f_clphy_baseline_rewb(panel_lagged)),
-  tar_target(m_clphy_total_rewb, f_clphy_total_rewb(panel_lagged)),
-  tar_target(m_clphy_advocacy_rewb, f_clphy_advocacy_rewb(panel_lagged)),
-  tar_target(m_clphy_entry_rewb, f_clphy_entry_rewb(panel_lagged)),
-  tar_target(m_clphy_funding_rewb, f_clphy_funding_rewb(panel_lagged)),
-  tar_target(m_clphy_v2csreprss_rewb, f_clphy_v2csreprss_rewb(panel_lagged)),
-
   ## Models using training data
   tar_target(m_clphy_baseline_train, f_clphy_baseline(panel_training_lagged)),
   tar_target(m_clphy_total_train, f_clphy_total(panel_training_lagged)),
@@ -204,13 +183,6 @@ list(
   tar_target(m_clphy_entry_train, f_clphy_entry(panel_training_lagged)),
   tar_target(m_clphy_funding_train, f_clphy_funding(panel_training_lagged)),
   tar_target(m_clphy_v2csreprss_train, f_clphy_v2csreprss(panel_training_lagged)),
-
-  tar_target(m_clphy_baseline_rewb_train, f_clphy_baseline_rewb(panel_training_lagged)),
-  tar_target(m_clphy_total_rewb_train, f_clphy_total_rewb(panel_training_lagged)),
-  tar_target(m_clphy_advocacy_rewb_train, f_clphy_advocacy_rewb(panel_training_lagged)),
-  tar_target(m_clphy_entry_rewb_train, f_clphy_entry_rewb(panel_training_lagged)),
-  tar_target(m_clphy_funding_rewb_train, f_clphy_funding_rewb(panel_training_lagged)),
-  tar_target(m_clphy_v2csreprss_rewb_train, f_clphy_v2csreprss_rewb(panel_training_lagged)),
 
   # Models for private civil liberties (v2x_clpriv)
   ## Models using full data
@@ -222,13 +194,6 @@ list(
   tar_target(m_clpriv_funding, f_clpriv_funding(panel_lagged)),
   tar_target(m_clpriv_v2csreprss, f_clpriv_v2csreprss(panel_lagged)),
 
-  tar_target(m_clpriv_baseline_rewb, f_clpriv_baseline_rewb(panel_lagged)),
-  tar_target(m_clpriv_total_rewb, f_clpriv_total_rewb(panel_lagged)),
-  tar_target(m_clpriv_advocacy_rewb, f_clpriv_advocacy_rewb(panel_lagged)),
-  tar_target(m_clpriv_entry_rewb, f_clpriv_entry_rewb(panel_lagged)),
-  tar_target(m_clpriv_funding_rewb, f_clpriv_funding_rewb(panel_lagged)),
-  tar_target(m_clpriv_v2csreprss_rewb, f_clpriv_v2csreprss_rewb(panel_lagged)),
-
   ## Models using training data
   tar_target(m_clpriv_baseline_train, f_clpriv_baseline(panel_training_lagged)),
   tar_target(m_clpriv_total_train, f_clpriv_total(panel_training_lagged)),
@@ -236,13 +201,6 @@ list(
   tar_target(m_clpriv_entry_train, f_clpriv_entry(panel_training_lagged)),
   tar_target(m_clpriv_funding_train, f_clpriv_funding(panel_training_lagged)),
   tar_target(m_clpriv_v2csreprss_train, f_clpriv_v2csreprss(panel_training_lagged)),
-
-  tar_target(m_clpriv_baseline_rewb_train, f_clpriv_baseline_rewb(panel_training_lagged)),
-  tar_target(m_clpriv_total_rewb_train, f_clpriv_total_rewb(panel_training_lagged)),
-  tar_target(m_clpriv_advocacy_rewb_train, f_clpriv_advocacy_rewb(panel_training_lagged)),
-  tar_target(m_clpriv_entry_rewb_train, f_clpriv_entry_rewb(panel_training_lagged)),
-  tar_target(m_clpriv_funding_rewb_train, f_clpriv_funding_rewb(panel_training_lagged)),
-  tar_target(m_clpriv_v2csreprss_rewb_train, f_clpriv_v2csreprss_rewb(panel_training_lagged)),
 
   # Models for latent respect for human rights (latent_hr_mean)
   ## Models using full data
@@ -322,10 +280,6 @@ list(
              build_modelsummary(lst(m_pts_baseline, m_pts_total, m_pts_total_new,
                                     m_pts_advocacy, m_pts_entry,
                                     m_pts_funding))),
-  tar_target(models_tbl_e1a_rewb,
-             build_modelsummary(lst(m_pts_baseline_rewb, m_pts_total_rewb,
-                                    m_pts_advocacy_rewb, m_pts_entry_rewb,
-                                    m_pts_funding_rewb))),
   tar_target(models_tbl_e1b_re,
              build_modelsummary(lst(m_clphy_baseline, m_clphy_total, m_clphy_total_new,
                                     m_clphy_advocacy, m_clphy_entry,
@@ -340,14 +294,11 @@ list(
                                     m_lhr_funding))),
   # Expectation 2
   tar_target(models_tbl_e2a,
-             build_modelsummary(lst(m_pts_baseline, m_pts_v2csreprss,
-                                    m_pts_baseline_rewb, m_pts_v2csreprss_rewb))),
+             build_modelsummary(lst(m_pts_baseline, m_pts_v2csreprss))),
   tar_target(models_tbl_e2b,
-             build_modelsummary(lst(m_clphy_baseline, m_clphy_v2csreprss,
-                                    m_clphy_baseline_rewb, m_clphy_v2csreprss_rewb))),
+             build_modelsummary(lst(m_clphy_baseline, m_clphy_v2csreprss))),
   tar_target(models_tbl_e2c,
-             build_modelsummary(lst(m_clpriv_baseline, m_clpriv_v2csreprss,
-                                    m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb))),
+             build_modelsummary(lst(m_clpriv_baseline, m_clpriv_v2csreprss))),
   tar_target(models_tbl_e2d,
              build_modelsummary(lst(m_lhr_baseline, m_lhr_v2csreprss))),
 

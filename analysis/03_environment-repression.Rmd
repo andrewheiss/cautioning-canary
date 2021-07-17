@@ -57,11 +57,8 @@ withr::with_dir(here::here(), {
   
   # Load actual model objects
   tar_load(c(m_pts_baseline, m_pts_v2csreprss, 
-             m_pts_baseline_rewb, m_pts_v2csreprss_rewb, 
              m_clphy_baseline, m_clphy_v2csreprss, 
-             m_clphy_baseline_rewb, m_clphy_v2csreprss_rewb, 
              m_clpriv_baseline, m_clpriv_v2csreprss, 
-             m_clpriv_baseline_rewb, m_clpriv_v2csreprss_rewb,
              m_lhr_baseline, m_lhr_v2csreprss))
   
   # Load regression tables
@@ -75,7 +72,7 @@ withr::with_dir(here::here(), {
 ```{r clean-data, message=FALSE, warning=FALSE}
 models <- model_df %>% 
   mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
-  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+  mutate(across(c(outcome_var, explan_var, family), ~fct_inorder(., ordered = TRUE)))
 
 coefs_clean <- tribble(
   ~coef, ~coef_clean,
@@ -99,7 +96,7 @@ models_for_table_e2a <- models %>%
   filter(outcome_var == "Political terror") %>% 
   mutate(outcome_var = recode(outcome_var, "Political terror" = "PTS"),
          explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 # Make a named vector of original model names and nice names
 model_names_tbl_e2a <- models_for_table_e2a %>% 
@@ -121,27 +118,21 @@ modelsummary(models_tbl_e2a,
 
 ```{r plot-coefs-e2a}
 coef_plots <- models %>% 
-  filter(str_detect(model, "m_pts_v2csreprss")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
+  filter(model == "m_pts_v2csreprss") %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `b_v2csreprss.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 1, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -150,11 +141,8 @@ coef_plots %>%
 
 ```{r plot-mfx-e2a}
 mfx <- models %>% 
-  filter(str_detect(model, "m_pts_v2csreprss")) %>% 
-  mutate(plot_vars = case_when(
-    re == "RE" ~ "v2csreprss",
-    re == "REWB" ~ "v2csreprss_within"
-  )) %>% 
+  filter(model == "m_pts_v2csreprss") %>% 
+  mutate(plot_vars = "v2csreprss") %>% 
   mutate(fx = map2(actual_model, plot_vars, 
                    ~conditional_effects(.x, effects = .y,
                                         categorical = TRUE)[[1]])) %>% 
@@ -162,21 +150,10 @@ mfx <- models %>%
   unnest(fx)
 
 mfx %>% 
-  filter(model == "m_pts_v2csreprss") %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
   geom_line(size = 1) +
   labs(x = "Civil society repression\n(higher values = less repression)",
-       y = "Predicted probability of category",
-       color = "Political terror scale", fill = "Political terror scale") +
-  theme_ngo()
-
-mfx %>% 
-  filter(model == "m_pts_v2csreprss_rewb") %>% 
-  ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
-  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
-  geom_line(size = 1) +
-  labs(x = "Difference from average level of civil society repression\n(higher values = less repression)",
        y = "Predicted probability of category",
        color = "Political terror scale", fill = "Political terror scale") +
   theme_ngo()
@@ -193,7 +170,7 @@ mfx %>%
 models_for_table_e2b <- models %>% 
   filter(outcome_var == "Physical violence") %>% 
   mutate(explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 # Make a named vector of original model names and nice names
 model_names_tbl_e2b <- models_for_table_e2b %>% 
@@ -215,27 +192,21 @@ modelsummary(models_tbl_e2b,
 
 ```{r plot-coefs-e2b}
 coef_plots <- models %>% 
-  filter(str_detect(model, "m_clphy_v2csreprss")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
+  filter(model == "m_clphy_v2csreprss") %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `b_v2csreprss.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 1, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -243,33 +214,19 @@ coef_plots %>%
 
 ```{r plot-mfx-e2b}
 mfx <- models %>% 
-  filter(str_detect(model, "m_clphy_v2csreprss")) %>% 
-  mutate(plot_vars = case_when(
-    re == "RE" ~ "v2csreprss",
-    re == "REWB" ~ "v2csreprss_within"
-  )) %>% 
+  filter(model == "m_clphy_v2csreprss") %>% 
+  mutate(plot_vars = "v2csreprss") %>% 
   mutate(fx = map2(actual_model, plot_vars, 
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
   select(-actual_model) %>% 
   unnest(fx)
 
 mfx %>% 
-  filter(model == "m_clphy_v2csreprss") %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#FF4136", color = NA) +
   geom_line(size = 1, color = "#FF4136") +
   labs(x = "Civil society repression\n(higher values = less repression)",
-       y = "Predicted physical violence index\n(higher values = less violence)") +
-  theme_ngo()
-
-mfx %>% 
-  filter(model == "m_clphy_v2csreprss_rewb") %>% 
-  ggplot(aes(x = effect1__, y = estimate__)) +
-  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
-              fill = "#FF4136", color = NA) +
-  geom_line(size = 1, color = "#FF4136") +
-  labs(x = "Difference from average level of civil society repression\n(higher values = less repression)",
        y = "Predicted physical violence index\n(higher values = less violence)") +
   theme_ngo()
 ```
@@ -283,7 +240,7 @@ mfx %>%
 models_for_table_e2c <- models %>% 
   filter(outcome_var == "Private civil liberties") %>% 
   mutate(explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 # Make a named vector of original model names and nice names
 model_names_tbl_e2c <- models_for_table_e2c %>% 
@@ -305,27 +262,21 @@ modelsummary(models_tbl_e2c,
 
 ```{r plot-coefs-e2c}
 coef_plots <- models %>% 
-  filter(str_detect(model, "m_clpriv_v2csreprss")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
+  filter(model == "m_clpriv_v2csreprss") %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `b_v2csreprss.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 1, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -333,33 +284,19 @@ coef_plots %>%
 
 ```{r plot-mfx-e2c}
 mfx <- models %>% 
-  filter(str_detect(model, "m_clpriv_v2csreprss")) %>% 
-  mutate(plot_vars = case_when(
-    re == "RE" ~ "v2csreprss",
-    re == "REWB" ~ "v2csreprss_within"
-  )) %>% 
+  filter(model == "m_clpriv_v2csreprss") %>% 
+  mutate(plot_vars = "v2csreprss") %>% 
   mutate(fx = map2(actual_model, plot_vars, 
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
   select(-actual_model) %>% 
   unnest(fx)
 
 mfx %>% 
-  filter(model == "m_clpriv_v2csreprss") %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#FF4136", color = NA) +
   geom_line(size = 1, color = "#FF4136") +
   labs(x = "Civil society repression\n(higher values = less repression)",
-       y = "Predicted civil liberties index\n(higher values = less violence)") +
-  theme_ngo()
-
-mfx %>% 
-  filter(model == "m_clpriv_v2csreprss_rewb") %>% 
-  ggplot(aes(x = effect1__, y = estimate__)) +
-  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
-              fill = "#FF4136", color = NA) +
-  geom_line(size = 1, color = "#FF4136") +
-  labs(x = "Difference from average level of civil society repression\n(higher values = less repression)",
        y = "Predicted civil liberties index\n(higher values = less violence)") +
   theme_ngo()
 ```
@@ -373,7 +310,7 @@ mfx %>%
 models_for_table_e2d <- models %>% 
   filter(outcome_var == "Latent human rights") %>% 
   mutate(explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 # Make a named vector of original model names and nice names
 model_names_tbl_e2d <- models_for_table_e2d %>% 
@@ -395,27 +332,21 @@ modelsummary(models_tbl_e2d,
 
 ```{r plot-coefs-e2d}
 coef_plots <- models %>% 
-  filter(str_detect(model, "m_lhr_v2csreprss")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
+  filter(model == "m_lhr_v2csreprss") %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `b_v2csreprss.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 1, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -423,14 +354,13 @@ coef_plots %>%
 
 ```{r plot-mfx-e2d}
 mfx <- models %>% 
-  filter(str_detect(model, "m_lhr_v2csreprss")) %>% 
+  filter(model == "m_lhr_v2csreprss") %>% 
   mutate(fx = map2(actual_model, "v2csreprss",
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
   select(-actual_model) %>% 
   unnest(fx)
 
 mfx %>% 
-  filter(model == "m_lhr_v2csreprss") %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#FF4136", color = NA) +

@@ -55,7 +55,6 @@ withr::with_dir(here::here(), {
   tar_load(c(m_pts_baseline_train, m_pts_v2csreprss_train,
              m_pts_total_train, m_pts_advocacy_train, 
              m_pts_entry_train, m_pts_funding_train,
-             m_pts_baseline_rewb_train, m_pts_v2csreprss_rewb_train, 
              m_clphy_baseline_train, m_clphy_v2csreprss_train, 
              m_clphy_total_train, m_clphy_advocacy_train, 
              m_clphy_entry_train, m_clphy_funding_train,
@@ -1309,24 +1308,6 @@ pred_pts_v2csreprss <- predict(
 ) %>% 
   as_tibble() %>% 
   magrittr::set_colnames(pts_levels)
-
-set.seed(seed_pts_prediction)
-pred_pts_baseline_rewb <- predict(
-  m_pts_baseline_rewb_train, 
-  newdata = select(canary_testing_lagged, -PTS_factor_lead1),
-  allow_new_levels = TRUE
-) %>% 
-  as_tibble() %>% 
-  magrittr::set_colnames(pts_levels)
-
-set.seed(seed_pts_prediction)
-pred_pts_v2csreprss_rewb <- predict(
-  m_pts_v2csreprss_rewb_train, 
-  newdata = select(canary_testing_lagged, -PTS_factor_lead1),
-  allow_new_levels = TRUE
-) %>% 
-  as_tibble() %>% 
-  magrittr::set_colnames(pts_levels)
 ```
 
 
@@ -1419,94 +1400,6 @@ ggplot(plot_data_condensed) +
   theme_void(base_family = "Inter Bold")
 ```
 
-### Baseline model (REWB)
-
-```{r e2a-separation-baseline-rewb}
-# Match each column in pred_mat (predicted probabilities for each response level)
-pred_long_list <- lapply(1:ncol(pred_pts_baseline_rewb), 
-                         FUN = match_actual, 
-                         pred = pred_pts_baseline_rewb, 
-                         actual = as.character(canary_testing_lagged$PTS_factor_lead1))
-
-plot_data <- pred_long_list %>% 
-  bind_rows() %>% 
-  filter(!is.nan(fitted), !is.na(actual)) %>% 
-  group_by(plot_level) %>% 
-  arrange(plot_level, fitted) %>% 
-  mutate(index = row_number()) %>% 
-  ungroup()
-
-markers <- plot_data %>% 
-  group_by(plot_level) %>%
-  summarize(obs = n(), expected = sum(fitted),
-            marker = obs - expected + 1)
-
-n_in_group <- nrow(pred_pts_baseline_rewb)
-
-plot_data_condensed <- plot_data %>% 
-  # rle(), dplyr-style: https://stackoverflow.com/a/33510765/120898
-  mutate(rleid = (actual != lag(actual, 1, default = 0))) %>%
-  mutate(rleid = cumsum(rleid)) %>% 
-  group_by(plot_level, rleid) %>% 
-  slice(1) %>% 
-  group_by(plot_level) %>% 
-  mutate(xmin = index, xmax = lead(index, default = n_in_group)) %>% 
-  ungroup()
-
-ggplot(plot_data_condensed) +
-  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = 1, fill = as.factor(actual))) + 
-  geom_line(aes(x = index, y = fitted), size = 0.3) +
-  geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
-  scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
-  facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
-  theme_void(base_family = "Inter Bold")
-```
-
-### Model with civil society repression (REWB)
-
-```{r e2a-separation-cs-rewb}
-pred_long_list <- lapply(1:ncol(pred_pts_v2csreprss_rewb), 
-                         FUN = match_actual, 
-                         pred = pred_pts_v2csreprss_rewb, 
-                         actual = as.character(canary_testing_lagged$PTS_factor_lead1))
-
-plot_data <- pred_long_list %>% 
-  bind_rows() %>% 
-  filter(!is.nan(fitted), !is.na(actual)) %>% 
-  group_by(plot_level) %>% 
-  arrange(plot_level, fitted) %>% 
-  mutate(index = row_number()) %>% 
-  ungroup()
-
-markers <- plot_data %>% 
-  group_by(plot_level) %>%
-  summarize(obs = n(), expected = sum(fitted),
-            marker = obs - expected + 1)
-
-n_in_group <- nrow(pred_pts_v2csreprss_rewb)
-
-plot_data_condensed <- plot_data %>% 
-  # rle(), dplyr-style: https://stackoverflow.com/a/33510765/120898
-  mutate(rleid = (actual != lag(actual, 1, default = 0))) %>%
-  mutate(rleid = cumsum(rleid)) %>% 
-  group_by(plot_level, rleid) %>% 
-  slice(1) %>% 
-  group_by(plot_level) %>% 
-  mutate(xmin = index, xmax = lead(index, default = n_in_group)) %>% 
-  ungroup()
-
-ggplot(plot_data_condensed) +
-  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = 1, fill = as.factor(actual))) + 
-  geom_line(aes(x = index, y = fitted), size = 0.3) +
-  geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
-  scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
-  facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
-  theme_void(base_family = "Inter Bold")
-```
-
-
 ## Prediction diagnostics
 
 ```{r e2a-improved-cases}
@@ -1526,22 +1419,6 @@ pred_pts_v2csreprss_categories <- pred_pts_v2csreprss %>%
   ungroup() %>% 
   select(predicted = name)
 
-pred_pts_baseline_categories_rewb <- pred_pts_baseline_rewb %>% 
-  rownames_to_column() %>% 
-  pivot_longer(-rowname) %>% 
-  group_by(rowname) %>% 
-  filter(rank(-value, ties.method = "last") == 1) %>% 
-  ungroup() %>% 
-  select(predicted = name)
-
-pred_pts_v2csreprss_categories_rewb <- pred_pts_v2csreprss_rewb %>% 
-  rownames_to_column() %>% 
-  pivot_longer(-rowname) %>% 
-  group_by(rowname) %>% 
-  filter(rank(-value, ties.method = "last") == 1) %>% 
-  ungroup() %>% 
-  select(predicted = name)
-
 pts_cat_preds <- canary_testing_lagged %>% 
   select(country, year, actual = PTS_factor_lead1) %>% 
   mutate(pred_baseline = pred_pts_baseline_categories$predicted,
@@ -1550,22 +1427,8 @@ pts_cat_preds <- canary_testing_lagged %>%
   mutate(is_correct_baseline = actual == pred_baseline,
          is_correct_v2csreprss = actual == pred_v2csreprss)
 
-pts_cat_preds_rewb <- canary_testing_lagged %>% 
-  select(country, year, actual = PTS_factor_lead1) %>% 
-  mutate(pred_baseline = pred_pts_baseline_categories_rewb$predicted,
-         pred_v2csreprss = pred_pts_v2csreprss_categories_rewb$predicted) %>% 
-  filter(!is.na(actual)) %>%
-  mutate(is_correct_baseline = actual == pred_baseline,
-         is_correct_v2csreprss = actual == pred_v2csreprss)
-
 # Improved predictions
 pts_improved <- pts_cat_preds %>% 
-  filter(!is_correct_baseline & is_correct_v2csreprss) %>% 
-  select(Country = country, Year = year, Actual = actual,
-         `CS repression included` = pred_v2csreprss,
-         `Baseline` = pred_baseline)
-
-pts_improved_rewb <- pts_cat_preds_rewb %>% 
   filter(!is_correct_baseline & is_correct_v2csreprss) %>% 
   select(Country = country, Year = year, Actual = actual,
          `CS repression included` = pred_v2csreprss,
@@ -1594,22 +1457,7 @@ pts_pred_table <- pts_cat_preds %>%
   select(-name, -value) %>% 
   pivot_wider(names_from = "nice_name", values_from = "n")
 
-pts_pred_table_rewb <- pts_cat_preds_rewb %>% 
-  pivot_longer(starts_with("is_correct")) %>% 
-  group_by(name, value) %>% 
-  summarize(n = n()) %>% 
-  ungroup() %>% 
-  left_join(correct_lookup, by = "name") %>% 
-  mutate(Prediction = ifelse(value == TRUE, "Correct", "Wrong")) %>% 
-  arrange(nice_name) %>% 
-  select(-name, -value) %>% 
-  pivot_wider(names_from = "nice_name", values_from = "n")
-
 pts_pred_table %>% 
-  kbl(align = "lcc") %>% 
-  kable_styling()
-
-pts_pred_table_rewb %>% 
   kbl(align = "lcc") %>% 
   kable_styling()
 ```

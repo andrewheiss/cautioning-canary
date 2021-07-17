@@ -58,22 +58,16 @@ withr::with_dir(here::here(), {
   # Load actual model objects
   tar_load(c(m_pts_baseline, m_pts_total, m_pts_total_new, 
              m_pts_advocacy, m_pts_entry, m_pts_funding, 
-             m_pts_baseline_rewb, m_pts_total_rewb, 
-             m_pts_advocacy_rewb, m_pts_entry_rewb, m_pts_funding_rewb, 
              m_clphy_baseline, m_clphy_total, m_clphy_total_new, 
              m_clphy_advocacy, m_clphy_entry, m_clphy_funding, 
-             m_clphy_baseline_rewb, m_clphy_total_rewb, 
-             m_clphy_advocacy_rewb, m_clphy_entry_rewb, m_clphy_funding_rewb, 
              m_clpriv_baseline, m_clpriv_total, m_clpriv_total_new,
              m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding, 
-             m_clpriv_baseline_rewb, m_clpriv_total_rewb, 
-             m_clpriv_advocacy_rewb, m_clpriv_entry_rewb, m_clpriv_funding_rewb,
              m_lhr_baseline, m_lhr_total, m_lhr_total_new, 
              m_lhr_advocacy, m_lhr_entry, m_lhr_funding))
   
   # Load regression tables
-  tar_load(c(models_tbl_e1a_re, models_tbl_e1a_rewb, 
-             models_tbl_e1b_re, models_tbl_e1c_re, models_tbl_e1d_re))
+  tar_load(c(models_tbl_e1a_re, models_tbl_e1b_re, 
+             models_tbl_e1c_re, models_tbl_e1d_re))
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
@@ -84,7 +78,7 @@ withr::with_dir(here::here(), {
 models <- model_df %>% 
   filter(!str_detect(model, "train")) %>% 
   mutate(actual_model = model %>% map(~eval(rlang::sym(.)))) %>% 
-  mutate(across(c(outcome_var, explan_var, re, family), ~fct_inorder(., ordered = TRUE)))
+  mutate(across(c(outcome_var, explan_var, family), ~fct_inorder(., ordered = TRUE)))
 
 coefs_clean <- tribble(
   ~coef, ~coef_clean,
@@ -130,10 +124,10 @@ Time-varying:
 ```{r tbl-e1a-re}
 # Build nicer column names
 models_for_table_e1a_re <- models %>% 
-  filter(outcome_var == "Political terror", re == "RE") %>% 
+  filter(outcome_var == "Political terror") %>% 
   mutate(outcome_var = recode(outcome_var, "Political terror" = "PTS"),
          explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 # Make a named vector of original model names and nice names
 models_names_table_e1a_re <- models_for_table_e1a_re %>% 
@@ -152,56 +146,27 @@ modelsummary(models_tbl_e1a_re,
              notes = list("Posterior means; 95% credible intervals in brackets"))
 ```
 
-```{r tbl-e1a-rewb}
-models_for_table_e1a_rewb <- models %>% 
-  filter(outcome_var == "Political terror", re == "REWB") %>% 
-  mutate(outcome_var = recode(outcome_var, "Political terror" = "PTS"),
-         explan_var = recode(explan_var, "Civil society repression" = "CS repression")) %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
-
-models_names_table_e1a_rewb <- models_for_table_e1a_rewb %>% 
-  pull(model_name) %>% 
-  set_names(models_for_table_e1a_rewb$model)
-
-names(models_tbl_e1a_rewb) <- recode(names(models_tbl_e1a_rewb), 
-                                     !!!models_names_table_e1a_rewb)
-
-modelsummary(models_tbl_e1a_rewb,
-             statistic = "[{conf.low}, {conf.high}]",
-             coef_map = coef_list,
-             gof_omit = "ELPD",
-             escape = FALSE,
-             notes = list("Posterior means; 95% credible intervals in brackets"))
-```
-
 ## Coefficients
 
 ```{r plot-coefs-e1a}
 coef_plots <- models %>% 
   filter(str_detect(model, "pts_"), !str_detect(model, "baseline")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `.*barriers.*|.*advocacy.*|.*entry.*|.*funding.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 2, scales = "free_y") +
   theme_ngo()
 ```
-
 
 ## Marginal effects
 
@@ -217,7 +182,7 @@ plot_pts_vars_lookup <- tribble(
   mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
 
 mfx <- models %>% 
-  filter(str_detect(model, "_pts"), !str_detect(model, "rewb|baseline")) %>% 
+  filter(str_detect(model, "_pts"), !str_detect(model, "baseline|new")) %>% 
   left_join(plot_pts_vars_lookup, by = "model") %>% 
   mutate(fx = map2(actual_model, plot_var, 
                    ~conditional_effects(.x, effects = .y,
@@ -253,8 +218,8 @@ mfx %>%
 
 ```{r tbl-e1b-re}
 models_for_table_e1b_re <- models %>% 
-  filter(outcome_var == "Physical violence", re == "RE") %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  filter(outcome_var == "Physical violence") %>% 
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 model_names_tbl_e1b_re <- models_for_table_e1b_re %>% 
   pull(model_name) %>% 
@@ -276,26 +241,20 @@ modelsummary(models_tbl_e1b_re,
 ```{r plot-coefs-e1b}
 coef_plots <- models %>% 
   filter(str_detect(model, "clphy"), !str_detect(model, "baseline")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `.*barriers.*|.*advocacy.*|.*entry.*|.*funding.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 2, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -313,7 +272,7 @@ plot_clphy_vars_lookup <- tribble(
   mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
 
 mfx <- models %>% 
-  filter(str_detect(model, "clphy"), !str_detect(model, "rewb|baseline")) %>% 
+  filter(str_detect(model, "clphy"), !str_detect(model, "new|baseline")) %>% 
   left_join(plot_clphy_vars_lookup, by = "model") %>% 
   mutate(fx = map2(actual_model, plot_var, 
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
@@ -347,8 +306,8 @@ mfx %>%
 
 ```{r tbl-e1c-re}
 models_for_table_e1c_re <- models %>% 
-  filter(outcome_var == "Private civil liberties", re == "RE") %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  filter(outcome_var == "Private civil liberties") %>% 
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 model_names_tbl_e1c_re <- models_for_table_e1c_re %>% 
   pull(model_name) %>% 
@@ -370,26 +329,20 @@ modelsummary(models_tbl_e1c_re,
 ```{r plot-coefs-e1c}
 coef_plots <- models %>% 
   filter(str_detect(model, "clpriv"), !str_detect(model, "baseline")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `.*barriers.*|.*advocacy.*|.*entry.*|.*funding.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 2, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -407,7 +360,7 @@ plot_clpriv_vars_lookup <- tribble(
   mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
 
 mfx <- models %>% 
-  filter(str_detect(model, "clpriv"), !str_detect(model, "rewb|baseline")) %>% 
+  filter(str_detect(model, "clpriv"), !str_detect(model, "new|baseline")) %>% 
   left_join(plot_clpriv_vars_lookup, by = "model") %>% 
   mutate(fx = map2(actual_model, plot_var, 
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
@@ -441,8 +394,8 @@ mfx %>%
 
 ```{r tbl-e1d-re}
 models_for_table_e1d_re <- models %>% 
-  filter(outcome_var == "Latent human rights", re == "RE") %>% 
-  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var}; {re})"))
+  filter(outcome_var == "Latent human rights") %>% 
+  mutate(model_name = glue("{outcome_var} (t + 1)<br>({explan_var})"))
 
 model_names_tbl_e1d_re <- models_for_table_e1d_re %>% 
   pull(model_name) %>% 
@@ -464,26 +417,20 @@ modelsummary(models_tbl_e1d_re,
 ```{r plot-coefs-e1d}
 coef_plots <- models %>% 
   filter(str_detect(model, "lhr"), !str_detect(model, "baseline")) %>% 
-  mutate(re_fancy = case_when(
-    re == "RE" ~ "Random effects models",
-    re == "REWB" ~ "Random effects—within/between models"
-  )) %>% 
   mutate(coef_draws = map(
     actual_model, 
     ~gather_draws(model = ., `.*barriers.*|.*advocacy.*|.*entry.*|.*funding.*`, regex = TRUE))) %>% 
   select(-actual_model) %>% 
   unnest(coef_draws) %>% 
-  filter(!str_detect(.variable, "between")) %>% 
   left_join(coefs_clean, by = c(".variable" = "coef"))
 
 coef_plots %>% 
-  ggplot(aes(y = fct_rev(coef_clean), x = .value, fill = re_fancy)) +
+  ggplot(aes(y = fct_rev(coef_clean), x = .value)) +
   stat_halfeye(aes(alpha = lagging), .width = c(0.8, 0.95)) +
   geom_vline(xintercept = 0) +
   guides(fill = FALSE, alpha = FALSE) +
   scale_alpha_manual(values = c(1, 0.4)) +
   labs(x = "Coefficient", y = NULL) +
-  facet_wrap(vars(re_fancy), ncol = 2, scales = "free_y") +
   theme_ngo()
 ```
 
@@ -501,7 +448,7 @@ plot_lhr_vars_lookup <- tribble(
   mutate(plot_var_nice = fct_inorder(plot_var_nice, ordered = TRUE))
 
 mfx <- models %>% 
-  filter(str_detect(model, "lhr"), !str_detect(model, "rewb|baseline")) %>% 
+  filter(str_detect(model, "lhr"), !str_detect(model, "new|baseline")) %>% 
   left_join(plot_lhr_vars_lookup, by = "model") %>% 
   mutate(fx = map2(actual_model, plot_var, 
                    ~conditional_effects(.x, effects = .y)[[1]])) %>% 
