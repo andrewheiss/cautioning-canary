@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.0.3",
+    "Version": "4.1.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -329,10 +329,10 @@
     },
     "callr": {
       "Package": "callr",
-      "Version": "3.6.0",
+      "Version": "3.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "25da2c6fba6a13b5da94e37acdb3f532"
+      "Hash": "461aa75a11ce2400245190ef5d3995df"
     },
     "cellranger": {
       "Package": "cellranger",
@@ -394,8 +394,8 @@
       "Package": "cmdstanr",
       "Version": "0.3.0.9000",
       "Source": "GitHub",
-      "Remotes": "stan-dev/posterior",
       "RemoteType": "github",
+      "Remotes": "stan-dev/posterior",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "cmdstanr",
       "RemoteUsername": "stan-dev",
@@ -440,10 +440,10 @@
     },
     "countrycode": {
       "Package": "countrycode",
-      "Version": "1.2.0",
+      "Version": "1.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c46036853ef73486af84ec5dc5b2443f"
+      "Hash": "0b2ceb4d9dc48332decc876ecd01ed00"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -1365,10 +1365,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.13.0",
+      "Version": "0.13.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "9f10d9db5b50400c348920c5c603385e"
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
     },
     "reprex": {
       "Package": "reprex",
@@ -1610,10 +1610,10 @@
     },
     "targets": {
       "Package": "targets",
-      "Version": "0.2.0",
+      "Version": "0.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c893326d7a0f169964e16c94edfba375"
+      "Hash": "a46df8ab3d40fd1627deeca2783df151"
     },
     "tensorA": {
       "Package": "tensorA",
