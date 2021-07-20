@@ -1,6 +1,6 @@
 ---
-title: "Canary in the Coal Mine? Civil Society Repression as a Predictor of Human Rights Abuses"
-short-title: "Canary in the Coal Mine"
+title: "Civil Society Repression as a Predictor of Worsening Human Rights Abuses"
+short-title: "Civil Society Repression"
 author:
 - name: Suparna Chaudhry
   affiliation: Lewis & Clark College
@@ -10,14 +10,14 @@ author:
   affiliation: Georgia State University
   email: aheiss@gsu.edu
   url: https://www.andrewheiss.com/
-date: "April 12, 2021"
-published: This is an early draft of a working paper.
+date: "July 17, 2021"
+published: Under review
 code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/canary-ngos/>"
 abstract: >-
   An increasing number of countries cracked down on NGOs over the last few decades. These attempts to repress civil society organizations—many of which are sanctioned by law—represent a bureaucratic form of repression that could indicate more severe human rights abuses and democratic backsliding in the future. This is especially the case for electoral democracies, which unlike autocracies, may not aggressively attack civic space. In this paper, we explore if crackdowns on NGOs predict broader human rights repression. Anti-NGO laws are among the most subtle means of repression and attract much less domestic and international condemnation compared to the use of violence, as many audiences mistake this repression as regulation. These laws may also make it easier for states to prevent future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, physical integrity rights violations, and violations of private civil liberties. We find that while formal de jure laws provide little information in predicting future repression, their patterns of implementation or de facto civil society repression predicts worsening respect for physical integrity rights and civil liberties.
 keywords: "civil society, NGOs, repression, human rights, political terror, civil liberties"
 thanks: >-
-  We would like to thank participants of the 2021 International Studies Association (ISA) convention, and the Human Rights on the Edge: The Future of International Human Rights Law and Practice hosted by the Global Human Rights Hub at Arizona State University for their comments and feedback.
+  We would like to thank participants of the 2021 International Studies Association (ISA) convention, and the "Human Rights on the Edge: The Future of International Human Rights Law and Practice" workshop hosted by the Global Human Rights Hub at Arizona State University for their comments and feedback.
 reference-section-title: References
 bibliography: bibliography.bib
 title-page: true
@@ -112,13 +112,13 @@ civicus <- civicus_clean %>%
 
 \memSingle
 
-Over the last few decades, governments across the globe have been increasinly cracking down on civil society organizations (CSOs), particularly non-governmental organizations (NGOs) -- a phenomenon commonly referred to the closing or shrinking of civic space [@CarothersBrechenmacher:2014; @DPR:2016; @Chaudhry:2016; @DupuyPrakash:2018]. More than 100 countries have proposed or enacted 244 measures restricting, repressing, or shutting down civil society since 2013 [@icnl:2021]. In Human Rights Watch's 2016 World Report, Executive Director Kenneth Roth argued that civil society was under more aggressive attack than at any time in recent memory, and over the past decade, the majority of the world has seen a substantial narrowing of allowable civic space. As seen in Figure \@ref(fig:civicus-map), by the end of 2020, only `r civicus$Open$prop_nice` of countries had open and unrestricted civil societies [@civicusmonitor; @ChaudhryHeiss:2021].[^open]
+Over the last few decades, governments across the globe have been increasingly cracking down on civil society organizations (CSOs), particularly non-governmental organizations (NGOs)—a phenomenon commonly known as closing civic space [@CarothersBrechenmacher:2014; @DPR:2016; @Chaudhry:2016; @DupuyPrakash:2018]. More than 100 countries have proposed or enacted 244 different measures that have restricted, repressed, or shut down civil society since 2013 [@icnl:2021]. In Human Rights Watch's 2016 World Report, Executive Director Kenneth Roth argued that civil society was under more aggressive attack than at any time in recent memory, and over the past decade, the majority of the world has seen a substantial narrowing of allowable civic space. As seen in Figure \@ref(fig:civicus-map), by the end of 2020, only `r civicus$Open$prop_nice` of countries had open and unrestricted civil societies [@civicusmonitor; @ChaudhryHeiss:2021].[^open]
 
 ```{r civicus-map, fig.cap="2020 CIVICUS Monitor civic space ratings", fig.pos="h"}
 ggplot() +
   geom_sf(data = civicus_map_data, aes(fill = fct_rev(category)), size = 0.15, color = "black") +
   coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
-  scale_fill_viridis_d(option = "plasma", end = 0.9, 
+  scale_fill_viridis_d(option = "rocket", direction = -1,
                        na.translate = FALSE, name = "Civic space") +
   theme_void(base_size = 9, base_family = "Inter Light") +
   theme(legend.position = "bottom",
@@ -127,34 +127,34 @@ ggplot() +
 
 This hostility to civil society is not unique to autocratic governments or even illiberal democracies [@AbramowitzSchenkkan:2018]—long-established liberal democracies have also increased restrictions on civil society in their countries. Over the past decade, India has canceled the licenses of tens of thousands of NGOs, targeted major groups such as Greenpeace International, Amnesty International and Ford Foundation, and has banned 5,000 NGOs from receiving foreign funds [@press-trust-india:2015; @press-trust-india:2019]. In 2013 Canada attempted to revoke the charitable status of NGOs for opposing the Northern Gateway pipeline and Canadian mining companies' initiatives abroad [@CIVICUS:2013]. In 2019, activists from the US-based nonprofit No More Deaths were arrested for providing food and water to migrants a the US-Mexico border and faced a 20-year prison sentence before their convictions were overturned in 2020 [@Cramer:2020].
 
-Much of this targeting of NGOs has been non-violent. Rather than publicly arrest or beat activists, states implement "administrative crackdown," or the passage of laws to create barriers to NGO advocacy, entry, and funding [@Chaudhry:2016]. The use of legal tools instead of violent repression means that NGOs have to adapt their practices to stay within the bounds of permitted activities and operations [@Heiss:2019; @Heiss:2017]. While this can lead to the depoliticization and avoidance of direct political activism by CSOs,[CITE] states cannot soften or neutralize all forms of political activity and advocacy in subtle, legal ways like they have with NGOs. Sooner or later, states may need to deal with threats to their stability in a more direct, violent, confrontational manner. Anti-NGO laws and repression of CSOs could be an important early warning sign—or a canary in the coal mine—of worsening human rights repression in a state, signaling that a state will continue down the path of further repression. What does state targeting of NGOs tell us about the state's broader respect for civil society and the overall level of human rights repression? Can the crackdown on NGOs act as a predictor of subsequent increasing repression?
+Much of this targeting of NGOs has been non-violent. Rather than publicly arrest or beat activists, states implement "administrative crackdown," or the passage of laws to create barriers to NGO advocacy, entry, and funding [@Chaudhry:2016]. The use of legal tools instead of violent repression means that NGOs have to adapt their practices to stay within the bounds of permitted activities and operations [@Heiss:2019; @Heiss:2017]. While this can lead to the depoliticization and avoidance of direct political activism by CSOs [@Bush:2015], states cannot soften or neutralize all forms of political activity and advocacy in subtle, legal ways like they have with NGOs. Sooner or later, states may need to deal with threats to their stability in a more direct, violent, confrontational manner. Anti-NGO laws and repression of CSOs could be an important early warning sign—or a canary in the coal mine—of worsening human rights repression in a state, signaling that a state will continue down the path of further repression. What does state targeting of NGOs tell us about the state's broader respect for civil society and the overall level of human rights repression? Can the crackdown on NGOs act as a predictor of subsequent increasing repression?
 
 In this paper, we explore the power of anti-NGO repression in predicting human rights abuses, political terror, physical violence, and violations of private civil liberties. We argue that information about NGO crackdown can be a valuable indicator of human rights trajectories. It can act as an early warning signal for worsening repression, suggesting which countries are testing the waters with comparatively "milder" methods of crackdown before enacting more violent forms of repression. To assess if attacks on NGOs and activists can provide us useful information about future repression, we use an original dataset on state crackdown on NGOs using legal repression across all countries from 1990–2013. We differentiate between two forms of NGO repression: official de jure anti-NGO restrictions that are codified in law, and their de facto implementation. Using multilevel Bayesian modeling, we find that formal de jure laws provide very little additional information when attempting to predict future repression. However, we find that accounting for their implementation does boost our models' predictive power. Increasing de facto civil society repression predicts an increase in the probability of moderate political terror and results in worsening violations of physical integrity rights and civil liberties. 
 
-Our paper makes an important contribution in predicting the onset of repressive state policies. While structural factors such as levels of democracy, economic development, electoral competitiveness can identify countries that are likely to have more or less respect for civic freedoms, these factors are also slow to change over time. As such, they may not be particularly suitable for forecasting short-term trajectories, especially for moderately repressive countries. On the other hand, state repression of NGOs is more dynamic process than may provide insight into changing levels of human rights standards and repression in subsequent years. While recent research has made important contributions to studying the extent and effects of state crackdown on NGOs, much of this focuses on de jure restrictions and its impact on NGOs and donors.[CITE] By looking at both laws, as well as their implementation when combined with extra-legal means, we are able to assess the long-term effects of closing civic space on broader patterns of repression as well. 
+Our paper makes an important contribution in predicting the onset of repressive state policies. While structural factors such as levels of democracy, economic development, electoral competitiveness can identify countries that are likely to have more or less respect for civic freedoms, these factors are also slow to change over time. As such, they may not be particularly suitable for forecasting short-term trajectories, especially for moderately repressive countries. On the other hand, state repression of NGOs is more dynamic process than may provide insight into changing levels of human rights standards and repression in subsequent years. While recent research has made important contributions to studying the extent and effects of state crackdown on NGOs, much of this focuses on de jure restrictions and its impact on NGOs and donors [@christensen2013; @BromleySchoferLonghofer:2020; @BakkeMitchellSmidt:2020; @SmidtPereraMitchell:2021]. By looking at laws *and* their implementation, as well as the extra-legal treatment of NGOs, we are able to assess the long-term effects of closing civic space on broader patterns of repression.
 
 Below, we first look at existing literature on repression and political violence, outlining state motivations to repress NGOs. We then elaborate on why attacking NGOs may be an important predictor of subsequent repression. Using both original data as well as data from several existing datasets, we build an ensemble of predictive models and explore (1) the marginal effects of civil society repression on different forms of broader human rights repression, and (2) the out-of-sample predictive performance of each model. We conclude by discussing the implications of our findings on the role of NGOs in the international community and prospects of democratic backsliding. 
 
 
 # Government repression and NGO restrictions
 
-Repression is the use of coercive action against an individual or organization, within the territorial jurisdiction of the state, for the purpose of imposing a cost on the target as well as deterring specific activities and/or beliefs perceived to be challenging to government personnel, practices, or institutions [@Goldstein:1978, p. xxvii; @Davenport:2007, 487; and @RitterConrad:2019, 15]. Early literature on repression focused on the role of structural factors such as levels of democracy, economic development, electoral competitiveness in predisposing a state to increased use of repression. Most notably, democratic forms of government—and democratization in general—has a pacifying effect on state repression [@DavenportArmstrong:2004; @Krain:1997; @Richards:1999]. Democracies have a negative effect on repression largely because of the increased probability of sanctions against authorities for undesirable behavior [@Davenport:2007a, 47].
+Repression is the use of coercive action against an individual or organization, within the territorial jurisdiction of the state, for the purpose of imposing a cost on the target as well as deterring specific activities and/or beliefs perceived to be challenging to government personnel, practices, or institutions [@Goldstein:1978, p. xxvii; @Davenport:2007, 487; and @ConradRitter:2019, 15]. Early literature on repression focused on the role of structural factors such as levels of democracy, economic development, electoral competitiveness in predisposing a state to increased use of repression. Most notably, democratic forms of government—and democratization in general—has a pacifying effect on state repression [@DavenportArmstrong:2004; @Krain:1997; @Richards:1999]. Democracies have a negative effect on repression largely because of the increased probability of sanctions against authorities for undesirable behavior [@Davenport:2007a, 47].
 
 More recent research focuses on how the behavior of various actors shapes government response. One of the most consistent findings in the political violence literature is that authorities repress to counter ongoing challenges to the status quo. In other words, dissent increases repressive behavior [@Davenport:2007]. However, dissent and repression have an endogenous relationship: state authorities also frequently engage in preventive repression to undermine or restrict groups' abilities to dissent [@RitterConrad:2016; @ConradRitter:2019]. In addition to attacking groups willingness to organize against states, such preventive repression also damages states' capacity to impose costs [@Davenport:2007a, 47]. NGOs are one actor that can pose challenges to political authorities, and state repression of these actors, especially through legal restrictions can be considered a form of preventive repression [@Chaudhry:2016]. 
 
-While many saw the initial proliferation of NGOs as leading to a "symbiotic relationship" between NGOs and states due to their mutual goals, this perception changed over time (Reimann 2006, 63). With expanded powers and their perceived role in the Color Revolutions, NGOs began to be seen as having a real influence. (CITE) State crackdown on NGOs became pervasive as these organizations have the ability to influence electoral politics [@DPR:2016; @Weiss:2009], aid mobilization [@MurdieBhasin:2011; @BBCM2014; @Boulding:2014], and threaten a state's economic interests [@DietrichMurdie:2017; @LebovicVoeten:2009; @Nielsen:2013]. 
+While many saw the initial proliferation of NGOs as leading to a "symbiotic relationship" between NGOs and states due to their mutual goals, this perception changed over time [@Reimann:2006, 63]. With expanded powers and their perceived role in the Color Revolutions, NGOs began to be seen as having a real influence on domestic and international politics [@CarothersBrechenmacher:2014]. State crackdown on NGOs became pervasive as these organizations have the ability to influence electoral politics [@DPR:2016; @Weiss:2009], aid mobilization [@MurdieBhasin:2011; @BBCM2014; @Boulding:2014], and threaten a state's economic interests [@DietrichMurdie:2017; @LebovicVoeten:2009; @Nielsen:2013]. 
 
 Given this threat, a number of states decided to repress threatening NGOs. While violence is often effective at curbing dissent, it can also backfire, leading to widespread protests, decreasing leaders' legitimacy and increasing their criminal liability [@KimSikkink:2010; @Sikkink:2011]. In contrast to violence, administrative crackdown has fewer adverse consequences—citizens may see it as regulation rather than repression, resulting in little to no counter-mobilization. It may also circumvent concerns among state security or bureaucratic agents about illegitimate orders based on violent repression [@StephanChenoweth:2008]. There are also fewer international consequences since laws—unlike violence—rarely invite condemnation or threats of aid withdrawal [@CarothersBrechenmacher:2014].
 
 This administrative crackdown via anti-NGO laws may foreshadow future government transgressions. Autocratic leaders want to avoid accountability, and NGOs often stand in conflict with that goal. Civil society organizations, including NGOs, can help shape the narrative of leaders' performance both domestically and internationally. Monitoring by NGOs and subsequent shaming can include significant external revenue loss to states in the form of loss of aid, trade, and foreign direct investments [@KeckSikkink:1998; @BarryClayFlynn:2013]. Government attempts to repress NGOs can signal the beginning of a deteriorating human rights situation. Such repression reflects the government's willingness and capability to use measures that can make it avoid accountability. Once a state targets NGOs, over time it may grow less hesitant to apply violent repression more widely and more severely. 
 
-In exploring the impact of state crackdown on NGOs on subsequent human rights conditions, we look at both *de jure* measures—or formal legislation that seeks to repress NGOs—as well as the *de facto* implementation of these measures. This distinction is important. While states may pass anti-NGO laws, these laws can also lie dormant. For instance, Russia passed its 2015 Undesirable Organizations Law with the purpose of targeting and eliminating specific foreign-connected NGOs it deemed dangerous. One of the law's sponsors, Aleksandr Tarnavsky, described the law as a preventative measure that would not affect the majority of NGOs working in Russia. Rather, the law would be a "weapon hanging on the wall that never fires" and stand as a warning to potentially uncooperative NGOs [@Kozenko:2015]. Similarly, Egypt's 2002 NGO law instated severe barriers to freedom of association, banned NGOs from engaging in activities that "threaten national unity or violate public order or morality," and also prevented groups for receiving foreign funding. But despite the harsh legal framework, the NGO sector nearly doubled in size between 1993-2011. This was because of the state's limited targeting of groups working on politically sensitive issues such as human rights and democracy, while tolerating other kinds of organizations (@Brechenmacher 2017).
+In exploring the impact of state crackdown on NGOs on subsequent human rights conditions, we look at both *de jure* measures—or formal legislation that seeks to repress NGOs—as well as the *de facto* implementation of these measures. This distinction is important—while states may pass anti-NGO laws, these laws can also lie dormant until governments feel the need to enforce them. For instance, Russia passed its 2015 Undesirable Organizations Law with the purpose of targeting and eliminating specific foreign-connected NGOs it deemed dangerous. One of the law's sponsors, Aleksandr Tarnavsky, described the law as a preventative measure that would not affect the majority of NGOs working in Russia. Rather, the law would be a "weapon hanging on the wall that never fires" and stand as a warning to potentially uncooperative NGOs [@Kozenko:2015]. Similarly, Egypt's 2002 NGO law instated severe barriers to freedom of association, banned NGOs from engaging in activities that "threaten national unity or violate public order or morality," and also prevented groups for receiving foreign funding. But despite the harsh legal framework, the NGO sector nearly doubled in size between 1993–2011. The state targeted a limited number of organizations working on politically sensitive issues such as human rights and democracy, while simultaneously tolerating organizations working on tamer issues [@Brechenmacher:2017].
 
 Simply noting the passage of (or counting) these laws may therefore miss the effect of their de facto implementation. Moreover, the implementation of these laws may not be limited to its legal character. The government may also engage in harassment of NGOs and activists to dissuade NGOs from operation or expressing themselves. This may include measures such as detentions, short-term incarceration, as well as beatings, threats to families and destruction of valuable property. 
 
 Finally, counting official laws can also undermeasure civil society repression because governments can repress NGOs without passing or relying on formal laws. As prior research in Egypt, Ethiopia, and Russia points out, "rather than systematically enforcing all repressive legal measures-often impossible owing to capacity constraints," governments may choose to use extra-legal means to intimidate, harass or prosecute a few NGOs or activists. These cases, especially during moments or crises or contention, "highlight to the wider NGO community-and citizenry-that the government is willing and capable of using the law to repress dissent" [@Brechenmacher:2017, 94].
 
-Based on these purposes of civil society restrictions and the different methods states use to implement them, we propose two empirical expectations about the relationship between civil society repression and general human rights: 
+Based on these various purposes of civil society restrictions and the different methods states use to implement them, we propose two empirical expectations about the relationship between civil society repression and general human rights: 
 
 - **Empirical expectation 1** (effect of de jure NGO repression): If a country imposes a formal anti-NGO law, then it is likely to signal future deteriorating human rights conditions.
 - **Empirical expectation 2** (effect of de facto NGO repression): If a country represses civil society, then it is likely to signal future deteriorating human rights conditions.
@@ -228,7 +228,7 @@ tbl_var_summary <- tribble(
   "Political Terror Scale (PTS)", NA, "Ordered category ranging from 1 (least terror) to 5 (most terror)", "(ref:pts)",
   "Physical violence index", NA, "0–1; higher values indicate less violence", "(ref:vdem); v2x_clphy",
   "Private civil liberties index", NA, "0–1; higher values indicate greater respect for civil liberties", "(ref:vdem); v2x_clpriv",
-  "Latent human rights values", NA, "≈ -3–5; higher values indicate greater respect for human rights", "(ref:lhr)",
+  "Latent human rights values", NA, "≈ −3–5; higher values indicate greater respect for human rights", "(ref:lhr)",
   "Total legal barriers", "De jure laws", "Count of all anti-NGO legal barriers", "(ref:chaudhry)",
   "Barriers to advocacy", "De jure laws", "Count of laws restricting NGO advocacy", "(ref:chaudhry)",
   "Barriers to entry", "De jure laws", "Count of laws restricting NGO entry, including registration", "(ref:chaudhry)",
@@ -304,7 +304,7 @@ df_barriers <- canary %>%
   pivot_longer(names_to = "barrier", values_to = "value", -year) %>% 
   left_join(regulations, by = "barrier") %>% 
   mutate(barrier_display = str_replace(barrier_display, "XXX", "\n")) %>%
-  arrange(desc(value)) %>% 
+  arrange(year, desc(value)) %>% 
   mutate(barrier_display = fct_inorder(barrier_display, ordered = TRUE))
 
 num_countries <- length(unique(canary$gwcode))
@@ -313,18 +313,19 @@ entry_plot <- ggplot(filter(df_barriers,
                             barrier_group == "Barriers to entry"), 
                      aes(x = year, y = value, 
                          color = barrier_display)) +
-  geom_line(size = 0.75) +
+  geom_line(size = 1.25) +
   expand_limits(y = c(0, 90)) +
   scale_y_continuous(sec.axis = sec_axis(~ . / num_countries,
                                          labels = percent_format(accuracy = 1)),
                      expand = c(0, 0)) +
-  scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
+  scale_color_viridis_d(option = "plasma", end = 0.92, name = NULL) +
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 90)) +
   guides(color = guide_legend(nrow = 2)) +
   labs(x = NULL, y = "Number of countries") +
   theme_ngo(9) + 
   theme(legend.justification = "left",
-        legend.key.size = unit(0.7, "lines")) +
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines")) +
   facet_wrap(vars(barrier_group))
 
 funding_plot <- ggplot(filter(df_barriers, 
@@ -332,11 +333,11 @@ funding_plot <- ggplot(filter(df_barriers,
                        aes(x = year, y = value, 
                            color = barrier_display,
                            linetype = barrier_display)) +
-  geom_line(size = 0.75) +
+  geom_line(size = 1.25) +
   scale_y_continuous(sec.axis = sec_axis(~ . / num_countries,
                                          labels = percent_format(accuracy = 1)),
                      expand = c(0, 0)) +
-  scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
+  scale_color_viridis_d(option = "plasma", end = 0.92, name = NULL) +
   scale_linetype_manual(values = c("solid", "21", "solid", "21", "solid"), name = NULL) +
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 45)) +
   guides(color = guide_legend(nrow = 3),
@@ -344,14 +345,15 @@ funding_plot <- ggplot(filter(df_barriers,
   labs(x = NULL, y = "Number of countries") +
   theme_ngo(9) + 
   theme(legend.justification = "left",
-        legend.key.size = unit(0.7, "lines")) +
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines")) +
   facet_wrap(vars(barrier_group))
 
 advocacy_plot <- ggplot(filter(df_barriers, 
                                barrier_group == "Barriers to advocacy"), 
                         aes(x = year, y = value, 
                             color = barrier_display)) +
-  geom_line(size = 0.75) +
+  geom_line(size = 1.25) +
   scale_y_continuous(sec.axis = sec_axis(~ . / num_countries,
                                          labels = percent_format(accuracy = 1)),
                      expand = c(0, 0)) +
@@ -361,7 +363,9 @@ advocacy_plot <- ggplot(filter(df_barriers,
   labs(x = NULL, y = "Number of countries",
        legend.key.size = unit(0.7, "lines")) +
   theme_ngo(9) + 
-  theme(legend.justification = "left") +
+  theme(legend.justification = "left",
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines")) +
   facet_wrap(vars(barrier_group))
 
 df_csreprss_plot <- canary %>%
@@ -379,7 +383,7 @@ df_csreprss_plot <- canary %>%
 
 csreprss_plot <- ggplot(df_csreprss_plot, aes(x = year, y = y)) +
   geom_ribbon(aes(ymin = ymin, ymax = ymax, fill = autocracy), alpha = 0.2,) +
-  geom_line(aes(color = autocracy), size = 0.75) +
+  geom_line(aes(color = autocracy), size = 1.25) +
   scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
   scale_fill_viridis_d(option = "plasma", end = 0.8, name = NULL) +
   coord_cartesian(xlim = c(1990, 2015)) +
@@ -387,7 +391,8 @@ csreprss_plot <- ggplot(df_csreprss_plot, aes(x = year, y = y)) +
   labs(y = "Average CSO repression", x = NULL) +
   theme_ngo(9) +
   theme(legend.justification = "left",
-        legend.key.size = unit(0.7, "lines")) +
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines")) +
   facet_wrap(vars(fake_facet_title))
 
 barriers_summary <- 
@@ -410,21 +415,23 @@ Because the PTS captures broad notions of political terror with only five possib
 
 However, looking at political terror, physical integrity rights, and private civil liberties captures specific dimensions of a country's respect for human rights, but isolating these trends in repression can prove difficult. @SchnakenbergFariss:2014, @Fariss:2014, and others have argued that a country's latent and underlying human rights environment causes a state to engage in specific actions related to human rights, such as engaging in political violence, arresting activists, or restricting freedom of religion. Measuring this underlying respect for human rights is difficult, however, as it is by definition unobserved. @FarissKenwickReuning:2020 use a Bayesian measurement model to generate estimates of latent respect for physical integrity rights. We use the posterior mean of their latent variable ($\theta$) as our final measure of repression in order to see how civil society restrictions predict changes in a country's future underlying human rights environment. The right panel of Figure \@ref(fig:repression) demonstrates the global increase in average latent human rights values over time.
 
-```{r repression, fig.width=7.5, fig.height=2.5, fig.asp=NULL, fig.cap="Key measures of repression over time"}
+```{r repression, fig.width=6.5, fig.height=7, fig.asp=NULL, fig.cap="Key measures of repression over time"}
 pts_plot <- canary %>% 
   filter(!is.na(PTS_factor)) %>% 
   group_by(PTS_factor, year) %>% 
   summarize(count = n()) %>% 
   mutate(fake_facet_title = "Political Terror Scale") %>% 
   ggplot(aes(x = year, y = count, color = PTS_factor)) +
-  geom_line(size = 0.75) +
-  scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
+  geom_line(size = 1) +
+  scale_color_viridis_d(option = "rocket", end = 0.85, direction = -1) +
   coord_cartesian(xlim = c(1990, 2015)) +
-  guides(color = guide_legend(nrow = 2)) +
-  labs(y = "Number of countries", x = NULL) +
+  guides(color = guide_legend(title = NULL)) +
+  labs(y = "Number of countries", x = NULL, caption = "(Higher PTS levels = more repression)") +
   theme_ngo(9) +
   theme(legend.justification = "left",
-        legend.key.size = unit(0.7, "lines")) +
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines"),
+        plot.caption = element_text(margin = margin(t = -1, unit = "lines"))) +
   facet_wrap(vars(fake_facet_title))
 
 labs_lookup <- tribble(
@@ -447,16 +454,18 @@ df_outcome_plot <- canary %>%
 
 vdem_outcome_plot <- ggplot(df_outcome_plot, aes(x = year, y = y)) +
   geom_ribbon(aes(ymin = ymin, ymax = ymax, fill = nice_name), alpha = 0.2,) +
-  geom_line(aes(color = nice_name), size = 0.75) +
-  scale_color_viridis_d(option = "plasma", end = 0.8, name = NULL) +
-  scale_fill_viridis_d(option = "plasma", end = 0.8, name = NULL) +
+  geom_line(aes(color = nice_name), size = 1) +
+  scale_color_manual(values = c("#433E85", "#4DC36B"), name = NULL) +
+  scale_fill_manual(values = c("#433E85", "#4DC36B"), name = NULL) +
   coord_cartesian(xlim = c(1990, 2015)) +
-  guides(color = guide_legend(nrow = 2, reverse = TRUE),
-         fill = guide_legend(nrow = 2, reverse = TRUE)) +
-  labs(y = "Average index value\n(Higher values = less repression)", x = NULL) +
+  guides(color = guide_legend(reverse = TRUE),
+         fill = guide_legend(reverse = TRUE)) +
+  labs(y = "Average index value", x = NULL, caption = "(Higher values = less repression)") +
   theme_ngo(9) +
   theme(legend.justification = "left",
-        legend.key.size = unit(0.7, "lines")) +
+        legend.key.height = unit(0.7, "lines"),
+        legend.key.width = unit(1, "lines"),
+        plot.caption = element_text(margin = margin(t = -1, unit = "lines"))) +
   facet_wrap(vars(fake_facet_title))
 
 df_lhr_plot <- canary %>% 
@@ -470,18 +479,15 @@ df_lhr_plot <- canary %>%
   mutate(fake_facet_title = "Latent human rights")
 
 lhr_plot <- ggplot(df_lhr_plot, aes(x = year, y = y)) +
-  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = 0.2, fill = "#433E85") +
-  geom_line(size = 0.75, color = "#433E85") +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = 0.2, fill = "#FF4136") +
+  geom_line(size = 1, color = "#FF4136") +
   coord_cartesian(xlim = c(1990, 2015)) +
-  guides(color = guide_legend(nrow = 2, reverse = TRUE),
-         fill = guide_legend(nrow = 2, reverse = TRUE)) +
-  labs(y = "Average value\n(Higher values = less repression)", x = NULL) +
+  labs(y = "Average value", x = NULL, caption = "(Higher values = less repression)") +
   theme_ngo(9) +
   theme(legend.justification = "left") +
   facet_wrap(vars(fake_facet_title))
 
-
-(pts_plot | vdem_outcome_plot | lhr_plot) &
+(pts_plot / vdem_outcome_plot / lhr_plot) &
   theme(legend.text = element_text(size = rel(0.7)),
         axis.title.y = element_text(margin = margin(r = 3)),
         legend.box.margin = margin(t = -0.5, unit = "lines"))
@@ -491,9 +497,7 @@ lhr_plot <- ggplot(df_lhr_plot, aes(x = year, y = y)) +
 
 Since we look at whether anti-NGO laws and their implementation can serve as an early warning signal for broader repression, we are primarily interested in *predicting* repression and not isolating the causal effect of civil society repression on general human rights abuses. We do not include a complete set of covariates to remove confounding relationships, but instead use a more parsimonious set of explanatory variables that strongly predict repression. Following @GohdesCarey:2017, we control for a country's previous level of repression, its level of democracy as measured by V-Dem's polyarchy index, its logged GDP per capita (measured by the UN), the percent of GDP attributed to trade (measured by the UN), and an indicator for whether the country witnessed more than 25 battle-related deaths (measured by @ucdp2020; @GleditschWallensteenEriksson:2002). Because changes in the human rights environment take time to be reflected by these larger indexes, we model the effect of lagged explanatory variables on repression one year in the future. We also include the lag of civil society laws or repression to account for serial correlation. 
 
-We extend @GohdesCarey:2017's previous modeling approach by accounting for country-level variation in repression with multilevel modeling and we include random effects for each country. Accounting for the country this way results in intraclass correlation coefficients of around 0.7 for each of our three outcome variables, which means that the country-based structure of the data explains more than 70% of the variation in outcome, resulting in model estimates that are arguably more precisely measured. Additionally, as a robustness check, we account for within-country and between-country variation by splitting each numeric explanatory variable into its country-level mean and its variation from the mean, following @BellJones:2015. [@TODO: Footnote this REWB stuff] The results from these random effects—within/between (REWB) models are nearly identical to those with the untransformed covariates, so for the sake of simplicity here, we only include results from basic multilevel random effects models. 
-
-We run multiple models for each of our empirical expectations, based on different combinations of our outcomes and key explanatory variables:
+We extend @GohdesCarey:2017's previous modeling approach by accounting for country-level variation in repression with multilevel modeling and we include random effects for each country. Accounting for country differences this way results in intraclass correlation coefficients of around 0.7 for each of our three outcome variables, which means that the country-based structure of the data explains more than 70% of the variation in outcome, resulting in model estimates that are arguably more precisely measured. We run multiple models for each of our empirical expectations, based on different combinations of our outcomes and key explanatory variables:
 
 - **Expectation 1~a~**: Anti-NGO laws (total, advocacy, entry, funding separately) signal worsening political terror
 - **Expectation 1~b~**: Anti-NGO laws signal worsening physical violence
@@ -504,34 +508,10 @@ We run multiple models for each of our empirical expectations, based on differen
 - **Expectation 2~c~**: Civil society repression signals constricting civil liberties
 - **Expectation 2~d~**: Civil society repression signals decreasing latent human rights respect
 
-We generate our predictions with two families of Bayesian regression models. Because the Political Terror Scale is measured as an ordered category, we use ordered logistic regression to predict future values of the PTS. As V-Dem's physical violence index and private civil liberties index and latent human rights values are all measured continuously, we predict these values with Gaussian models. We use median values from the models' posterior distributions as our point estimates and provide credible intervals using the 95% highest posterior density.[^bayes] We declare an effect statistically "significant" if the posterior probability of being different from zero (i.e. above or below) exceeds 0.95.
+We generate predictions with two families of Bayesian regression models. Because the Political Terror Scale is measured as an ordered category, we use ordered logistic regression to predict future values of the PTS. As V-Dem's physical violence index and private civil liberties index and latent human rights values are all measured continuously, we predict these values with Gaussian models. The appendix contains complete details of our modeling approach. We use median values from the models' posterior distributions as our point estimates and provide credible intervals using the 95% highest posterior density. We declare an effect statistically "significant" if the posterior probability of being different from zero (i.e. above or below) exceeds 0.95.
 
 [^open]: Defined as the state both enabling and safeguarding citizens' freedom to form associations, authorities being tolerant of criticism from CSOs and laws governing freedom of peaceful assembly adhere to international laws and standards. 
 
-[^bayes]: We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
-
-@TODO: FOOTNOTE or APPENDIX: Complete results from all the models (including REWB models), along with posterior predictive checks, goodness-of-fit measures, and prediction diagnostics are all available at a companion website at <https://stats.andrewheiss.com/canary-ngos/>. Our general modeling approach can be summarized as follows:
-
-\footnotesize
-
-$$
-\begin{aligned}
-y_{i, t+1} \mid u_i, x_{i, t} \sim&\ \operatorname{Ordered Logistic}(y^*_{i, t + 1}, \sigma^2_m) & \text{[likelihood for ordinal PTS models]} \\
-y_{i, t+1} \mid u_i, x_{i, t} \sim&\ \mathcal{N}(y^*_{i, t + 1}, \sigma^2_m) & \text{[likelihood for Gaussian V-Dem models]} \\
-y^*_{i, t + 1} =&\ \beta_0 + \beta_1 \text{Civil society repression}_{i, t} + & \text{[model with covariates]}\\
-&\ \beta_2 \text{Civil society repression}_{i, t - 1} + \\
-&\ \beta_3 \text{Outcome}_{i, t} + \beta_4 \text{Polyarchy}_{i, t} + \\
-&\ \beta_5 \log (\text{GDP per capita}) + \\
-&\ \beta_6 \text{Trade as } \% \text{ of GDP}_{i, t} + \\
-&\ \beta_7 \text{Armed conflict}_{i, t} + u_i + \sigma^2_e \\
-u_i =&\ \mathcal{N}(0, \sigma^2_u) & \text{[country-specific intercepts]} \\
-\ \\
-\beta_0 \sim&\ \mathcal{N}(0, 10) & \text{[prior population intercept]} \\
-\beta_{1-7} \sim&\ \mathcal{N}(0, 3) & \text{[prior population effects]} \\
-\sigma^2_m, \sigma^2_e, \sigma^2_u \sim&\ \operatorname{Cauchy}(0, 1) & \text{[prior sd for model, population, and country error]} \\
-\end{aligned}
-$$
-\normalsize
 
 # Results and analysis
 
@@ -553,10 +533,11 @@ mfx_e1a_pts %>%
   geom_line(aes(group = effect2__), size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
                   position = position_dodge(width = 0.2),
-                  fatten = 1) +
+                  fatten = 1, size = 1) +
   scale_x_continuous(breaks = 0:9) +
   scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  scale_color_viridis_d(option = "plasma", end = 0.9) +
+  scale_color_viridis_d(option = "rocket", end = 0.85, direction = -1) +
+  guides(color = guide_legend(override.aes = list(size = 0.5, linetype = 0))) +
   labs(x = "Count of legal barriers\n",
        y = "Predicted probability of category",
        color = "Predicted political terror scale", fill = "Predicted political terror scale",
@@ -582,11 +563,11 @@ out_mfx_e1b <- mfx_e1b_clphy %>%
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  fatten = 1) +
+                  fatten = 1, size = 1) +
   scale_x_continuous(breaks = 0:9) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   coord_cartesian(ylim = c(0.60, 0.71)) +
-  guides(color = FALSE) +
+  guides(color = "none") +
   labs(x = NULL,
        y = "Predicted physical violence index\n(higher values = less violence)",
        title = "Physical violence index") +
@@ -603,11 +584,11 @@ out_mfx_e1c <- mfx_e1c_clpriv %>%
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  fatten = 1) +
+                  fatten = 1, size = 1) +
   scale_x_continuous(breaks = 0:9) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   coord_cartesian(ylim = c(0.60, 0.71)) +
-  guides(color = FALSE) +
+  guides(color = "none") +
   labs(x = NULL,
        y = "Predicted civil liberties index\n(higher values = better protection)",
        title = "Private civil liberties index") +
@@ -624,10 +605,10 @@ out_mfx_e1d <- mfx_e1d_lhr %>%
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  fatten = 1) +
+                  fatten = 1, size = 1) +
   scale_x_continuous(breaks = 0:9) +
   scale_color_viridis_d(option = "plasma", end = 0.8) +
-  guides(color = FALSE) +
+  guides(color = "none") +
   labs(x = "Count of legal barriers",
        y = "Predicted latent human rights value\n(higher values = better protection)",
        title = "Latent human rights") +
@@ -649,11 +630,11 @@ The effect of de facto civil society repression on predicted values of the Polit
 out_mfx_e2a <- mfx_e2a_pts %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
-  geom_line(size = 0.75) +
+  geom_line(size = 1) +
   scale_x_reverse() +
   scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  scale_color_viridis_d(option = "plasma", end = 0.9) +
-  scale_fill_viridis_d(option = "plasma", end = 0.9) +
+  scale_color_viridis_d(option = "rocket", end = 0.75, direction = -1) +
+  scale_fill_viridis_d(option = "rocket", end = 0.9, direction = -1) +
   labs(x = "Civil society repression\n(scale reversed; greater repression on the right)\n",
        y = "Predicted probability of category",
        color = "Political terror scale", fill = "Political terror scale",
@@ -671,7 +652,7 @@ out_mfx_e2b <- mfx_e2b_clphy %>%
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#433E85", color = NA) +
-  geom_line(size = 0.75, color = "#433E85") +
+  geom_line(size = 1, color = "#433E85") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
   labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
@@ -683,7 +664,7 @@ out_mfx_e2c <- mfx_e2c_clpriv %>%
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#4DC36B", color = NA) +
-  geom_line(size = 0.75, color = "#4DC36B") +
+  geom_line(size = 1, color = "#4DC36B") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
   labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
@@ -695,7 +676,7 @@ out_mfx_e2d <- mfx_e2d_lhr %>%
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
               fill = "#FF4136", color = NA) +
-  geom_line(size = 0.75, color = "#FF4136") +
+  geom_line(size = 1, color = "#FF4136") +
   scale_x_reverse() +
   labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
        y = "Predicted latent human rights value\n(higher values = better protection)",
@@ -711,6 +692,8 @@ out_mfx_e2b | out_mfx_e2c | out_mfx_e2d
 These predicted probabilities and outcomes are conditional on all other model parameters being held at their average values and show the effect of hypothetically changing a single predictor to different values. They do not show how well these models work with actual data. Following @WardBeger:2017 and @GohdesCarey:2017, we test the predictive power of both sets of our models using out-of-sample prediction. We divide our complete data into a training set and a test set—the training set includes data from all countries from 1990–2010, and the test set includes the last three years of data (2011–2013). We re-run each of our models using our training data and then use the estimated parameters to predict political terror, physical violence, and private civil liberties for the test data. Additionally, we estimate a model for each outcome without predictor variables for civil society laws or repression as a baseline measure of model performance.
 
 ```{r correct-not-correct}
+# These numbers come from the analysis notebook at 
+# https://stats.andrewheiss.com/canary-ngos/04_predictions.html#Prediction_diagnostics
 pts_pred_table <- tribble(
   ~Prediction, ~Baseline, ~total, ~advocacy, ~entry, ~funding, ~repression,
   "Wrong",     108,       108,    110,       108,    109,      111,
@@ -755,6 +738,8 @@ We assess predictive power in a few different ways, depending on the model used 
 Including civil society restrictions—both de jure and de facto—does very little to improve predictions of political terror. As seen in Table \@ref(tab:correct-not-correct), no model provides more correct predictions than the baseline model, and some models perform worse. Accounting for anti-NGO activities does improve predictions in eight cases (see Table \@ref(tab:tbl-improved-pts)), but it also results in an equal number of incorrect predictions. 
 
 ```{r tbl-rmse}
+# These numbers also come from the analysis notebook at 
+# https://stats.andrewheiss.com/canary-ngos/04_predictions.html
 tbl_rmse <- tribble(
                       ~Model,     ~RMSE, ~`% change from baseline`,
                   "Baseline", 0.0462298,                       "—",
@@ -811,7 +796,7 @@ if (!is_docx) {
 
 When looking at the level of physical violence in a country, including de jure and de facto repression does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for legal barriers and civil society repression only reduces the RMSE by at most 0.4% compared to the baseline model. This is likely related to the lack of improvements in predicting political terror—both indexes measure similar phenomena. Similarly, accounting for de facto civil society repression when modeling latent human rights only results in slight changes to the RMSE. However, including civil society-related predictors when modeling private civil liberties does result in small gains in accuracy, reducing the RMSE by as much as 2% compared to the baseline model. 
 
-While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases. 
+While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases.
 
 
 # Conclusion and implications
@@ -820,11 +805,46 @@ Strengthening civil society is an important precondition for democratic transiti
 
 We do, however, find some predictive power when accounting for de facto levels of NGO repression, which includes both legal and extra-legal means of crackdown. As with formal laws, rising NGO repression tends to increase the probability of more moderate political terror. Additionally, this repression is associated with worsening respect for physical integrity rights and civil liberties in the future. In out-of-sample predictions, including civil society restrictions improves model accuracy by 1–2% over the baseline.
 
-Importantly, the lack of predictive power when modeling political violence and the modest improvements in predictive power when modeling civil liberties likely reflects the purpose of NGO restrictions. Encroachments on private civil liberties such as restricting freedom of association are not nearly as violent as events like government-sponsored murders. The global shrinking of civil society is thus not likely an early warning sign for future violent repression—states typically signal their future repressive intentions with more violent methods, such as the persecution and murder of activists and the media. Instead, civil society is a possible "canary in the coal mine" for impending violations of other civil rights, such as the freedom of religion, labor rights, property rights, and the freedom of movement. 
+Importantly, the lack of predictive power when modeling political violence and the modest improvements in predictive power when modeling civil liberties likely reflects the purpose of NGO restrictions. Encroachments on private civil liberties such as restricting freedom of association are not nearly as violent as events like government-sponsored murders. In authoritarian states in particular, administrative crackdown on NGOs can also be seen as a careful strategy for autocratic survival. Authoritarian leaders must carefully balance domestic and international institutional pressures—including pressure from civil society and NGOS—to remain in power [@Heiss:2019a; @LevitskyWay:2010]. Anti-NGO laws could possibly be a side effect of authoritarian stability-seeking behavior, similar to election tampering, media censorship, cronyism, and rent-seeking, rather than an overt signal of impending serious human rights abuses.
+
+The global shrinking of civil society is thus not likely an early warning sign for future violent repression—states typically signal their future repressive intentions with more violent methods, such as the persecution and murder of activists and the media. Instead, civil society is a possible "canary in the coal mine" for impending violations of other civil rights, such as the freedom of religion, labor rights, property rights, and the freedom of movement. 
 
 \clearpage
 
 # Appendix
+
+## Modeling approach
+
+We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
+
+Complete results from all the models, along with posterior predictive checks, goodness-of-fit measures, and prediction diagnostics are all available at a companion website at <https://stats.andrewheiss.com/canary-ngos/>. Our general modeling approach can be summarized as follows:
+
+\footnotesize
+
+$$
+\begin{aligned}
+y_{i, t+1} \mid u_i, x_{i, t} \sim&\ \operatorname{Ordered Logistic}(y^*_{i, t + 1}, \sigma^2_m) & \text{[likelihood for ordinal PTS models]} \\
+y_{i, t+1} \mid u_i, x_{i, t} \sim&\ \mathcal{N}(y^*_{i, t + 1}, \sigma^2_m) & \text{[likelihood for Gaussian V-Dem models]} \\
+y^*_{i, t + 1} =&\ \beta_0 + \beta_1 \text{Civil society repression}_{i, t} + & \text{[model with covariates]}\\
+&\ \beta_2 \text{Civil society repression}_{i, t - 1} + \\
+&\ \beta_3 \text{Outcome}_{i, t} + \beta_4 \text{Polyarchy}_{i, t} + \\
+&\ \beta_5 \log (\text{GDP per capita}) + \\
+&\ \beta_6 \text{Trade as } \% \text{ of GDP}_{i, t} + \\
+&\ \beta_7 \text{Armed conflict}_{i, t} + u_i + \sigma^2_e \\
+u_i =&\ \mathcal{N}(0, \sigma^2_u) & \text{[country-specific intercepts]} \\
+\ \\
+\beta_0 \sim&\ \mathcal{N}(0, 10) & \text{[prior population intercept]} \\
+\beta_{1-7} \sim&\ \mathcal{N}(0, 3) & \text{[prior population effects]} \\
+\sigma^2_m, \sigma^2_e, \sigma^2_u \sim&\ \operatorname{Cauchy}(0, 1) & \text{[prior sd for model, population, and country error]} \\
+\end{aligned}
+$$
+\normalsize
+
+To check for robustness, we also ran models using both country and regional random effects, but doing so made no noticable difference in the results—for the sake of computational efficiency, we thus do not include regional effects.
+
+## Improved cases
+
+\newpage
 
 ```{r tbl-improved-pts}
 tbl_improved_pts <- tribble(
@@ -868,6 +888,8 @@ if (!is_docx) {
 ```
 
 \newpage
+
+## Complete model results
 
 \memSingleSmall
 
