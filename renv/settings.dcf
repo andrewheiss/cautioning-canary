@@ -1,7 +1,9 @@
 external.libraries:
-ignored.packages:
+ignored.packages: collections, rex, cyclocomp, xmlparsedata, lintr, repr, brew,
+    roxygen2, R.methodsS3, R.oo, R.utils, R.cache, styler, languageserver
 package.dependency.fields: Imports, Depends, LinkingTo
 r.version:
 snapshot.type: implicit
 use.cache: TRUE
 vcs.ignore.library: TRUE
+vcs.ignore.local: TRUE

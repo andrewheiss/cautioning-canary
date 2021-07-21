@@ -1603,10 +1603,10 @@
     },
     "tarchetypes": {
       "Package": "tarchetypes",
-      "Version": "0.1.0",
+      "Version": "0.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "1270e517deebe89a4140ed2445e82bea"
+      "Hash": "e3bc4a532ee78afda96b3e66cf5f1ef1"
     },
     "targets": {
       "Package": "targets",
@@ -1715,10 +1715,10 @@
     },
     "viridisLite": {
       "Package": "viridisLite",
-      "Version": "0.3.0",
+      "Version": "0.4.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ce4f6271baa94776db692f1cb2055bee"
+      "Hash": "55e157e2aa88161bdb0754218470d204"
     },
     "visNetwork": {
       "Package": "visNetwork",
