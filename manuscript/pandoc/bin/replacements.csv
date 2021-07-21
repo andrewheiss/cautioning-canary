@@ -1,5 +1,28 @@
 original, replacement
-Andrew Heiss,Author
-Georgia State University,Institution
-Andrew Young School of Policy Studies,Department
+Suparna Chaudhry,Author 1
+Lewis & Clark College,Institution 1
+schaudhry@lclark.edu,author_1@example.com
+http://www.suparnachaudhry.com/,http://www.example.com
+Department of International Affairs,Department 1
+"Portland, OR 97219",Address 1
+757-594-7461,IRB phone 1
+IRB@cnu.edu,IRB e-mail 1
+1436622-1,IRB code 1
+Marc Dotson,Author 2
+Brigham Young University,Institution 2
+marc_dotson@byu.edu,author_2@example.com
 https://www.andrewheiss.com/,http://www.example.com
+Marriott School of Business,Department 2
+"Provo, UT 84602",Address 2
+801-422-1461,IRB phone 2
+irb@byu.edu,IRB e-mail 2
+E19135,IRB code 2
+Andrew Heiss,Author 3
+Georgia State University,Institution 3
+aheiss@gsu.edu,author_3@example.com
+https://www.andrewheiss.com/,http://www.example.com
+Andrew Young School of Policy Studies,Department 3
+"Atlanta, GA 30303",Address 3
+H19644,IRB code 3
+https://osf.io/hsbyd/,https://osf.io/ANON-PREREG/
+https://osf.io/sm5ew/,https://osf.io/ANON-CODE-DATA/

@@ -3,8 +3,8 @@ library(tarchetypes)
 library(tibble)
 
 # General variables
-csl <- "pandoc/csl/chicago-author-date.csl"
-bibstyle <- "bibstyle-chicago-authordate"
+csl <- "pandoc/csl/apa.csl"
+bibstyle <- "bibstyle-apa"
 
 suppressPackageStartupMessages(library(brms))
 
@@ -345,21 +345,21 @@ list(
   tar_target(pdf,
              render_pdf(
                input = main_manuscript,
-               output = here_rel("manuscript", "output/manuscript.pdf"),
+               output = here_rel("manuscript", "output", "manuscript.pdf"),
                bibstyle = bibstyle,
                bib_file),
              format = "file"),
   tar_target(ms_pdf,
              render_pdf_ms(
                input = main_manuscript,
-               output = here_rel("manuscript", "output/manuscript-ms.pdf"),
+               output = here_rel("manuscript", "output", "manuscript-ms.pdf"),
                bibstyle = bibstyle,
                bib_file),
              format = "file"),
   tar_target(docx,
              render_docx(
                input = main_manuscript,
-               output = here_rel("manuscript", "output/manuscript.docx"),
+               output = here_rel("manuscript", "output", "manuscript.docx"),
                csl = csl,
                bib_file),
              format = "file"),
@@ -368,5 +368,12 @@ list(
                input_rmd = main_manuscript,
                input_bib = bib_file,
                output = here_rel("manuscript", "output", "extracted-citations.bib")),
-             format = "file")
+             format = "file"),
+
+  # Always show a word count
+  tar_target(word_count, count_words(html)),
+  tar_force(show_word_count, print(word_count), TRUE),
+
+  # Knit the README
+  tar_render(readme, here_rel("README.Rmd"))
 )
