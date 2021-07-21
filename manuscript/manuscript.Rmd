@@ -1,6 +1,6 @@
 ---
 title: "NGO Repression as a Predictor of Worsening Human Rights Abuses"
-short-title: "NGO Repression"
+short-title: "NGO Repression and Human Rights"
 author:
 - name: Suparna Chaudhry
   affiliation: Lewis & Clark College
@@ -10,21 +10,27 @@ author:
   affiliation: Georgia State University
   email: aheiss@gsu.edu
   url: https://www.andrewheiss.com/
-date: "July 17, 2021"
+date: "July 20, 2021"
 published: Under review
 code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/canary-ngos/>"
 abstract: >-
-  An increasing number of countries have cracked down on non-governmental organizations (NGOs) over the last few decades. This crackdown—much of which is sanctioned by law—represents a bureaucratic form of repression that could indicate more severe human rights abuses in the future. This is especially the case for electoral democracies, which unlike autocracies, may not aggressively attack civic space. In this paper, we explore if crackdowns on NGOs predict broader human rights repression. Anti-NGO laws are among the most subtle means of repression and attract much less domestic and international condemnation compared to the use of violence, as many audiences perceive this repression as regulation. These laws may also make it easier for states to prevent future large-scale popular mobilization. Using original data on civil society restrictions over the last three decades, we test whether NGO crackdown is a predictor of political terror, and violations of physical integrity rights and civil liberties. We find that while formal de jure laws provide little information in predicting future repression, their patterns of implementation, or de facto civil society repression, predicts worsening respect for physical integrity rights and civil liberties.
-keywords: "civil society, NGOs, repression, human rights, political terror, civil liberties"
+  An increasing number of countries have recently cracked down on non-governmental organizations (NGOs). Much of this crackdown is sanctioned by law and represents a bureaucratic form of repression that could indicate more severe human rights abuses in the future. This is especially the case for democracies, which unlike autocracies, may not aggressively attack civic space. We explore if crackdowns on NGOs predict broader human rights repression. Anti-NGO laws are among the most subtle means of repression and attract lesser domestic and international condemnation compared to the use of violence. Using original data on NGO repression, we test whether NGO crackdown is a predictor of political terror, and violations of physical integrity rights and civil liberties. We find that while formal de jure laws provide little information in predicting future repression, their patterns of implementation, or de facto civil society repression, predicts worsening respect for physical integrity rights and civil liberties.
+# keywords: civil society, NGOs, repression, human rights, political terror, civil liberties
+word-count: "7,159"
 thanks: >-
   We would like to thank participants of the 2021 International Studies Association (ISA) convention, and the "Human Rights on the Edge: The Future of International Human Rights Law and Practice" workshop hosted by the Global Human Rights Hub at Arizona State University for their comments and feedback.
 reference-section-title: References
 bibliography: bibliography.bib
+toc: false
 title-page: true
-endnotes: false
+endnotes: true
 endfloat: false
 mainfont: Cochineal
 sansfont: Inter
+author-note: >-
+  Suparna Chaudhry, PhD, Assistant Professor of International Affairs, Department of International Affairs, Lewis \& Clark College; Andrew Heiss, PhD, Assistant Professor of Public Management, Andrew Young School of Policy Studies, Georgia State University. 
+correspondence: >-
+  Correspondence concerning this article should be addressed to Andrew Heiss, PhD, Department of Public Management and Policy, Andrew Young School of Policy Studies, Georgia State University, 14 Marietta Street NW, Suite 357, Atlanta, GA 30303. Contact: aheiss@gsu.edu
 editor_options: 
   chunk_output_type: console
 ---
@@ -272,7 +278,7 @@ To measure de jure repression, we use data on anti-NGO laws from @Chaudhry:2016 
 - Barriers to entry (3 possible barriers): registration is burdensome, NGOs are not allowed to appeal if denied registration, and entry requirements differ if the NGO receives foreign funding
 - Barriers to funding (5 possible barriers): NGOs need prior approval to receive foreign funding, NGOs are required to channel foreign funding to state-owned banks, NGOs face additional restrictions if receiving foreign funding, and NGOs are prohibited from receiving foreign funding
 
-```{r barriers, fig.width=7, fig.height=6, fig.asp=NULL, fig.cap="Number of legal barriers to NGO activity per country over time (de jure legislation) and average level of CSO repression across democracies and non-democracies (de facto implementation)"}
+```{r barriers, fig.width=6, fig.height=6, fig.asp=NULL, fig.cap="Number of legal barriers to NGO activity per country over time (de jure legislation) and average level of CSO repression across democracies and non-democracies (de facto implementation)"}
 regulations <- tribble(
     ~question, ~barrier,       ~question_clean,                  ~ignore_in_index, ~question_display,
     "q1a",     "association",  "const_assoc",                    TRUE,             "Constitutional associational rights",
@@ -569,8 +575,9 @@ out_mfx_e1b <- mfx_e1b_clphy %>%
   coord_cartesian(ylim = c(0.60, 0.71)) +
   guides(color = "none") +
   labs(x = NULL,
-       y = "Predicted physical violence index\n(higher values = less violence)",
-       title = "Physical violence index") +
+       y = "Predicted physical violence index",
+       title = "Physical violence index",
+       caption = "(Higher values = less violence)") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
@@ -590,8 +597,9 @@ out_mfx_e1c <- mfx_e1c_clpriv %>%
   coord_cartesian(ylim = c(0.60, 0.71)) +
   guides(color = "none") +
   labs(x = NULL,
-       y = "Predicted civil liberties index\n(higher values = better protection)",
-       title = "Private civil liberties index") +
+       y = "Predicted civil liberties index",
+       title = "Private civil liberties index",
+       caption = "(Higher values = better protection)") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
@@ -610,8 +618,9 @@ out_mfx_e1d <- mfx_e1d_lhr %>%
   scale_color_viridis_d(option = "plasma", end = 0.8) +
   guides(color = "none") +
   labs(x = "Count of legal barriers",
-       y = "Predicted latent human rights value\n(higher values = better protection)",
-       title = "Latent human rights") +
+       y = "Predicted latent human rights value",
+       title = "Latent human rights",
+       caption = "(Higher values = better protection)") +
   facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
@@ -635,17 +644,19 @@ out_mfx_e2a <- mfx_e2a_pts %>%
   scale_y_continuous(labels = percent_format(accuracy = 1)) +
   scale_color_viridis_d(option = "rocket", end = 0.75, direction = -1) +
   scale_fill_viridis_d(option = "rocket", end = 0.9, direction = -1) +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on the right)\n",
+  labs(x = "Civil society repression",
        y = "Predicted probability of category",
        color = "Political Terror Scale", fill = "Political Terror Scale",
-       title = "Political Terror Scale") +
-  theme_ngo()
+       title = "Political Terror Scale",
+       caption = "(x-axis reversed; greater repression on the right)") +
+  theme_ngo() +
+  theme(legend.box.margin = margin(t = 0.5, unit = "lines"))
 out_mfx_e2a
 ```
 
 In contrast with formal laws, civil society repression does have a noticeable effect on the predicted values of the other rights indexes (see Figure \@ref(fig:plot-mfx-e2b-e2d)). When holding all other model parameters at their typical values, increased civil society repression predicts increases in both the physical violence index and private civil liberties index: a one standard deviation change in civil society repression is associated with a 0.02 change in overall rights. In other words, a typical country with a civil society repression score of 0 is predicted to have a physical violence index of 0.62 and civil liberties index of 0.67. This implies that an increase in de facto NGO restrictions predicts a `r percent_format(accuracy = 1)((0.62 - (0.62 - 0.02)) / (0.62 - 0.02))` decline in both protection from physical violence and respect for private civil liberties in the following year. Moreover, worsening civil society repression is strongly associated with a worse future human rights environment, as seen in the right panel of Figure \@ref(fig:plot-mfx-e2b-e2d).
 
-When holding all other factors equal, the de facto implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passage of formal de jure laws. In countries with low levels of political terror, it can potentially serve as a weak signal of a more general increase in political violence in the future, but predict more substantial changes in physical integrity rights, threats to civil liberties, and respect for human rights. The difference in the effects of laws vs. their de facto implementation could also potentially be explained by the time frame of these strategies. De jure laws are a long-term strategy to prevent threats to the regime from coalescing in the first place. For instance, Egypt's NGO law had been on the books since 2002, but only over the past five years have post-revolutionary regimes used it more broadly [@CITATION]. As such, the long-term effects of these laws in terms of their predictive power may require a much longer time period under study. In contrast, de facto crackdown on NGOs may signal the need to react sooner due to the immediacy of the threat. 
+When holding all other factors equal, the de facto implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passage of formal de jure laws. In countries with low levels of political terror, it can potentially serve as a weak signal of a more general increase in political violence in the future, but predict more substantial changes in physical integrity rights, threats to civil liberties, and respect for human rights. The difference in the effects of laws vs. their de facto implementation could also potentially be explained by the time frame of these strategies. De jure laws are a long-term strategy to prevent threats to the regime from coalescing in the first place. For instance, Egypt's Law 84 of 2002—which outlined many anti-NGO restrictions—has been on the books for nearly two decades, but only over the past five years have post-revolutionary regimes used it more broadly [@Ruffner:2015]. As such, the long-term effects of these laws in terms of their predictive power may require a much longer time period under study. In contrast, de facto crackdown on NGOs may signal the need to react sooner due to the immediacy of the threat. 
 
 ```{r plot-mfx-e2b-e2d, fig.width=9.5, fig.height=3.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on V-Dem rights indexes and latent human rights"}
 out_mfx_e2b <- mfx_e2b_clphy %>% 
@@ -655,8 +666,8 @@ out_mfx_e2b <- mfx_e2b_clphy %>%
   geom_line(size = 1, color = "#433E85") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
-       y = "Predicted physical violence index\n(higher values = less violence)",
+  labs(x = "Civil society repression",
+       y = "Predicted physical violence index",
        title = "Physical violence index") +
   theme_ngo(8)
 
@@ -667,8 +678,8 @@ out_mfx_e2c <- mfx_e2c_clpriv %>%
   geom_line(size = 1, color = "#4DC36B") +
   scale_x_reverse() +
   coord_cartesian(ylim = c(0.5, 0.75)) +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
-       y = "Predicted civil liberties index\n(higher values = better protection)",
+  labs(x = "Civil society repression",
+       y = "Predicted civil liberties index",
        title = "Private civil liberties index") +
   theme_ngo(8)
 
@@ -678,12 +689,16 @@ out_mfx_e2d <- mfx_e2d_lhr %>%
               fill = "#FF4136", color = NA) +
   geom_line(size = 1, color = "#FF4136") +
   scale_x_reverse() +
-  labs(x = "Civil society repression\n(scale reversed; greater repression on right)\n",
-       y = "Predicted latent human rights value\n(higher values = better protection)",
+  labs(x = "Civil society repression",
+       y = "Predicted latent human rights value",
        title = "Latent human rights") +
   theme_ngo(8)
 
-out_mfx_e2b | out_mfx_e2c | out_mfx_e2d
+(out_mfx_e2b | out_mfx_e2c | out_mfx_e2d) +
+  plot_annotation(caption = "(x-axis reversed; greater repression on right\nhigher values in y-axis show less violence and better protection of rights)",
+                  theme = theme(plot.caption = element_text(size = rel(0.8), color = "grey50", face = "plain",
+                                      family = "Inter Light",
+                                      margin = margin(t = 5))))
 ```
 
 
@@ -710,7 +725,7 @@ pts_pred_table_caption <- "Counts of correctly and incorrectly predicted cases a
 if (!is_docx) {
   pts_pred_table %>% 
     kbl(align = "lcccccc",
-        booktabs = TRUE, linesep = "",
+        booktabs = TRUE, linesep = "\\addlinespace",
         caption = pts_pred_table_caption) %>% 
     kable_styling(font_size = ifelse(is_latex, 8.5, NA)) %>%
     kable_styling() %>% 
@@ -768,7 +783,7 @@ tbl_rmse_caption <- "Root mean squared error across models predicting physical v
 if (!is_docx) {
   tbl_rmse %>% 
     kbl(align = "lcc",
-        booktabs = TRUE, linesep = "",
+        booktabs = TRUE, linesep = "\\addlinespace",
         caption = tbl_rmse_caption) %>% 
     pack_rows(index = c("Physical violence index" = 6, 
                         "Private civil liberties index" = 6,
@@ -817,7 +832,7 @@ The global shrinking of civil society is thus not likely an early warning sign f
 
 We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
 
-Complete results from all the models, along with posterior predictive checks, goodness-of-fit measures, and prediction diagnostics are all available at a companion website at <https://stats.andrewheiss.com/canary-ngos/>. Our general modeling approach can be summarized as follows:
+Complete results from all the models, along with posterior predictive checks, goodness-of-fit measures, and prediction diagnostics are all available at a companion website at `anonymized`. Our general modeling approach can be summarized as follows:
 
 \footnotesize
 
@@ -840,11 +855,11 @@ u_i =&\ \mathcal{N}(0, \sigma^2_u) & \text{[country-specific intercepts]} \\
 $$
 \normalsize
 
-To check for robustness, we also ran models using both country and regional random effects, but doing so made no noticable difference in the results—for the sake of computational efficiency, we thus do not include regional effects.
-
-## Improved cases
+To check for robustness, we also ran models using both country and regional random effects, but doing so made no noticeable difference in the results—for the sake of computational efficiency, we thus do not include regional effects.
 
 \newpage
+
+## Improved cases
 
 ```{r tbl-improved-pts}
 tbl_improved_pts <- tribble(
@@ -889,16 +904,18 @@ if (!is_docx) {
 
 \newpage
 
+\blandscape
+
 ## Complete model results
 
 \memSingleSmall
 
 ```{r tbl-models-pts}
-model_names_tbl_pts <- c("Total barriers\n(t + 1)",
-                         "Barriers to advocacy\n(t + 1)",
-                         "Barriers to entry\n(t + 1)",
-                         "Barriers to funding\n(t + 1)",
-                         "Civil society repression\n(t + 1)")
+model_names_tbl_pts <- c("Total barriers",
+                         "Barriers to advocacy",
+                         "Barriers to entry",
+                         "Barriers to funding",
+                         "Civil society repression")
 
 names(models_paper_pts) <- model_names_tbl_pts
 
@@ -911,13 +928,18 @@ tbl_reg_pts <- modelsummary(models_paper_pts,
                             gof_omit = "ELPD",
                             escape = FALSE,
                             caption = tbl_reg_pts_caption,
-                            notes = list("Posterior means; 95% credible intervals in brackets")) 
+                            notes = list("Posterior means; 95% credible intervals in brackets"),
+                            longtable = TRUE) 
 
 if (!is_docx) {
   tbl_reg_pts %>% 
-    kable_styling(font_size = ifelse(is_latex, 7, NA)) %>% 
-    column_spec(1, width = "0.10\\\\textwidth") %>% 
-    column_spec(2:6, width = "0.14\\\\textwidth")
+    kable_styling() %>% 
+    add_header_above(header = c(" " = 1, "Outcome in t + 1" = 5))
+    # kable_styling(font_size = ifelse(is_latex, 7, NA)) %>%
+    # column_spec(1, width = "0.75in", latex_valign = "b") %>%
+    # column_spec(2:6, width = "1.3in", latex_valign = "b")
+    # column_spec(1, width = "0.10\\\\textwidth") %>%
+    # column_spec(2:6, width = "0.14\\\\textwidth")
 } else {
   tbl_reg_pts %>% 
     set_font_size(10) %>% 
@@ -936,11 +958,11 @@ if (!is_docx) {
 \clearpage
 
 ```{r tbl-models-clphy}
-model_names_tbl_clphy <- c("Total barriers\n(t + 1)",
-                           "Barriers to advocacy\n(t + 1)",
-                           "Barriers to entry\n(t + 1)",
-                           "Barriers to funding\n(t + 1)",
-                           "Civil society repression\n(t + 1)")
+model_names_tbl_clphy <- c("Total barriers",
+                           "Barriers to advocacy",
+                           "Barriers to entry",
+                           "Barriers to funding",
+                           "Civil society repression")
 
 names(models_paper_clphy) <- model_names_tbl_clphy
 
@@ -953,13 +975,16 @@ tbl_reg_clphy <- modelsummary(models_paper_clphy,
                               gof_omit = "ELPD",
                               escape = FALSE,
                               caption = tbl_reg_clphy_caption,
-                              notes = list("Posterior means; 95% credible intervals in brackets")) 
+                              notes = list("Posterior means; 95% credible intervals in brackets"),
+                              longtable = TRUE) 
 
 if (!is_docx) {
   tbl_reg_clphy %>% 
-    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
-    column_spec(1, width = "0.10\\\\textwidth") %>% 
-    column_spec(2:6, width = "0.14\\\\textwidth")
+    kable_styling() %>% 
+    add_header_above(header = c(" " = 1, "Outcome in t + 1" = 5))
+    # kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    # column_spec(1, width = "0.10\\\\textwidth") %>% 
+    # column_spec(2:6, width = "0.14\\\\textwidth")
 } else {
   tbl_reg_clphy %>% 
     set_font_size(10) %>% 
@@ -976,11 +1001,11 @@ if (!is_docx) {
 \clearpage
 
 ```{r tbl-models-clpriv}
-model_names_tbl_clpriv <- c("Total barriers\n(t + 1)",
-                            "Barriers to advocacy\n(t + 1)",
-                            "Barriers to entry\n(t + 1)",
-                            "Barriers to funding\n(t + 1)",
-                            "Civil society repression\n(t + 1)")
+model_names_tbl_clpriv <- c("Total barriers",
+                            "Barriers to advocacy",
+                            "Barriers to entry",
+                            "Barriers to funding",
+                            "Civil society repression")
 
 names(models_paper_clpriv) <- model_names_tbl_clpriv
 
@@ -993,13 +1018,16 @@ tbl_reg_clpriv <- modelsummary(models_paper_clpriv,
                                gof_omit = "ELPD",
                                escape = FALSE,
                                caption = tbl_reg_clpriv_caption,
-                               notes = list("Posterior means; 95% credible intervals in brackets"))
+                               notes = list("Posterior means; 95% credible intervals in brackets"),
+                               longtable = TRUE)
 
 if (!is_docx) {
   tbl_reg_clpriv %>% 
-    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
-    column_spec(1, width = "0.10\\\\textwidth") %>% 
-    column_spec(2:6, width = "0.14\\\\textwidth")
+    kable_styling() %>% 
+    add_header_above(header = c(" " = 1, "Outcome in t + 1" = 5))
+    # kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    # column_spec(1, width = "0.10\\\\textwidth") %>% 
+    # column_spec(2:6, width = "0.14\\\\textwidth")
 } else {
   tbl_reg_clpriv %>% 
     set_font_size(10) %>% 
@@ -1016,11 +1044,11 @@ if (!is_docx) {
 \clearpage
 
 ```{r tbl-models-lhr}
-model_names_tbl_lhr <- c("Total barriers\n(t + 1)",
-                         "Barriers to advocacy\n(t + 1)",
-                         "Barriers to entry\n(t + 1)",
-                         "Barriers to funding\n(t + 1)",
-                         "Civil society repression\n(t + 1)")
+model_names_tbl_lhr <- c("Total barriers",
+                         "Barriers to advocacy",
+                         "Barriers to entry",
+                         "Barriers to funding",
+                         "Civil society repression")
 
 names(models_paper_lhr) <- model_names_tbl_lhr
 
@@ -1033,13 +1061,16 @@ tbl_reg_lhr <- modelsummary(models_paper_lhr,
                             gof_omit = "ELPD",
                             escape = FALSE,
                             caption = tbl_reg_lhr_caption,
-                            notes = list("Posterior means; 95% credible intervals in brackets"))
+                            notes = list("Posterior means; 95% credible intervals in brackets"),
+                            longtable = TRUE)
 
 if (!is_docx) {
   tbl_reg_lhr %>% 
-    kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
-    column_spec(1, width = "0.10\\\\textwidth") %>% 
-    column_spec(2:6, width = "0.14\\\\textwidth")
+    kable_styling() %>% 
+    add_header_above(header = c(" " = 1, "Outcome in t + 1" = 5))
+    # kable_styling(font_size = ifelse(is_latex, 7.5, NA)) %>% 
+    # column_spec(1, width = "0.10\\\\textwidth") %>% 
+    # column_spec(2:6, width = "0.14\\\\textwidth")
 } else {
   tbl_reg_lhr %>% 
     set_font_size(10) %>% 
@@ -1054,5 +1085,7 @@ if (!is_docx) {
 ```
 
 \clearpage
+
+\elandscape
 
 \memSingle
