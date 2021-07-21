@@ -1,58 +1,52 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Canary in the Coal Mine: Anti-NGO Legislation as a Predictor of Civil Society Repression
+# NGO Repression as a Predictor of Worsening Human Rights Abuses
 
 [Suparna Chaudhry](http://www.suparnachaudhry.com/) • Department of
-Political Science • Christopher Newport University  
+International Affairs • Lewis & Clark College  
 [Andrew Heiss](https://www.andrewheiss.com/) • Andrew Young School of
 Policy Studies • Georgia State University
 
 # Abstract
 
-Many countries across the globe are increasingly cracking down on civil
-society groups through legal restrictions. While research on democratic
-backsliding has tended to focus on rights and institutions in the
-electoral arena, this new wave of laws—many of which appear mundane on
-their face—represent a bureaucratic form of repressive that could be
-indicative of more severe human rights abuses and backsliding. This is
-especially the case for electoral democracies, which unlike autocracies
-do not aggressively and openly attack civic space. In this paper, we
-ask: do legal crackdowns on NGOs predict broader civil society
-repression? We argue that this is the case because anti-NGO laws are
-among the most subtle means of repression and attract the least least
-domestic and international condemnation, as many audiences mistake this
-repression as regulation and are not personally affected by it. These
-laws also make it easier for states to prevent and deter future
-large-scale popular mobilization. Using original data on civil society
-restrictions over the last three decades, we test whether NGO crackdown
-is a predictor of attacks on journalists, independent media, academic
-freedom, and freedoms of expression and association. This project has
-important implications: if crackdown on NGOs is indeed an early warning,
-it can potentially prevent further deteriorations in space for civil
-society.
+An increasing number of countries have recently cracked down on
+non-governmental organizations (NGOs). Much of this crackdown is
+sanctioned by law and represents a bureaucratic form of repression that
+could indicate more severe human rights abuses in the future. This is
+especially the case for democracies, which unlike autocracies, may not
+aggressively attack civic space. We explore if crackdowns on NGOs
+predict broader human rights repression. Anti-NGO laws are among the
+most subtle means of repression and attract lesser domestic and
+international condemnation compared to the use of violence. Using
+original data on NGO repression, we test whether NGO crackdown is a
+predictor of political terror, and violations of physical integrity
+rights and civil liberties. We find that while formal de jure laws
+provide little information in predicting future repression, their
+patterns of implementation, or de facto civil society repression,
+predicts worsening respect for physical integrity rights and civil
+liberties.
 
 ------------------------------------------------------------------------
 
 This repository contains the data and code for our paper:
 
-> Suparna Chaudhry and Andrew Heiss. (2021). *Canary in the Coal Mine:
-> Anti-NGO Legislation as a Predictor of Civil Society Repression*.
-> Accessed March 23, 2021.
+> Suparna Chaudhry and Andrew Heiss. (2021). *NGO Repression as a
+> Predictor of Worsening Human Rights Abuses*. Accessed July 21, 2021.
 
 Our pre-print is online here:
 
-> Authors, (YYYY). *Canary in the Coal Mine: Anti-NGO Legislation as a
-> Predictor of Civil Society Repression*. Name of journal/book, Accessed
-> 23 Mar 2021. Online at <https://doi.org/xxx/xxx>
+> Authors, (YYYY). *NGO Repression as a Predictor of Worsening Human
+> Rights Abuses*. Name of journal/book, Accessed 21 Jul 2021. Online at
+> <https://doi.org/xxx/xxx>
 
 ## How to cite
 
 Please cite this compendium as:
 
 > Suparna Chaudhry and Andrew Heiss. (2021). *Compendium of R code and
-> data for Canary in the Coal Mine: Anti-NGO Legislation as a Predictor
-> of Civil Society Repression*. Accessed March 23, 2021.
+> data for NGO Repression as a Predictor of Worsening Human Rights
+> Abuses*. Accessed July 21, 2021.
 
 ### How to download or install
 
@@ -61,9 +55,7 @@ file](/archive/master.zip) or use GitHub to clone or fork the compendium
 repository (see the green “Clone or download” button at the top of the
 GitHub page).
 
-In order to reproduce this project, you’ll need to install the
-compendium as an R package. After downloading the compendium, do the
-following:
+In order to reproduce this project, you’ll need to install ASDF:
 
 ### Licenses
 
