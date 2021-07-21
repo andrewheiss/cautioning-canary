@@ -27,6 +27,7 @@ manuscript/output/*.pdf
 manuscript/output/*.tex
 manuscript/output/figures/*
 manuscript/pandoc/bin/vc*
+manuscript/*.ent
 
 # Other folders
 admin/*
