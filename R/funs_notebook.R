@@ -45,11 +45,13 @@ tar_notebook_pages <- function(
 
   values <- lazy_list(
     rmd_file = !! rmds,
-    rmd_page = basename(.data$rmd_file),
+    rmd_page_raw = basename(.data$rmd_file),
+    rmd_page = make.names(.data$rmd_page_raw),
     sym_rmd_page = rlang::syms(.data$rmd_page),
     rmd_deps = lapply(.data$rmd_file, tarchetypes::tar_knitr_deps_expr),
     html_page = rmd_to_html(.data$rmd_page),
-    html_file = file.path(!! dir_html, .data$html_page)
+    html_page_raw = rmd_to_html(.data$rmd_page_raw),
+    html_file = file.path(!! dir_html, .data$html_page_raw)
   )
 
   list(
