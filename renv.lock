@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.0",
+    "Version": "4.1.1",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -137,10 +137,10 @@
     },
     "TMB": {
       "Package": "TMB",
-      "Version": "1.7.19",
+      "Version": "1.7.22",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "47dcf908c560ace98bd71a6a7a055d14"
+      "Hash": "d1a16b564d4d43d01943002981f45ab6"
     },
     "UpSetR": {
       "Package": "UpSetR",
@@ -993,10 +993,10 @@
     },
     "mgcv": {
       "Package": "mgcv",
-      "Version": "1.8-34",
+      "Version": "1.8-38",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "bd4a6c4b600f58651d60d381b0e9a397"
+      "Hash": "be3c61ffbb1e3d3b3df214d192ac5444"
     },
     "mime": {
       "Package": "mime",
