@@ -527,22 +527,26 @@ We present the results of our models in two stages. First, to see how minor shif
 
 ### How does repression change following increases in NGO laws?
 
-In general, when holding all other covariates constant, the passage of an additional anti-NGO legal barrier is generally associated with a higher probability of more severe level of political terror in the following year. The probability of seeing different levels of political terror varies across different possible counts of NGO laws (see Figure \@ref(fig:plot-mfx-e1a)). In the absence of formal legal barriers, Level 2 of the PTS—an environment where political imprisonment, torture, and beatings are rare—is the most likely category of political terror across all models, appearing a predicted 60% of the time. Level 1, where a country is under secure rule of law, is the second most likely outcome at slightly under 40%. The other categories of the PTS are extremely rare when there are no anti-NGO laws. 
+In general, when holding all other covariates constant, the passage of an additional anti-NGO legal barrier is generally associated with a higher probability of more severe level of political terror in the following year. The probability of seeing different levels of political terror varies across different possible counts of NGO laws (see Figure \@ref(fig:plot-mfx-e1a)). In the absence of formal legal barriers, Level 2 of the PTS—an environment where political imprisonment, torture, and beatings are rare—is the most likely category of political terror across all models, appearing a predicted 60% of the time. Level 1, where a country is under secure rule of law, is the second most likely outcome at slightly under 40%. The other categories of the PTS are extremely rare when there are no anti-NGO laws—as such, we collapse them into a single category. 
 
 ```{r plot-mfx-e1a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on the probability of specific levels of political terror"}
 mfx_e1a_pts %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
+  # Collapse 3-5 to just one level, since they're all tiny
+  mutate(effect2__ = fct_collapse(effect2__, "3+" = c("3", "4", "5"))) %>% 
   group_by(x_rounded, effect2__, plot_var_nice) %>% 
   slice(1) %>% 
+  # Add up these values for the collapsed 3-5 results
+  summarize(across(c(estimate__, lower__, upper__), sum)) %>% 
   ungroup() %>% 
   ggplot(aes(x = x_rounded, y = estimate__, color = effect2__)) +
   geom_line(aes(group = effect2__), size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  position = position_dodge(width = 0.2),
+                  # position = position_dodge(width = 0.2),
                   fatten = 1, size = 1) +
   scale_x_continuous(breaks = 0:9) +
   scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  scale_color_viridis_d(option = "rocket", end = 0.85, direction = -1) +
+  scale_color_viridis_d(option = "rocket", begin = 0.1, end = 0.85, direction = -1) +
   guides(color = guide_legend(override.aes = list(size = 0.5, linetype = 0))) +
   labs(x = "Count of legal barriers\n",
        y = "Predicted probability of category",
@@ -553,63 +557,20 @@ mfx_e1a_pts %>%
   theme(panel.grid.major.x = element_blank())
 ```
 
-As new laws are added, though, the distribution of probabilities for each of the PTS levels shifts. Adding new barriers to advocacy, entry, and funding decreases the likelihood of seeing Level 1 and increases the probability of a country turning to either Level 2 or Level 3 (with extensive political imprisonment and trial-free detention). The marginal effects of all forms of NGO laws results in this turn from Level 1 to Levels 2 or 3, but this switching effect is strongest following additional barriers to advocacy. Anti-NGO laws do not predict more dramatic shifts in the PTS. Across all counts of legal barriers, the overall probability of seeing Levels 4 and 5 is minuscule, and the passave of additional laws does little to shift that probability. This is not unexpected however—the PTS has a natural ceiling at Level 5. Specifically, in addition to measuring the scope and intensity of government violence, the PTS scale also looks at the proportion of population targeted for abuse. Countries that receive a 4 and 5 are rare, as 4 denotes that murders, disappearances, and torture are a common part of life, while 5 denotes that physical abuses are routinely perpetrated against citizens not involved in politics, and includes cases where governments engage in "scorched earth" counterinsurgency policies or summary executions based on class or ethnic affiliation [@GibneyCornettWood:2019]. The majority of movement across PTS categories should thus occur between Levels 1–3.
+As new laws are added, though, the distribution of probabilities for each of the PTS levels shifts. Adding new barriers to advocacy, entry, and funding decreases the likelihood of seeing Level 1 and increases the probability of a country turning to either Level 2 or Level 3 (with extensive political imprisonment and trial-free detention). The marginal effects of all forms of NGO laws results in this turn from Level 1 to Levels 2 or 3+, but this switching effect is strongest following additional barriers to advocacy. Anti-NGO laws do not predict more dramatic shifts in the PTS. Across all counts of legal barriers, the overall probability of seeing Levels 4 and 5 is minuscule, and the passage of additional laws does little to shift that probability. This is not unexpected however—the PTS has a natural ceiling at Level 5. Specifically, in addition to measuring the scope and intensity of government violence, the PTS scale also looks at the proportion of population targeted for abuse. Countries that receive a 4 and 5 are rare, as 4 denotes that murders, disappearances, and torture are a common part of life, while 5 denotes that physical abuses are routinely perpetrated against citizens not involved in politics, and includes cases where governments engage in "scorched earth" counterinsurgency policies or summary executions based on class or ethnic affiliation [@GibneyCornettWood:2019]. The majority of movement across PTS categories should thus occur between Levels 1–3.
 
 Figure \@ref(fig:plot-mfx-e1b-e1d) shows the marginal effects of additional NGO legislation on V-Dem's physical violence index and private civil liberties index. Across all four models for different categories of legal barriers, holding all other values constant, neither rights index moves much in response to new NGO laws. Each barrier-based posterior coefficient is essentially zero with narrow credible intervals that include large proportions of both negative and positive values. Within the categories of anti-NGO laws, it appears that additional advocacy and entry laws might reduce future violence, but again, these predictions are indistinguishable from each other. The null effect of legal barriers on private civil liberties is even more stark—a typical country is predicted to have a score of 0.69 regardless of the addition of any kind of NGO law. However, when looking at latent human rights values, adding a new NGO law is associated with a -0.013 decline in the level of respect for human rights in the following year, on average. The marginal effect is larger (-0.02) for additional barriers to advocacy and entry, which represent more burdensome restrictions than limits to funding.
 
 At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal (albeit weakly) that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. When looking at other forms of political repression, though, such as physical violence and private civil liberties, NGO legal barriers do not change predicted values in any meaningful way. 
 
-```{r plot-mfx-e1b-e1d, fig.width=7.5, fig.height=7.5, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on V-Dem rights indexes and latent human rights"}
-out_mfx_e1b <- mfx_e1b_clphy %>% 
-  mutate(x_rounded = floor(effect1__)) %>% 
-  group_by(x_rounded, plot_var_nice) %>% 
-  slice(1) %>% 
-  ungroup() %>% 
-  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
-  ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
-  geom_line(size = 0.5, color = "grey90") +
-  geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  fatten = 1, size = 1) +
-  scale_x_continuous(breaks = 0:9) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  coord_cartesian(ylim = c(0.60, 0.71)) +
-  guides(color = "none") +
-  labs(x = NULL,
-       y = "Predicted physical violence index",
-       title = "Physical violence index",
-       caption = "(Higher values = less violence)") +
-  facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
-  theme_ngo() +
-  theme(panel.grid.major.x = element_blank())
-
-out_mfx_e1c <- mfx_e1c_clpriv %>% 
-  mutate(x_rounded = floor(effect1__)) %>% 
-  group_by(x_rounded, plot_var_nice) %>% 
-  slice(1) %>% 
-  ungroup() %>% 
-  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
-  ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
-  geom_line(size = 0.5, color = "grey90") +
-  geom_pointrange(aes(ymin = lower__, ymax = upper__),
-                  fatten = 1, size = 1) +
-  scale_x_continuous(breaks = 0:9) +
-  scale_color_viridis_d(option = "plasma", end = 0.8) +
-  coord_cartesian(ylim = c(0.60, 0.71)) +
-  guides(color = "none") +
-  labs(x = NULL,
-       y = "Predicted civil liberties index",
-       title = "Private civil liberties index",
-       caption = "(Higher values = better protection)") +
-  facet_grid(cols = vars(plot_var_nice), scales = "free_x", space = "free_x") +
-  theme_ngo() +
-  theme(panel.grid.major.x = element_blank())
-
+```{r plot-mfx-e1b-e1d, fig.width=7.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on V-Dem rights indexes and latent human rights"}
 out_mfx_e1d <- mfx_e1d_lhr %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
   ungroup() %>% 
-  mutate(plot_var_nice = fct_relabel(plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
+  mutate(plot_var_nice = fct_relabel(
+    plot_var_nice, ~str_to_sentence(str_remove(., "Barriers to ")))) %>% 
   ggplot(aes(x = x_rounded, y = estimate__, color = plot_var_nice)) +
   geom_line(size = 0.5, color = "grey90") +
   geom_pointrange(aes(ymin = lower__, ymax = upper__),
@@ -625,7 +586,7 @@ out_mfx_e1d <- mfx_e1d_lhr %>%
   theme_ngo() +
   theme(panel.grid.major.x = element_blank())
 
-out_mfx_e1b / out_mfx_e1c / out_mfx_e1d
+out_mfx_e1d
 ```
 
 
@@ -633,17 +594,21 @@ out_mfx_e1b / out_mfx_e1c / out_mfx_e1d
 
 The weak (or even non-existent) predictive power of formal NGO laws is likely attributable to fact that de jure NGO legislation may take time to implement - many states need to first establish institutions that oversee the operation and funding of these groups or incorporate threatening NGOs into the regime apparatus (Naim 2007). Further, states that engage in political repression can do so with or without legal justification. De facto civil society repression, on the other hand, represents the actual implementation of anti-NGO strategies—both legal and extralegal—and might be more indicative of future human rights abuses. The results from our second set of models, using V-Dem's civil society repression index as the key predictor, confirm this. 
 
-The effect of de facto civil society repression on predicted values of the PTS mirrors what we found previously with our first empirical expectation. As seen in Figure \@ref(fig:plot-mfx-e2a), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression.
+The effect of de facto civil society repression on predicted values of the PTS mirrors what we found previously with our first empirical expectation. As seen in Figure \@ref(fig:plot-mfx-e2a), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression—we again collapse these into a single category.
 
 ```{r plot-mfx-e2a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror", out.width="75%"}
 out_mfx_e2a <- mfx_e2a_pts %>% 
+  mutate(effect2__ = fct_collapse(effect2__, "3+" = c("3", "4", "5"))) %>% 
+  group_by(effect1__, effect2__, plot_var_nice) %>% 
+  summarize(across(c(estimate__, lower__, upper__), sum)) %>% 
+  ungroup() %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
   geom_line(size = 1) +
   scale_x_reverse() +
   scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  scale_color_viridis_d(option = "rocket", end = 0.75, direction = -1) +
-  scale_fill_viridis_d(option = "rocket", end = 0.9, direction = -1) +
+  scale_color_viridis_d(option = "rocket", begin = 0.1, end = 0.75, direction = -1) +
+  scale_fill_viridis_d(option = "rocket", begin = 0.1, end = 0.9, direction = -1) +
   labs(x = "Civil society repression",
        y = "Predicted probability of category",
        color = "Political Terror Scale", fill = "Political Terror Scale",
