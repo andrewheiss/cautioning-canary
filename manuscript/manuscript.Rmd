@@ -67,7 +67,7 @@ options(
   dplyr.summarise.inform = FALSE,  # Turn off dplyr's summarize() auto messages
   knitr.kable.NA = "",  # Make NAs blank in kables
   kableExtra.latex.load_packages = FALSE,  # Don't add LaTeX preamble stuff
-  modelsummary_default = table_format  # Set modelsummary backend
+  modelsummary_factory_default = table_format  # Set modelsummary backend
 )
 ```
 
