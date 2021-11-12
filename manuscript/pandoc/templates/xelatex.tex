@@ -188,7 +188,7 @@ $endif$
 
 % Use sans fonts for all parts of the TOC
 \renewcommand{\cftsectionfont}{\normalfont\sffamily}
-\renewcommand{\cftsectionpagefont}{\normalfont\sffamily} 
+\renewcommand{\cftsectionpagefont}{\normalfont\sffamily}
 \renewcommand{\cftsubsectionfont}{\normalfont\sffamily}
 \renewcommand{\cftsubsectionpagefont}{\normalfont\sffamily}
 \renewcommand{\cftsubsubsectionfont}{\normalfont\sffamily}
@@ -272,6 +272,8 @@ $endif$
 % --------
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{siunitx}
+\newcolumntype{d}{S[input-symbols = ()]}
 \usepackage{pbox}  % For multi-line table cells
 
 % Things that kableExtra needs
