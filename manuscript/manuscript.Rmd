@@ -68,7 +68,14 @@ options(
   knitr.kable.NA = "",  # Make NAs blank in kables
   kableExtra.latex.load_packages = FALSE,  # Don't add LaTeX preamble stuff
   modelsummary_factory_default = table_format,  # Set modelsummary backend
+  modelsummary_format_numeric_latex = "plain"  # Don't use siunitx
 )
+
+# modelsummary regression table notes
+if (is_latex) {
+  model_note <- "Posterior means; 95\\\\% credible intervals in brackets" 
+} else {
+  model_note <- "Posterior means; 95% credible intervals in brackets"
 }
 ```
 
