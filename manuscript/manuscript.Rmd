@@ -102,20 +102,17 @@ withr::with_dir(here::here(), {
   tar_load(civicus_clean)
   
   tar_load(c(m_pts_total, m_pts_advocacy, m_pts_entry, m_pts_funding,
-             m_clphy_total, m_clphy_advocacy, m_clphy_entry, m_clphy_funding,
-             m_clpriv_total, m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding,
-             m_pts_v2csreprss, m_clphy_v2csreprss, m_clpriv_v2csreprss, m_lhr_v2csreprss))
+             m_lhr_total, m_lhr_advocacy, m_lhr_entry, m_lhr_funding,
+             m_pts_v2csreprss, m_lhr_v2csreprss))
   
   # Model tables
-  tar_load(c(models_paper_pts, models_paper_clphy, 
-             models_paper_clpriv, models_paper_lhr))
+  tar_load(c(models_paper_pts, models_paper_lhr))
   
   # Load lookup list for coefficients in regression tables
   tar_load(coef_list)
   
   # Load marginal effects
-  tar_load(c(mfx_e1a_pts, mfx_e1b_clphy, mfx_e1c_clpriv, mfx_e1d_lhr,
-             mfx_e2a_pts, mfx_e2b_clphy, mfx_e2c_clpriv, mfx_e2d_lhr))
+  tar_load(c(mfx_e1a_pts, mfx_e1d_lhr, mfx_e2a_pts, mfx_e2d_lhr))
 })
 ```
 
@@ -152,7 +149,7 @@ In this paper, we explore the power of anti-NGO repression in predicting politic
 
 Our paper makes an important contribution in predicting the onset of repressive state policies. While structural factors such as levels of democracy, economic development, electoral competitiveness can identify countries that are likely to have more or less respect for civic freedoms, these factors are also slow to change over time. As such, they may not be particularly suitable for forecasting short-term trajectories, especially for moderately repressive countries. On the other hand, state repression of NGOs is a more dynamic process that may provide insight into changing levels of human rights standards and repression in subsequent years. While recent research has made important contributions to studying the extent and effects of state crackdown on NGOs, much of this focuses on de jure restrictions and its impact on NGOs and donors [@christensen2013; @DPR:2016; @DupuyPrakash:2018; @BromleySchoferLonghofer:2020; @BakkeMitchellSmidt:2020; @SmidtPereraMitchell:2021]. By looking at laws *and* their implementation, as well as the extra-legal treatment of NGOs, we are able to assess the long-term effects of closing civic space on broader patterns of repression.
 
-Second, by examining the growth in anti-NGO laws and their effects on patterns of human rights abuses, our results also have important implications for understanding the future of human rights legislation. Existing research on international human rights law shows that civil society groups play an important role in highlighting states' violations of their treaty commitments. By revealing the gap between treaty provisions and actual state behavior, these organizations play a vital role in reducing the "compliance gap" between legal commitments and state practices [@Hathaway:2002; @HafnerBurtonTsutsui:2005; @Simmons:2009]. The dramatic rise in anti-NGO laws and their implementation through de facto civil society repression threatens to exacerbate this compliance gap. Indeed, recent research finds that when governments have committed to human rights treaties and continue to commit severe human rights abuses, they impose anti-NGO laws to escape monitoring [@Bakke2020]. Our findings support these arguments by showing that de facto levels of NGO repression are a possible predictor of broader patterns of human rights violations.
+Second, by examining the growth in anti-NGO laws and their effects on patterns of human rights abuses, our results also have important implications for understanding the future of human rights legislation. Existing research on international human rights law shows that civil society groups play an important role in highlighting states' violations of their treaty commitments. By revealing the gap between treaty provisions and actual state behavior, these organizations play a vital role in reducing the "compliance gap" between legal commitments and state practices [@Hathaway:2002; @Hafner-BurtonTsutsui:2005; @Simmons:2009]. The dramatic rise in anti-NGO laws and their implementation through de facto civil society repression threatens to exacerbate this compliance gap. Indeed, recent research finds that when governments have committed to human rights treaties and continue to commit severe human rights abuses, they impose anti-NGO laws to escape monitoring [@BakkeMitchellSmidt:2020]. Our findings support these arguments by showing that de facto levels of NGO repression are a possible predictor of broader patterns of human rights violations.
 
 Below, we first look at existing literature on repression and political violence, outlining state motivations to repress NGOs. We then elaborate on why attacking NGOs may be an important predictor of subsequent repression. Using both original data as well as data from several existing datasets, we build an ensemble of predictive models and explore (1) the marginal effects of civil society repression on different forms of broader human rights repression, and (2) the out-of-sample predictive performance of each model. We then illustrate one of the mechanisms of our findings—the disconnect between de jure and de facto anti-NGO repression—with a brief case study of Egypt's treatment of civil society since 2002. We conclude by discussing the implications of our findings on autocratic survival, and how states may manage NGOs as a strategy to remain in power. 
 
@@ -291,7 +288,7 @@ To measure de jure repression, we use data on anti-NGO laws from @Chaudhry:2016 
 - **Barriers to entry** (3 possible barriers): (1) registration is burdensome, (2) NGOs are not allowed to appeal if denied registration, and (3) entry requirements differ if the NGO receives foreign funding
 - **Barriers to funding** (5 possible barriers): (1) NGOs need prior approval to receive foreign funding, (2) NGOs are required to channel foreign funding to state-owned banks, (3) NGOs face additional restrictions if receiving foreign funding, and (4) NGOs are restricted or (5) prohibited from receiving foreign funding
 
-```{r barriers, fig.width=6, fig.height=6, fig.asp=NULL, fig.cap="Number of legal barriers to NGO activity per country over time (de jure legislation) and average level of CSO repression across democracies and non-democracies (de facto implementation)"}
+```{r barriers, fig.width=7, fig.height=5.5, fig.asp=NULL, fig.cap="Number of legal barriers to NGO activity per country over time (de jure legislation) and average level of CSO repression across democracies and non-democracies (de facto implementation)"}
 regulations <- tribble(
     ~question, ~barrier,       ~question_clean,                  ~ignore_in_index, ~question_display,
     "q1a",     "association",  "const_assoc",                    TRUE,             "Constitutional associational rights",
@@ -341,7 +338,7 @@ entry_plot <- ggplot(filter(df_barriers,
   coord_cartesian(xlim = c(1990, 2015), ylim = c(0, 90)) +
   guides(color = guide_legend(nrow = 2)) +
   labs(x = NULL, y = "Number of countries") +
-  theme_ngo(9) + 
+  theme_ngo() + 
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
         legend.key.width = unit(1, "lines")) +
@@ -362,7 +359,7 @@ funding_plot <- ggplot(filter(df_barriers,
   guides(color = guide_legend(nrow = 3),
          linetype = guide_legend(nrow = 3)) +
   labs(x = NULL, y = "Number of countries") +
-  theme_ngo(9) + 
+  theme_ngo() + 
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
         legend.key.width = unit(1, "lines")) +
@@ -381,7 +378,7 @@ advocacy_plot <- ggplot(filter(df_barriers,
   guides(color = guide_legend(nrow = 2)) +
   labs(x = NULL, y = "Number of countries",
        legend.key.size = unit(0.7, "lines")) +
-  theme_ngo(9) + 
+  theme_ngo() + 
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
         legend.key.width = unit(1, "lines")) +
@@ -408,7 +405,7 @@ csreprss_plot <- ggplot(df_csreprss_plot, aes(x = year, y = y)) +
   coord_cartesian(xlim = c(1990, 2015)) +
   guides(color = guide_legend(nrow = 2)) +
   labs(y = "Average CSO repression", x = NULL) +
-  theme_ngo(9) +
+  theme_ngo() +
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
         legend.key.width = unit(1, "lines")) +
@@ -431,11 +428,11 @@ Figure \@ref(fig:barriers) shows each of these types of legal barriers per count
 
 ## Measuring repression
 
-To see how both de jure and de facto civil society restrictions influence general human rights repression, we use four different quantitative measures of repression, each of which capture different dimensions of political and civil violence. First, following @GohdesCarey:2017, who use the killing of journalists to predict worsening human rights conditions, we use the Political Terror Scale (PTS), which assigns countries to one of five possible levels of repression each year [@GibneyCornettWood:2019], with Level 5 representing widespread political violence—including arrests, imprisonment, political murders, disappearances, and torture. As seen in the top panel of Figure \@ref(fig:repression), the number of countries at Level 5 has decreased since the 1990s, while most countries are coded as Levels 2 and 3 (moderate levels of political terror). 
+To see how both de jure and de facto civil society restrictions influence general human rights repression, we use two different quantitative measures of repression, each of which capture different dimensions of political and civil violence. First, following @GohdesCarey:2017, who use the killing of journalists to predict worsening human rights conditions, we use the Political Terror Scale (PTS), which assigns countries to one of five possible levels of repression each year [@GibneyCornettWood:2019], with Level 5 representing widespread political violence—including arrests, imprisonment, political murders, disappearances, and torture. As seen in the top panel of Figure \@ref(fig:repression), the number of countries at Level 5 has decreased since the 1990s, while most countries are coded as Levels 2 and 3 (moderate levels of political terror). 
 
 The five levels of the PTS are helpful for conceptualizing broader trends in human rights abuses. However, these categories are not always granular enough to model or predict a country's level of political terror. Additionally, the PTS—along with most other measures of human rights abuses—does not account for the systematic changes in the way monitoring agencies have gathered information about human rights violations over time. Accordingly, we use latent human rights scores as an alternative measure of underlying repression [@Fariss:2014; @FarissKenwickReuning:2020]. This variable is generated from a Bayesian measurement model that incorporates information about human rights abuses from a variety of published repression indices, including the PTS. Because the resulting measure is continuous, it picks up on more minute changes in national-level human rights. Moreover, this variable accounts for changing standards of accountability, which has led to the production of more stringent human rights reports as monitors look harder for abuse, look in more places for abuse, and classify more acts as abuse. When accounting for these changes, the bottom panel of Figure \@ref(fig:repression) demonstrates the global improvements in average latent human rights values over time.
 
-```{r repression, fig.width=6.5, fig.height=4.5, fig.asp=NULL, fig.cap="Key measures of repression over time"}
+```{r repression, fig.width=5.5, fig.height=4, fig.asp=NULL, fig.cap="Key measures of repression over time"}
 pts_plot <- canary %>% 
   filter(!is.na(PTS_factor)) %>% 
   group_by(PTS_factor, year) %>% 
@@ -447,7 +444,7 @@ pts_plot <- canary %>%
   coord_cartesian(xlim = c(1990, 2015)) +
   guides(color = guide_legend(title = NULL)) +
   labs(y = "Number of countries", x = NULL, caption = "(Higher PTS levels = more repression)") +
-  theme_ngo(9) +
+  theme_ngo() +
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
         legend.key.width = unit(1, "lines"),
@@ -469,7 +466,7 @@ lhr_plot <- ggplot(df_lhr_plot, aes(x = year, y = y)) +
   geom_line(size = 1, color = "#FF4136") +
   coord_cartesian(xlim = c(1990, 2015)) +
   labs(y = "Average value", x = NULL, caption = "(Higher values = less repression)") +
-  theme_ngo(9) +
+  theme_ngo() +
   theme(legend.justification = "left") +
   facet_wrap(vars(fake_facet_title))
 
@@ -531,14 +528,47 @@ mfx_e1a_pts %>%
   theme(panel.grid.major.x = element_blank())
 ```
 
+```{r lhr-barriers-trends, include=FALSE, warning=FALSE}
+lhr_barriers_stats <- m_lhr_total %>% 
+  tidy(effects = "fixed") %>% 
+  mutate(term = janitor::make_clean_names(term)) %>%
+  split(.$term)
+
+lhr_advocacy_stats <- m_lhr_advocacy %>% 
+  tidy(effects = "fixed") %>% 
+  mutate(term = janitor::make_clean_names(term)) %>%
+  split(.$term)
+  
+lhr_barriers_diffs <- m_lhr_total %>% 
+  emmeans(~ barriers_total + gwcode, var = "barriers_total", 
+          at = list(gwcode = 999,
+                    barriers_total = c(0:9)),
+          epred = TRUE, re_formula = NULL,
+          allow_new_levels = TRUE, sample_new_levels = "gaussian") %>% 
+  tidy() %>% 
+  mutate(pct_change = (estimate - lag(estimate)) / lag(estimate),
+         id = janitor::make_clean_names(barriers_total)) %>% 
+  split(.$id)
+
+lhr_advocacy_diffs <- m_lhr_advocacy %>% 
+  emmeans(~ advocacy + gwcode, var = "advocacy", 
+          at = list(gwcode = 999,
+                    advocacy = c(0:1)),
+          epred = TRUE, re_formula = NULL,
+          allow_new_levels = TRUE, sample_new_levels = "gaussian") %>% 
+  tidy() %>% 
+  mutate(pct_change = (estimate - lag(estimate)) / lag(estimate),
+         id = janitor::make_clean_names(advocacy)) %>% 
+  split(.$id)
+```
+
 As new laws are added, though, the distribution of probabilities for each of the PTS levels shifts. Adding new barriers to advocacy, entry, and funding decreases the likelihood of seeing Level 1 and increases the probability of a country turning to either Level 2 or Level 3 (with extensive political imprisonment and trial-free detention). The marginal effects of all forms of NGO laws results in this turn from Level 1 to Levels 2 or 3+, but this switching effect is strongest following additional barriers to advocacy. Anti-NGO laws do not predict more dramatic shifts in the PTS. Across all counts of legal barriers, the overall probability of seeing Levels 4 and 5 is minuscule, and the passage of additional laws does little to shift that probability. This is not unexpected however—the PTS has a natural ceiling at Level 5. Specifically, in addition to measuring the scope and intensity of government violence, the PTS scale also looks at the proportion of population targeted for abuse. Countries that receive a 4 and 5 are rare, as 4 denotes that murders, disappearances, and torture are a common part of life, while 5 denotes that physical abuses are routinely perpetrated against citizens not involved in politics, and includes cases where governments engage in "scorched earth" counterinsurgency policies or summary executions based on class or ethnic affiliation [@GibneyCornettWood:2019]. The majority of movement across PTS categories should thus occur between Levels 1–3.
 
-Figure \@ref(fig:plot-mfx-e1b) shows the marginal effects of additional NGO legislation on latent human rights scores. Across all four models for different categories of legal barriers, holding all other values constant, the predicted level of human rights respect decreases. Adding a new NGO law is associated with a -0.013-point decline in the level of respect for human rights in the following year, on average. The marginal effect is larger (-0.02) for additional barriers to advocacy and entry, which represent more burdensome restrictions than limits to funding.
+Figure \@ref(fig:plot-mfx-e1b) shows the marginal effects of additional NGO legislation on latent human rights scores. Across all four models for different categories of legal barriers, holding all other values constant, the predicted level of human rights respect decreases. Adding a new NGO law is associated with a `r round(lhr_barriers_stats$barriers_total$estimate, 3)`-point decline in the level of respect for human rights in the following year, on average, representing a roughly 5% decline in predicted the predicted value. The marginal effect is larger (`r round(lhr_advocacy_stats$advocacy$estimate, 2)`, or a 9% decline) for additional barriers to advocacy and entry, which represent more burdensome restrictions than limits to funding.
 
 At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. This pattern holds when looking at a more continuous measure of human rights protection—countries with a low count of anti-NGO legal barriers tend to have higher predicted values of latent human rights scores, and average protection against abuses decreases as more laws are added.
 
 ```{r plot-mfx-e1b, fig.width=7.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on latent human rights scoress"}
-# TODO: Andrew: Add more specific coefficients and percent changes to the prose above
 out_mfx_e1b <- mfx_e1d_lhr %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
@@ -569,14 +599,15 @@ out_mfx_e1b
 
 The weaker predictive power of formal NGO laws is likely attributable to fact that de jure NGO legislation may take time to implement—many states need to first establish institutions that oversee the operation and funding of these groups or incorporate threatening NGOs into the regime apparatus [@Naim:2007]. Further, states that engage in political repression can do so with or without legal justification. De facto civil society repression, on the other hand, represents the actual implementation of anti-NGO strategies—both legal and extralegal—and might be more indicative of future human rights abuses. The results from our second set of models, using V-Dem;s civil society repression index as the key predictor, confirm this. 
 
-The effect of de facto civil society repression on predicted values of the PTS mirrors what we found previously with our first empirical expectation. As seen in Figure \@ref(fig:plot-mfx-e2a), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression—we again collapse these into a single category.
+The effect of de facto civil society repression on predicted values of the PTS mirrors what we found previously with our first empirical expectation. As seen in left panel of Figure \@ref(fig:plot-mfx-e2ab), at the lowest levels of repression, Levels 1 and 2 are the most common predicted outcomes and are each equiprobable at roughly 50%. As de facto CSO repression increases, though, the probability of seeing Level 1 decreases and is replaced with either Level 2 or Level 3. More severe levels of political terror remain exceptionally improbable at any level of preceding civil society repression—we again collapse these into a single category.
 
-```{r plot-mfx-e2a, fig.width=6.5, fig.height=5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror", out.width="75%"}
+```{r plot-mfx-e2ab, fig.width=7, fig.height=4.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror and predicted latent human rights values"}
 out_mfx_e2a <- mfx_e2a_pts %>% 
   mutate(effect2__ = fct_collapse(effect2__, "3+" = c("3", "4", "5"))) %>% 
   group_by(effect1__, effect2__, plot_var_nice) %>% 
   summarize(across(c(estimate__, lower__, upper__), sum)) %>% 
   ungroup() %>% 
+  mutate(fake_facet_title = "Political Terror Scale") %>% 
   ggplot(aes(x = effect1__, y = estimate__, color = effect2__, fill = effect2__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, color = NA) +
   geom_line(size = 1) +
@@ -587,11 +618,25 @@ out_mfx_e2a <- mfx_e2a_pts %>%
   labs(x = "Civil society repression",
        y = "Predicted probability of category",
        color = "Political Terror Scale", fill = "Political Terror Scale",
-       title = "Political Terror Scale",
        caption = "(x-axis reversed; greater repression on the right)") +
+  facet_wrap(vars(fake_facet_title)) +
   theme_ngo() +
   theme(legend.box.margin = margin(t = 0.5, unit = "lines"))
-out_mfx_e2a
+
+out_mfx_e2b <- mfx_e2d_lhr %>% 
+  mutate(fake_facet_title = "Latent human rights values") %>% 
+  ggplot(aes(x = effect1__, y = estimate__)) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
+              fill = "#FF4136", color = NA) +
+  geom_line(size = 1, color = "#FF4136") +
+  scale_x_reverse() +
+  labs(x = "Civil society repression",
+       y = "Predicted latent human rights value",
+       caption = "(x-axis reversed; greater repression on right\nhigher values in y-axis show less violence and better protection of rights)") +
+  facet_wrap(vars(fake_facet_title)) +
+  theme_ngo()
+
+out_mfx_e2a | out_mfx_e2b
 ```
 
 ```{r lhr-trends, include=FALSE, warning=FALSE}
@@ -612,32 +657,12 @@ lhr_csreprss_diffs <- m_lhr_v2csreprss %>%
   split(.$id)
 ```
 
-De facto civil society repression has a noticeable effect on latent human rights values (see Figure \@ref(fig:plot-mfx-e2b)). When holding all other model parameters at their typical values, increased civil society repression predicts a strong decrease in respect for broader human rights: a one unit change in civil society repression is associated with a `r round(lhr_csreprss_stats$v2csreprss$estimate, 2)`-unit change in overall latent human rights. To illustrate the magnitude of this effect, a typical simulated country with a civil society repression index of 0 is predicted to have a latent human rights score of `r round(lhr_csreprss_diffs$x0$estimate, 2)`. This predicted outcome drops to `r round(lhr_csreprss_diffs$x1$estimate, 2)` with a 1-unit decrease in civil society repression, representing a `r percent_format(accuracy = 1)(abs(lhr_csreprss_diffs$x1$pct_change))` decline in respect for human rights in the following year.
+De facto civil society repression has a noticeable effect on latent human rights values (see the right panel of Figure \@ref(fig:plot-mfx-e2ab)). When holding all other model parameters at their typical values, increased civil society repression predicts a strong decrease in respect for broader human rights: a one unit change in civil society repression is associated with a `r round(lhr_csreprss_stats$v2csreprss$estimate, 2)`-unit change in overall latent human rights. To illustrate the magnitude of this effect, a typical simulated country with a civil society repression index of 0 is predicted to have a latent human rights score of `r round(lhr_csreprss_diffs$x0$estimate, 2)`. This predicted outcome drops to `r round(lhr_csreprss_diffs$x1$estimate, 2)` with a 1-unit decrease in civil society repression, representing a `r percent_format(accuracy = 1)(abs(lhr_csreprss_diffs$x1$pct_change))` decline in respect for human rights in the following year.
 
-When holding all other factors equal, the de facto implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passage of formal de jure laws. In countries with low levels of political terror, it can potentially serve as a weak signal of a more general increase in political violence in the future, but predict more substantial changes in general respect for human rights. The difference in the effects of laws vs. their de facto implementation could also potentially be explained by the time frame of these strategies. As we explore in the next section, de jure civil society laws are a long-term strategy to prevent threats to the regime from coalescing in the first place. As such, the long-term effects of these laws in terms of their predictive power may require a much longer time period under study. In contrast, de facto crackdown on NGOs may signal the need to react sooner due to the immediacy of the threat. 
-
-```{r plot-mfx-e2b, fig.width=6.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on latent human rights"}
-# TODO: Combine with previous plot so there's just one, with fake facet titles
-out_mfx_e2d <- mfx_e2d_lhr %>% 
-  ggplot(aes(x = effect1__, y = estimate__)) +
-  geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
-              fill = "#FF4136", color = NA) +
-  geom_line(size = 1, color = "#FF4136") +
-  scale_x_reverse() +
-  labs(x = "Civil society repression",
-       y = "Predicted latent human rights value",
-       title = "Latent human rights", 
-       caption = "(x-axis reversed; greater repression on right\nhigher values in y-axis show less violence and better protection of rights)") +
-  theme_ngo(8)
-out_mfx_e2d
-```
+When holding all other factors equal, the de facto implementation of anti-civil society measures thus appear to be a stronger marginal indicator of future repression than the passage of formal de jure laws. In countries with low levels of political terror, it can potentially serve as a weak signal of a more general increase in political violence in the future, but predict more substantial changes in general respect for human rights. The difference in the effects of laws vs. their de facto implementation could also potentially be explained by the time frame of these strategies. As we explore in the next section, de jure civil society laws are a long-term strategy to prevent threats to the regime from coalescing in the first place. As such, the long-term effects of these laws in terms of their predictive power may require a much longer time period under study. In contrast, de facto crackdown on NGOs may signal the need to react sooner due to the immediacy of the threat.
 
 
 ## Predictions
-
-```{r eval=FALSE, include=FALSE}
-# TODO: Andrew: Streamline this section
-```
 
 These predicted probabilities and outcomes are conditional on all other model parameters being held at their average values and show the effect of hypothetically changing a single predictor to different values. They do not show how well these models work with actual data. Following @WardBeger:2017 and @GohdesCarey:2017, we test the predictive power of both sets of our models using out-of-sample prediction. We divide our complete data into a training set and a test set—the training set includes data from all countries from 1990–2010, and the test set includes the last three years of data (2011–2013). We re-run each of our models using our training data and then use the estimated parameters to predict political terror, physical violence, and private civil liberties for the test data. Additionally, we estimate a model for each outcome without predictor variables for civil society laws or repression as a baseline measure of model performance.
 
@@ -760,7 +785,7 @@ ggplot(egypt_cs, aes(x = year, y = v2csreprss)) +
   annotate(geom = "label", x = 2014, y = -0.65, size = pts(9),
            label = "2011\nuprising") +
   labs(x = "Year", y = "De facto CSO repression") +
-  theme_ngo(9)
+  theme_ngo()
 ```
 
 In the wake of domestic terrorist attacks in the late 1990s, the Egyptian parliament passed Law 84 of 2002, or the Law on Associations and Foundations [@Agati:2007, 60]. The new law imposed specific limits on international and foreign-connected NGOs and required that all NGOs register with the Ministry of Social Solidarity. Any revenue from foreign associations to nonprofit organizations working in Egypt required both recipients and donors to submit multiple applications to the Ministry of Foreign Affairs and state security, and the latter maintained ultimate veto power over the approval process [@Thabet:2004, 162]. Though it granted the government substantial oversight power over NGOs, Law 84 also allowed for enormous discretion in enforcement. In spite of the strict legal framework, the Egyptian NGO sector nearly doubled in size between 1993–2011 [@Brechenmacher:2017], largely because of the government's selective and targeted enforcement of the law. When NGOs become too contentious or pose a threat to the regime, officials could use minor infractions in more obscure parts of the law to fine or shut down the organization, but these attacks on NGOs were limited to specific NGOs. As seen in Figure \@ref(fig:plot-egypt-cs), Egypt saw its highest, most stable, and most open level of broader civil society repression in the decade following the passage of Law 84.
@@ -776,6 +801,6 @@ Strengthening civil society is an important precondition for democratic transiti
 
 Importantly, the weak predictive power of anti-NGO laws by themselves reflects the purpose of NGO restrictions. Encroachments on private civil liberties such as restricting freedom of association and funding are not nearly as violent as events like physical integrity rights violations and political terror. Anti-NGO laws could possibly be a side effect of authoritarian stability-seeking behavior, similar to election tampering, media censorship, cronyism, and rent-seeking, rather than an overt signal of impending serious human rights abuses. The global shrinking of civic space or increasing passage of anti-NGO laws is thus not likely an early warning sign for future violent repression—states typically signal their future repressive intentions with more violent methods, such as the persecution and murder of civil society activists and the media. Instead, civil society is a possible "canary in the coal mine" for impending violations of other civil rights, such as the freedom of religion, labor rights, property rights, and the freedom of movement. 
 
-However, it is also important to state that while anti-NGO laws do not seem to be a predictor of broader human rights repression over the period under study, it does not imply they are not having a chilling effect on NGO operations. The broader literature on state repression of NGOs has shown that de jure laws can have numerous adverse consequences. Foreign funding laws have led to a 32% decline in bilateral aid flows [@DP:2018]. NGOs that are underfunded, understaffed tend to shut down when faced with increasing restrictions [@Heiss:2019]. In sum, while de jure laws do not effect levels of physical integrity and civil liberties violations in particular, research has found that they other adverse consequences. Moreover, since the actual implementation of these laws through de facto civl society repression can have negative effects on broader patterns of human rights abuses, the passage of these laws may still be a concerning first step that paves the path for future implementation.
+However, it is also important to state that while anti-NGO laws do not seem to be a predictor of broader human rights repression over the period under study, it does not imply they are not having a chilling effect on NGO operations. The broader literature on state repression of NGOs has shown that de jure laws can have numerous adverse consequences. Foreign funding laws have led to a 32% decline in bilateral aid flows [@DupuyPrakash:2018]. NGOs that are underfunded, understaffed tend to shut down when faced with increasing restrictions [@Heiss:2019]. In sum, while de jure laws do not effect levels of physical integrity and civil liberties violations in particular, research has found that they other adverse consequences. Moreover, since the actual implementation of these laws through de facto civl society repression can have negative effects on broader patterns of human rights abuses, the passage of these laws may still be a concerning first step that paves the path for future implementation.
 
-The dramatic growth in these laws has important implications for the power of the human rights regime and international human rights law. The UN Special Rapporteur on the Right to Freedom of Peaceful Assembly and Association has pointed out that the right of NGOs to seek, receive and utilize resources is an essential component of the right to association [@citeme]. Anti-NGO laws, including barriers to funding, violate core human rights treaties such as the International Covenant on Civil and Political Rights (ICCPR). In contrast to the influential work on the impact of transnational advocacy networks and international law, which places immense value on the ability of civil society groups to monitor, shame and reform state behavior, the results in this article show that reforms resulting from international legal pressure and mobilization may be short-lived. Rather, states may be learning to counter these dynamics by ramping up repression.
+The dramatic growth in these laws has important implications for the power of the human rights regime and international human rights law. The UN Special Rapporteur on the Right to Freedom of Peaceful Assembly and Association has pointed out that the right of NGOs to seek, receive and utilize resources is an essential component of the right to association [@Kiai:2013]. Anti-NGO laws, including barriers to funding, violate core human rights treaties such as the International Covenant on Civil and Political Rights (ICCPR). In contrast to the influential work on the impact of transnational advocacy networks and international law, which places immense value on the ability of civil society groups to monitor, shame and reform state behavior, the results in this article show that reforms resulting from international legal pressure and mobilization may be short-lived. Rather, states may be learning to counter these dynamics by ramping up repression.
