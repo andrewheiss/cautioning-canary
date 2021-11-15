@@ -1,3 +1,6 @@
+# Make labels use Barlow by default
+update_geom_defaults("label", list(family = "Inter"))
+
 # ggplot themes -----------------------------------------------------------
 
 #' theme_ngo
