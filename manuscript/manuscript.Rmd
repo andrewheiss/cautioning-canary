@@ -683,7 +683,7 @@ if (!is_docx) {
 }
 ```
 
-We assess predictive power in a few different ways, depending on the model used to predict the outcome. For the ordinal Political Terror Scale, Table \@ref(tab:correct-not-correct) shows a count of correct and incorrect predictions from each model. Because the physical violence and private civil liberties indexes are predicted with Gaussian models, we measure predictive accuracy with the root mean squared error, provided in Table \@ref(tab:tbl-rmse). In the appendix we include lists of country-year cases that see improved predictions when taking civil society laws and repression into account.
+We assess predictive power in a few different ways, depending on the model used to predict the outcome. For the ordinal Political Terror Scale, Table \@ref(tab:correct-not-correct) shows a count of correct and incorrect predictions from each model. We measure the predicted accuracy of our latent human rights models with the root mean squared error, provided in Table \@ref(tab:tbl-rmse). In the appendix we include lists of country-year cases that see improved predictions when taking civil society laws and repression into account.
 
 Including civil society restrictions—both de jure and de facto—does very little to improve predictions of political terror. As seen in Table \@ref(tab:correct-not-correct), no model provides more correct predictions than the baseline model, and some models perform worse. Accounting for anti-NGO activities does improve predictions in eight cases (see Table A1 in the appendix), but it also results in an equal number of incorrect predictions. 
 
@@ -708,15 +708,20 @@ if (!is_docx) {
     kbl(align = "lcc",
         booktabs = TRUE, linesep = "\\addlinespace",
         caption = tbl_rmse_caption) %>% 
+    pack_rows(index = c(" " = 1, "De jure repression" = 4, "De facto repression" = 1)) %>% 
     kable_styling()
 } else {
   tbl_rmse %>% 
     hux() %>% 
     set_font_size(10) %>%
     set_all_padding(3) %>% 
+    insert_row("De jure repression", "", "", after = 2) %>% 
+    insert_row("De facto repression", "", "", after = 7) %>% 
     set_align(everywhere, 1, "left") %>% 
     set_align(everywhere, 2:3, "center") %>% 
     set_bold(1, everywhere) %>%
+    set_bold(c(3, 8), everywhere) %>%
+    set_bottom_border(c(3, 8), everywhere) %>%
     set_width(1) %>% 
     set_wrap(TRUE) %>% 
     huxtable::set_caption(tbl_rmse_caption) %>% 
@@ -724,9 +729,10 @@ if (!is_docx) {
 }
 ```
 
-When looking at the level of physical violence in a country, including de jure and de facto repression does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for legal barriers and civil society repression only reduces the RMSE by at most 0.4% compared to the baseline model. This is likely related to the lack of improvements in predicting political terror—both indices measure similar phenomena. Similarly, accounting for de facto civil society repression when modeling latent human rights only results in slight changes to the RMSE. However, including civil society-related predictors when modeling private civil liberties does result in small gains in accuracy, reducing the RMSE by as much as 2% compared to the baseline model. 
+When looking at the overall latent human rights values in a country, including de jure and de facto repression does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for de facto civil society repression only reduces the RMSE by 0.29% compared to the baseline, while accounting for de jure laws worsen the models' predictive power slightly. While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases.
 
-While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases.
+We thus again find that de facto civil society repression is a stronger predictor of worsening human rights in the future than formal laws on their own. Actual government interference in civil society act as a possible signal of future abuses of civil and human rights better than simply the presence of a law that could potentially be used at some point in the future. 
+
 
 # Discretionary disconnect between de jure and de facto NGO regulations: the case of Egypt
 
