@@ -2,12 +2,12 @@ library(targets)
 library(tarchetypes)
 library(tibble)
 
-# General variables
+# General pipeline settings ----
+
 csl <- "pandoc/csl/apa.csl"
 bibstyle <- "bibstyle-apa"
 
 suppressPackageStartupMessages(library(brms))
-
 
 # Bayes-specific stuff
 options(mc.cores = 4,
@@ -44,11 +44,17 @@ set.seed(9936)  # From random.org
 
 future::plan(future::multisession)
 
+# haha this project was the first time I'd used {targets} and I wasn't *quite*
+# sure what this option did back then, so I shoved a billion packages in here
+# needlessly and we don't have time to go back and be more specific about which
+# targets need which packages, so we'll live with this mega list :shrug:
 tar_option_set(packages = c("tidyverse", "countrycode", "states", "WDI", "here", "fs",
                             "readxl", "haven", "sf", "lubridate", "scales",
                             "janitor", "kableExtra", "huxtable", "modelsummary",
                             "knitr", "withr", "flextable", "testthat", "DT",
                             "brms", "tidybayes", "broom", "cmdstanr", "jsonlite"))
+
+# R functions ----
 
 source("R/funs_data-cleaning.R")
 source("R/funs_knitting.R")
@@ -68,8 +74,10 @@ source("R/models_lhr.R")
 here_rel <- function(...) {fs::path_rel(here::here(...))}
 
 
+# Pipeline ----
+
 list(
-  # Define raw data files
+  ## Define raw data files ----
   tar_target(chaudhry_raw_file,
              here_rel("data", "raw_data", "Chaudhry restrictions", "SC_Expanded.dta"),
              format = "file"),
@@ -111,10 +119,10 @@ list(
              here_rel("data", "raw_data", "Civicus", "civicus_2021-03-19.json"),
              format = "file"),
 
-  # Define helper functions
+  ## Define helper functions ----
   tar_target(plot_funs, here_rel("lib", "graphics.R"), format = "file"),
 
-  # Load and clean data
+  ## Load and clean data ----
   tar_target(world_map, load_world_map(naturalearth_raw_file)),
   tar_target(civicus_clean, load_clean_civicus(civicus_raw_file)),
   tar_target(civicus_map_data, create_civicus_map_data(civicus_clean, world_map)),
@@ -130,7 +138,8 @@ list(
   tar_target(un_pop, load_clean_un_pop(un_pop_raw_file, skeleton, wdi_clean)),
   tar_target(un_gdp, load_clean_un_gdp(un_gdp_constant_raw_file,
                                        un_gdp_current_raw_file, skeleton)),
-  # Combine data
+
+  ## Combine data ----
   # This includes 2014 for lagging/leading
   tar_target(panel_with_2014, combine_data(skeleton, chaudhry_clean,
                                            pts_clean, latent_hr_clean, killings_all,
@@ -148,8 +157,8 @@ list(
   tar_target(panel_testing, trim_data(create_testing(panel_with_2014))),  # Remove 2014
   tar_target(panel_testing_lagged, create_testing(panel_lagged)),
 
-  # Models for the political terror score (PTS_factor)
-  ## Models using full data
+  ## Models for the political terror score (PTS_factor) ----
+  ### Models using full data ----
   tar_target(m_pts_baseline, f_pts_baseline(panel_lagged)),
   tar_target(m_pts_total, f_pts_total(panel_lagged)),
   tar_target(m_pts_total_new, f_pts_total_new(panel_lagged)),
@@ -158,7 +167,7 @@ list(
   tar_target(m_pts_funding, f_pts_funding(panel_lagged)),
   tar_target(m_pts_v2csreprss, f_pts_v2csreprss(panel_lagged)),
 
-  ## Models using training data
+  ### Models using training data ----
   tar_target(m_pts_baseline_train, f_pts_baseline(panel_training_lagged)),
   tar_target(m_pts_total_train, f_pts_total(panel_training_lagged)),
   tar_target(m_pts_advocacy_train, f_pts_advocacy(panel_training_lagged)),
@@ -166,8 +175,8 @@ list(
   tar_target(m_pts_funding_train, f_pts_funding(panel_training_lagged)),
   tar_target(m_pts_v2csreprss_train, f_pts_v2csreprss(panel_training_lagged)),
 
-  # Models for physical violence (v2x_clphy)
-  ## Models using full data
+  ## Models for physical violence (v2x_clphy) ----
+  ### Models using full data ----
   tar_target(m_clphy_baseline, f_clphy_baseline(panel_lagged)),
   tar_target(m_clphy_total, f_clphy_total(panel_lagged)),
   tar_target(m_clphy_total_new, f_clphy_total_new(panel_lagged)),
@@ -176,7 +185,7 @@ list(
   tar_target(m_clphy_funding, f_clphy_funding(panel_lagged)),
   tar_target(m_clphy_v2csreprss, f_clphy_v2csreprss(panel_lagged)),
 
-  ## Models using training data
+  ### Models using training data ----
   tar_target(m_clphy_baseline_train, f_clphy_baseline(panel_training_lagged)),
   tar_target(m_clphy_total_train, f_clphy_total(panel_training_lagged)),
   tar_target(m_clphy_advocacy_train, f_clphy_advocacy(panel_training_lagged)),
@@ -184,8 +193,8 @@ list(
   tar_target(m_clphy_funding_train, f_clphy_funding(panel_training_lagged)),
   tar_target(m_clphy_v2csreprss_train, f_clphy_v2csreprss(panel_training_lagged)),
 
-  # Models for private civil liberties (v2x_clpriv)
-  ## Models using full data
+  ## Models for private civil liberties (v2x_clpriv) ----
+  ### Models using full data ----
   tar_target(m_clpriv_baseline, f_clpriv_baseline(panel_lagged)),
   tar_target(m_clpriv_total, f_clpriv_total(panel_lagged)),
   tar_target(m_clpriv_total_new, f_clpriv_total_new(panel_lagged)),
@@ -194,7 +203,7 @@ list(
   tar_target(m_clpriv_funding, f_clpriv_funding(panel_lagged)),
   tar_target(m_clpriv_v2csreprss, f_clpriv_v2csreprss(panel_lagged)),
 
-  ## Models using training data
+  ### Models using training data ----
   tar_target(m_clpriv_baseline_train, f_clpriv_baseline(panel_training_lagged)),
   tar_target(m_clpriv_total_train, f_clpriv_total(panel_training_lagged)),
   tar_target(m_clpriv_advocacy_train, f_clpriv_advocacy(panel_training_lagged)),
@@ -202,8 +211,8 @@ list(
   tar_target(m_clpriv_funding_train, f_clpriv_funding(panel_training_lagged)),
   tar_target(m_clpriv_v2csreprss_train, f_clpriv_v2csreprss(panel_training_lagged)),
 
-  # Models for latent respect for human rights (latent_hr_mean)
-  ## Models using full data
+  ## Models for latent respect for human rights (latent_hr_mean) ----
+  ### Models using full data ----
   tar_target(m_lhr_baseline, f_lhr_baseline(panel_lagged)),
   tar_target(m_lhr_total, f_lhr_total(panel_lagged)),
   tar_target(m_lhr_total_new, f_lhr_total_new(panel_lagged)),
@@ -212,6 +221,7 @@ list(
   tar_target(m_lhr_funding, f_lhr_funding(panel_lagged)),
   tar_target(m_lhr_v2csreprss, f_lhr_v2csreprss(panel_lagged)),
 
+  ### Models using training data ----
   tar_target(m_lhr_baseline_train, f_lhr_baseline(panel_training_lagged)),
   tar_target(m_lhr_total_train, f_lhr_total(panel_training_lagged)),
   tar_target(m_lhr_total_new_train, f_lhr_total_new(panel_training_lagged)),
@@ -220,10 +230,10 @@ list(
   tar_target(m_lhr_funding_train, f_lhr_funding(panel_training_lagged)),
   tar_target(m_lhr_v2csreprss_train, f_lhr_v2csreprss(panel_training_lagged)),
 
-  # Big dataframe of model names for full models
+  ## Big dataframe of model names for full models ----
   tar_target(model_df, create_model_df()),
 
-  # Calculate marginal effects
+  ## Calculate marginal effects ----
   tar_target(mfx_e1a_pts, generate_mfx(
     tibble(model = list(m_pts_total, m_pts_advocacy, m_pts_entry, m_pts_funding),
            plot_var = c("barriers_total", "advocacy", "entry", "funding"),
@@ -270,12 +280,13 @@ list(
            plot_var = c("v2csreprss"),
            plot_var_nice = c("Civil society repression")))),
 
+  ## Model tables ----
   # Build models here because they take forever
   # Note tibble::lst() instead of base::list(); lst() auto-names the elements by
   # their object names
   tar_target(coef_list, build_coef_list()),
 
-  # Expectation 1
+  ### Expectation 1 ----
   tar_target(models_tbl_e1a_re,
              build_modelsummary(lst(m_pts_baseline, m_pts_total, m_pts_total_new,
                                     m_pts_advocacy, m_pts_entry,
@@ -292,7 +303,7 @@ list(
              build_modelsummary(lst(m_lhr_baseline, m_lhr_total, m_lhr_total_new,
                                     m_lhr_advocacy, m_lhr_entry,
                                     m_lhr_funding))),
-  # Expectation 2
+  ### Expectation 2 ----
   tar_target(models_tbl_e2a,
              build_modelsummary(lst(m_pts_baseline, m_pts_v2csreprss))),
   tar_target(models_tbl_e2b,
@@ -302,7 +313,7 @@ list(
   tar_target(models_tbl_e2d,
              build_modelsummary(lst(m_lhr_baseline, m_lhr_v2csreprss))),
 
-  # Models for paper
+  ## Models for paper ----
   tar_target(models_paper_pts,
              build_modelsummary(lst(m_pts_total, m_pts_advocacy, m_pts_entry,
                                     m_pts_funding, m_pts_v2csreprss))),
@@ -316,8 +327,10 @@ list(
              build_modelsummary(lst(m_lhr_total, m_lhr_advocacy, m_lhr_entry,
                                     m_lhr_funding, m_lhr_v2csreprss))),
 
-  # Render the analysis notebook
+  ## Render the analysis notebook ----
   tar_notebook_pages(),
+
+  ## Render the manuscript into a bunch of different outputs ----
 
   # tarchetypes::tar_render() automatically detects target dependencies in Rmd
   # files and knits them, but there's no easy way to pass a custom rendering
@@ -370,10 +383,10 @@ list(
                output = here_rel("manuscript", "output", "extracted-citations.bib")),
              format = "file"),
 
-  # Always show a word count
+  ## Always show a word count ----
   tar_target(word_count, count_words(html)),
   tar_force(show_word_count, print(word_count), TRUE),
 
-  # Knit the README
+  ## Knit the README ----
   tar_render(readme, here_rel("README.Rmd"))
 )
