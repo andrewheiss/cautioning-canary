@@ -383,6 +383,41 @@ list(
                output = here_rel("manuscript", "output", "extracted-citations.bib")),
              format = "file"),
 
+  ## Render the appendix ----
+  tar_target_raw("appendix", here_rel("manuscript", "appendix.Rmd"),
+                 format = "file",
+                 deps = c("bib_file",
+                          tar_knitr_deps(here_rel("manuscript", "appendix.Rmd")))),
+  tar_target(app_html,
+             render_html(
+               input = appendix,
+               output = here_rel("manuscript", "output", "appendix.html"),
+               csl = csl,
+               bib_file,
+               support_folder = "output/html-support"),
+             format = "file"),
+  tar_target(app_pdf,
+             render_pdf(
+               input = appendix,
+               output = here_rel("manuscript", "output", "appendix.pdf"),
+               bibstyle = bibstyle,
+               bib_file),
+             format = "file"),
+  tar_target(app_ms_pdf,
+             render_pdf_ms(
+               input = appendix,
+               output = here_rel("manuscript", "output", "appendix-ms.pdf"),
+               bibstyle = bibstyle,
+               bib_file),
+             format = "file"),
+  tar_target(app_docx,
+             render_docx(
+               input = appendix,
+               output = here_rel("manuscript", "output", "appendix.docx"),
+               csl = csl,
+               bib_file),
+             format = "file"),
+
   ## Always show a word count ----
   tar_target(word_count, count_words(html)),
   tar_force(show_word_count, print(word_count), TRUE),
