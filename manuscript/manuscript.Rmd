@@ -572,7 +572,7 @@ Figure \@ref(fig:plot-mfx-e1b) shows the marginal effects of additional anti-NGO
 
 At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. This pattern holds when looking at a more continuous measure of human rights protection—countries with a low count of anti-NGO legal barriers tend to have higher predicted values of latent human rights scores, and average protection against abuses decreases as more laws are added.
 
-```{r plot-mfx-e1b, fig.width=7.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on latent human rights scoress"}
+```{r plot-mfx-e1b, fig.width=7.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on latent human rights values"}
 out_mfx_e1b <- mfx_e1b_lhr %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
@@ -723,7 +723,7 @@ Including civil society restrictions—both de jure and de facto—does very lit
 baseline_rmse <- 0.1862156
 tbl_rmse <- tribble(
   ~`Latent human rights values`, ~RMSE,
-                  "Baseline",    baseline_rmse,
+            "Baseline model",    baseline_rmse,
       "Total legal barriers",    0.1872181,
       "Barriers to advocacy",    0.1872011,
          "Barriers to entry",    0.1862635,

@@ -1,6 +1,6 @@
 ---
-title: 'Appendix for "NGO Repression as a Predictor of Worsening Human Rights Abuses"'
-short-title: 'Appendix for "NGO Repression"'
+title: 'Online appendix for "NGO Repression as a Predictor of Worsening Human Rights Abuses"'
+short-title: 'Online appendix for "NGO Repression"'
 author:
 - name: Suparna Chaudhry
   affiliation: Lewis & Clark College
@@ -15,8 +15,9 @@ date: "November 19, 2021"
 code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/cautioning-canary/>"
 reference-section-title: References
 bibliography: bibliography.bib
-toc: false
 appendix: true
+toc: true
+title-page: false
 mainfont: Cochineal
 sansfont: Inter
 editor_options: 
@@ -41,7 +42,7 @@ knitr::opts_chunk$set(
   fig.retina = 3, dpi = conditional_dpi,
   fig.width = 7, fig.asp = 0.618,
   fig.align = conditional_align, out.width = "100%",
-  fig.path = "output/figures/",
+  fig.path = "output/figures-appendix/",
   cache.path = "output/_cache/",
   fig.process = function(x) {  # Remove "-1" from figure names
     x2 = sub('-\\d+([.][a-z]+)$', '\\1', x)
@@ -88,9 +89,11 @@ withr::with_dir(here::here(), {
 })
 ```
 
+\memSingle
+
 # Modeling approach
 
-We use Stan [@stan] through R [@r-project] and brms [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
+We use Stan [@stan] through R [@r-project] and **brms** [@brms-jss] to estimate our models. We generate 4 MCMC chains for each model with 2,000 iterations in each chain, 1,000 of which are used for warmup. All chains converge; we assess convergence with visual inspection.
 
 To check for robustness, we also ran models using both country and regional random effects, but doing so made no noticeable difference in the results—for the sake of computational efficiency, we thus do not include regional effects.
 
@@ -116,7 +119,7 @@ y_{i, t+1} \sim&\ \operatorname{Categorical}(p_{i, t + 1}) \\
 \alpha_j \sim&\ \mathcal{N} (\mu_{\alpha_j}, \sigma_{\alpha_j}), \text{ for country } j \text{ in } 1 .. J & \text{[country-specific intercepts]} \\ \\
 \ \\
 & \textbf{Priors} \\
-\mu_{\alpha_j} \sim&\ \mathcal{N}(0, 10) & \text{[country-specific intercepts]} \\
+\mu_{\alpha_j} \sim&\ \mathcal{N}(0, 3) & \text{[country-specific intercepts]} \\
 \beta_{1-7} \sim&\ \mathcal{N}(0, 3) & \text{[population effects]} \\
 \sigma_{\alpha_j} \sim&\ \operatorname{Cauchy}(0, 1) & \text{[sd for population \& country]}
 \end{aligned}
@@ -136,7 +139,7 @@ brm(
        PTS + v2x_polyarchy + gdpcap_log +
        un_trade_pct_gdp + armed_conflict + (1 | gwcode)),
   family = cumulative(),
-  prior = c(set_prior("normal(0, 10)", class = "Intercept"),
+  prior = c(set_prior("normal(0, 3)", class = "Intercept"),
             set_prior("normal(0, 3)", class = "b"),
             set_prior("cauchy(0, 1)", class = "sd")),
   ...
@@ -332,5 +335,3 @@ if (!is_docx) {
 \clearpage
 
 \elandscape
-
-\memSingle
