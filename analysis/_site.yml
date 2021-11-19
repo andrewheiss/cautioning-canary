@@ -1,4 +1,4 @@
-name: canary-ngos
+name: cautioning-canary
 exclude:
   - options.R
   - Makefile

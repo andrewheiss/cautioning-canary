@@ -57,6 +57,14 @@ GitHub page).
 
 In order to reproduce this project, you’ll need to install ASDF:
 
+### ⚠️🐦: “Cautioning canary” project name
+
+Because project titles change all the time with revisions, rewriting,
+and peer review, we use “cautioning canary” as an internal-to-us project
+name that won’t change. (We chose this name before the
+[**codename**](http://svmiller.com/codename/) was invented—had it
+existed already, we would have used that to generate the name.)
+
 ### Licenses
 
 **Text and figures:** All prose and images are licensed under Creative

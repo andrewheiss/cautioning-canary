@@ -12,7 +12,7 @@ author:
   url: https://www.andrewheiss.com/
 date: "November 19, 2021"
 # published: Under review
-code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/canary-ngos/>"
+code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/cautioning-canary/>"
 reference-section-title: References
 bibliography: bibliography.bib
 toc: false
