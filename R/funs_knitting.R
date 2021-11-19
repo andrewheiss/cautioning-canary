@@ -211,5 +211,5 @@ count_words <- function(html) {
 }
 
 print.wordcount <- function(x) {
-  cat(scales::comma(x), "words in manuscript\n")
+  cat("*", scales::comma(x), "words in manuscript\n")
 }
