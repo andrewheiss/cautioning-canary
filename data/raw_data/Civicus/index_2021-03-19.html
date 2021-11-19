@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+    <head>
+        <title>- 
+                CIVICUS - Tracking conditions for citizen action</title>
+
+        
+
+        <meta name="description" content="CIVICUS Monitor">
+        <meta name="author" content="CIVICUS">
+        <meta name="generator" content="Blanc Ltd">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link href="/static/css/styles.min.6eaff073a029.css" rel="stylesheet" />
+
+        
+            <script src="/static/js/gauges.35ee3178232b.js" async></script>
+        
+
+        <!--[if lt IE 9]><script src="/static/js/modernizr.e8efd8b753d4.js"></script><![endif]-->
+
+        
+        
+
+    </head>
+    <body class="home show-badge">
+        
+
+        <header class="head">
+            <h1><a href="/">CIVICUS</a></h1>
+            <h2><a href="/">Monitor<small>Tracking civic space</small></a></h2>
+            
+            <label for="translate-toggle" class="translator"></label>
+            <input type="checkbox" id="translate-toggle" />
+            <div class="translate-pane">
+                <div id="ytWidget"></div><script src="https://translate.yandex.net/website-widget/v1/widget.js?widgetId=ytWidget&pageLang=en&widgetTheme=dark&trnslKey=trnsl.1.1.20170305T230824Z.73364cb40edd45ad.75c6871be483114dab41f2f471f926c497044601&autoMode=false" type="text/javascript"></script>
+                <label for="translate-toggle" class="translator-hide"></label>
+            </div>
+        </header>
+
+        
+
+
+        <div class="message-bar">
+            
+            
+
+        </div>
+
+        
+  <article id="content">
+    <div id="map-container" class="world"></div>
+    <div class="legend-holder">
+      <div class="legend">
+        <ul>
+          
+          
+            <li class="rating1">
+              <span>
+                <a href="/Ratings#closed" target="_top">Closed</a>
+              </span>
+            </li>
+          
+            <li class="rating2">
+              <span>
+                <a href="/Ratings#repressed" target="_top">Repressed</a>
+              </span>
+            </li>
+          
+            <li class="rating3">
+              <span>
+                <a href="/Ratings#obstructed" target="_top">Obstructed</a>
+              </span>
+            </li>
+          
+            <li class="rating4">
+              <span>
+                <a href="/Ratings#narrowed" target="_top">Narrowed</a>
+              </span>
+            </li>
+          
+            <li class="rating5">
+              <span>
+                <a href="/Ratings#open" target="_top">Open</a>
+              </span>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+    <div class="map__zoom-controls">
+  <button id="zoom-out" type="button" class="citation-btn map__zoom-button" data-zoom="out">
+    <span class="hidden">zoom out</span>
+    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" fill-rule="evenodd">
+        <path d="M0 0H38V38H0z" transform="translate(-9 -9)"/>
+        <path d="M17.1251269,9 C21.612697,9 25.2502538,12.6375568 25.2502538,17.1251269 C25.2502538,18.732652 24.7771214,20.2270504 23.9714839,21.4883201 C24.1489866,21.5758214 24.3252394,21.673948 24.4733667,21.8214503 L24.4733667,21.8214503 L28.4509288,25.7996374 C29.1834403,26.5321489 29.1828153,27.7184174 28.4503038,28.4509288 C27.7177924,29.1834403 26.5308988,29.1834403 25.7983874,28.4509288 L25.7983874,28.4509288 L21.8208253,24.4739917 C21.673323,24.3246144 21.5764464,24.1489866 21.4876951,23.9708588 C20.2270504,24.7764964 18.732652,25.2502538 17.1251269,25.2502538 C12.6375568,25.2502538 9,21.612697 9,17.1251269 C9,12.6375568 12.6375568,9 17.1251269,9 Z M17.1251269,11.5000391 C14.0182034,11.5000391 11.5000391,14.0182034 11.5000391,17.1251269 C11.5000391,20.2320504 14.0182034,22.7502148 17.1251269,22.7502148 C20.2320504,22.7502148 22.7502148,20.2320504 22.7502148,17.1251269 C22.7502148,14.0182034 20.2320504,11.5000391 17.1251269,11.5000391 Z M20.8751855,15.8751074 C21.2208159,15.8751074 21.5001953,16.1544868 21.5001953,16.5001172 L21.5001953,16.5001172 L21.5001953,17.7501367 C21.5001953,18.0957671 21.2208159,18.3751464 20.8751855,18.3751464 L20.8751855,18.3751464 L13.3750683,18.3751464 C13.0294379,18.3751464 12.7500586,18.0957671 12.7500586,17.7501367 L12.7500586,17.7501367 L12.7500586,16.5001172 C12.7500586,16.1544868 13.0294379,15.8751074 13.3750683,15.8751074 L13.3750683,15.8751074 Z" fill="#FFA900" fill-rule="nonzero" transform="translate(-9 -9)"/>
+      </g>
+    </svg>
+  </button>
+  <p id="zoom-level">0%</p>
+  <button id="zoom-in" type="button" class="citation-btn map__zoom-button" data-zoom="in">
+    <span class="hidden">zoom in</span>
+    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" fill-rule="evenodd">
+        <path d="M0 0H38V38H0z" transform="translate(-9 -9)"/>
+        <path d="M17.1251269,9 C21.612697,9 25.2502538,12.6375568 25.2502538,17.1251269 C25.2502538,18.732652 24.7771214,20.2270504 23.9714839,21.4883201 C24.1489866,21.5758214 24.3252394,21.673948 24.4733667,21.8214503 L24.4733667,21.8214503 L28.4509288,25.7996374 C29.1834403,26.5321489 29.1828153,27.7184174 28.4503038,28.4509288 C27.7177924,29.1834403 26.5308988,29.1834403 25.7983874,28.4509288 L25.7983874,28.4509288 L21.8208253,24.4739917 C21.673323,24.3246144 21.5764464,24.1489866 21.4876951,23.9708588 C20.2270504,24.7764964 18.732652,25.2502538 17.1251269,25.2502538 C12.6375568,25.2502538 9,21.612697 9,17.1251269 C9,12.6375568 12.6375568,9 17.1251269,9 Z M17.1251269,11.5000391 C14.0182034,11.5000391 11.5000391,14.0182034 11.5000391,17.1251269 C11.5000391,20.2320504 14.0182034,22.7502148 17.1251269,22.7502148 C20.2320504,22.7502148 22.7502148,20.2320504 22.7502148,17.1251269 C22.7502148,14.0182034 20.2320504,11.5000391 17.1251269,11.5000391 Z M17.7501367,12.7500586 C18.0957671,12.7500586 18.3751464,13.0294379 18.3751464,13.3750683 L18.3751464,13.3750683 L18.3751464,15.8751074 L20.8751855,15.8751074 C21.2208159,15.8751074 21.5001953,16.1544868 21.5001953,16.5001172 L21.5001953,16.5001172 L21.5001953,17.7501367 C21.5001953,18.0957671 21.2208159,18.3751464 20.8751855,18.3751464 L20.8751855,18.3751464 L18.3751464,18.3751464 L18.3751464,20.8751855 C18.3751464,21.2208159 18.0957671,21.5001953 17.7501367,21.5001953 L17.7501367,21.5001953 L16.5001172,21.5001953 C16.1544868,21.5001953 15.8751074,21.2208159 15.8751074,20.8751855 L15.8751074,20.8751855 L15.8751074,18.3751464 L13.3750683,18.3751464 C13.0294379,18.3751464 12.7500586,18.0957671 12.7500586,17.7501367 L12.7500586,17.7501367 L12.7500586,16.5001172 C12.7500586,16.1544868 13.0294379,15.8751074 13.3750683,15.8751074 L13.3750683,15.8751074 L15.8751074,15.8751074 L15.8751074,13.3750683 C15.8751074,13.0294379 16.1544868,12.7500586 16.5001172,12.7500586 L16.5001172,12.7500586 Z" fill="#FFA900" fill-rule="nonzero" transform="translate(-9 -9)"/>
+      </g>
+    </svg>
+  </button>
+</div>
+
+  </article>
+
+
+        
+
+        <script src="/static/admin/js/jquery.c0b3962f9f23.js"></script>
+        <script src="/static/js/transition.5ad1985ebfbc.js"></script>
+        <script src="/static/js/lightbox.9ef14efb6c07.js"></script>
+        <script src="/static/js/common.5bee5134b594.js"></script>
+
+        
+    <script>
+        var COUNTRIES_DATA = {
+            
+            
+                'AFG': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/afghanistan/',
+                },
+            
+                'ALB': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/albania/',
+                },
+            
+                'DZA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/algeria/',
+                },
+            
+                'AND': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/andorra/',
+                },
+            
+                'AGO': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/angola/',
+                },
+            
+                'ATG': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/antigua-and-barbuda/',
+                },
+            
+                'ARG': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/argentina/',
+                },
+            
+                'ARM': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/armenia/',
+                },
+            
+                'AUS': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/australia/',
+                },
+            
+                'AUT': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/austria/',
+                },
+            
+                'AZE': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/azerbaijan/',
+                },
+            
+                'BHS': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/bahamas/',
+                },
+            
+                'BHR': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/bahrain/',
+                },
+            
+                'BGD': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/bangladesh/',
+                },
+            
+                'BRB': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/barbados/',
+                },
+            
+                'BLR': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/belarus/',
+                },
+            
+                'BEL': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/belgium/',
+                },
+            
+                'BLZ': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/belize/',
+                },
+            
+                'BEN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/benin/',
+                },
+            
+                'BTN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/bhutan/',
+                },
+            
+                'BOL': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/bolivia/',
+                },
+            
+                'BIH': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/bosnia-herzegovina/',
+                },
+            
+                'BWA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/botswana/',
+                },
+            
+                'BRA': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/brazil/',
+                },
+            
+                'BRN': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/brunei-darussalam/',
+                },
+            
+                'BGR': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/bulgaria/',
+                },
+            
+                'BFA': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/burkina-faso/',
+                },
+            
+                'BDI': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/burundi/',
+                },
+            
+                'KHM': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/cambodia/',
+                },
+            
+                'CMR': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/cameroon/',
+                },
+            
+                'CAN': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/canada/',
+                },
+            
+                'CPV': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/cape-verde/',
+                },
+            
+                'CAF': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/central-african-republic/',
+                },
+            
+                'TCD': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/chad/',
+                },
+            
+                'CHL': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/chile/',
+                },
+            
+                'CHN': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/china/',
+                },
+            
+                'COL': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/colombia/',
+                },
+            
+                'COM': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/comoros/',
+                },
+            
+                'CRI': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/costa-rica/',
+                },
+            
+                'CIV': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/cote-divoire/',
+                },
+            
+                'HRV': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/croatia/',
+                },
+            
+                'CUB': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/cuba/',
+                },
+            
+                'CYP': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/cyprus/',
+                },
+            
+                'CZE': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/czech-republic/',
+                },
+            
+                'COD': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/democratic-republic-congo/',
+                },
+            
+                'DNK': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/denmark/',
+                },
+            
+                'DJI': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/djibouti/',
+                },
+            
+                'DMA': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/dominica/',
+                },
+            
+                'DOM': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/dominican-republic/',
+                },
+            
+                'ECU': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/ecuador/',
+                },
+            
+                'EGY': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/egypt/',
+                },
+            
+                'SLV': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/el-salvador/',
+                },
+            
+                'GNQ': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/equatorial-guinea/',
+                },
+            
+                'ERI': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/eritrea/',
+                },
+            
+                'EST': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/estonia/',
+                },
+            
+                'SWZ': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/swaziland/',
+                },
+            
+                'ETH': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/ethiopia/',
+                },
+            
+                'FJI': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/fiji/',
+                },
+            
+                'FIN': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/finland/',
+                },
+            
+                'FRA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/france/',
+                },
+            
+                'GAB': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/gabon/',
+                },
+            
+                'GMB': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/gambia/',
+                },
+            
+                'GEO': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/georgia/',
+                },
+            
+                'DEU': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/germany/',
+                },
+            
+                'GHA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/ghana/',
+                },
+            
+                'GRC': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/greece/',
+                },
+            
+                'GRL': {
+                    
+                        fillKey: 'None',
+                    
+                    slug: 'https://monitor.civicus.org/country/greenland/',
+                },
+            
+                'GRD': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/grenada/',
+                },
+            
+                'GTM': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/guatemala/',
+                },
+            
+                'GIN': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/guinea/',
+                },
+            
+                'GNB': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/guinea-bissau/',
+                },
+            
+                'GUY': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/guyana/',
+                },
+            
+                'HTI': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/haiti/',
+                },
+            
+                'HND': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/honduras/',
+                },
+            
+                'HUN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/hungary/',
+                },
+            
+                'ISL': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/iceland/',
+                },
+            
+                'IND': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/india/',
+                },
+            
+                'IDN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/indonesia/',
+                },
+            
+                'IRN': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/iran/',
+                },
+            
+                'IRQ': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/iraq/',
+                },
+            
+                'IRL': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/ireland/',
+                },
+            
+                'ISR': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/israel/',
+                },
+            
+                'ITA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/italy/',
+                },
+            
+                'JAM': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/jamaica/',
+                },
+            
+                'JPN': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/japan/',
+                },
+            
+                'JOR': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/jordan/',
+                },
+            
+                'KAZ': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/kazakhstan/',
+                },
+            
+                'KEN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/kenya/',
+                },
+            
+                'KIR': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/kiribati/',
+                },
+            
+                'kosovo': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/kosovo/',
+                },
+            
+                'KWT': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/kuwait/',
+                },
+            
+                'KGZ': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/kyrgyzstan/',
+                },
+            
+                'LAO': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/laos/',
+                },
+            
+                'LVA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/latvia/',
+                },
+            
+                'LBN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/lebanon/',
+                },
+            
+                'LSO': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/lesotho/',
+                },
+            
+                'LBR': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/liberia/',
+                },
+            
+                'LBY': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/libya/',
+                },
+            
+                'LIE': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/liechtenstein/',
+                },
+            
+                'LTU': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/lithuania/',
+                },
+            
+                'LUX': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/luzembourg/',
+                },
+            
+                'MDG': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/madagascar/',
+                },
+            
+                'MWI': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/malawi/',
+                },
+            
+                'MYS': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/malaysia/',
+                },
+            
+                'MDV': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/maldives/',
+                },
+            
+                'MLI': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/mali/',
+                },
+            
+                'MLT': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/malta/',
+                },
+            
+                'MHL': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/marshall-islands/',
+                },
+            
+                'MRT': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/mauritania/',
+                },
+            
+                'MUS': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/mauritius/',
+                },
+            
+                'MEX': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/mexico/',
+                },
+            
+                'FSM': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/micronesia/',
+                },
+            
+                'MDA': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/moldova/',
+                },
+            
+                'MCO': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/monaco/',
+                },
+            
+                'MNG': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/mongolia/',
+                },
+            
+                'MNE': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/montenegro/',
+                },
+            
+                'MAR': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/morocco/',
+                },
+            
+                'MOZ': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/mozambique/',
+                },
+            
+                'MMR': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/myanmar/',
+                },
+            
+                'NAM': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/namibia/',
+                },
+            
+                'NRU': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/nauru/',
+                },
+            
+                'NPL': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/nepal/',
+                },
+            
+                'NLD': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/netherlands/',
+                },
+            
+                'NZL': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/new-zealand/',
+                },
+            
+                'NIC': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/nicaragua/',
+                },
+            
+                'NER': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/niger/',
+                },
+            
+                'NGA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/nigeria/',
+                },
+            
+                'PRK': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/north-korea/',
+                },
+            
+                'MKD': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/macedonia/',
+                },
+            
+                'NOR': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/norway/',
+                },
+            
+                'OMN': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/oman/',
+                },
+            
+                'PAK': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/pakistan/',
+                },
+            
+                'PLW': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/palau/',
+                },
+            
+                'PSE': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/palestine/',
+                },
+            
+                'PAN': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/panama/',
+                },
+            
+                'PNG': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/papua-new-guinea/',
+                },
+            
+                'PRY': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/paraguay/',
+                },
+            
+                'PER': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/peru/',
+                },
+            
+                'PHL': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/philippines/',
+                },
+            
+                'POL': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/poland/',
+                },
+            
+                'PRT': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/portugal/',
+                },
+            
+                'QAT': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/qatar/',
+                },
+            
+                'COG': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/republicofthecongo/',
+                },
+            
+                'ROU': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/romania/',
+                },
+            
+                'RUS': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/russia/',
+                },
+            
+                'RWA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/rwanda/',
+                },
+            
+                'LCA': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/saint-lucia/',
+                },
+            
+                'WSM': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/samoa/',
+                },
+            
+                'SMR': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/san-marino/',
+                },
+            
+                'STP': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/sao-tome-and-principe/',
+                },
+            
+                'SAU': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/saudi-arabia/',
+                },
+            
+                'SEN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/senegal/',
+                },
+            
+                'SRB': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/serbia/',
+                },
+            
+                'SYC': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/seychelles/',
+                },
+            
+                'SLE': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/sierra-leone/',
+                },
+            
+                'SGP': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/singapore/',
+                },
+            
+                'SVK': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/slovakia/',
+                },
+            
+                'SVN': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/slovenia/',
+                },
+            
+                'SLB': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/solomon-islands/',
+                },
+            
+                'SOM': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/somalia/',
+                },
+            
+                'ZAF': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/south-africa/',
+                },
+            
+                'KOR': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/south-korea/',
+                },
+            
+                'SSD': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/south-sudan/',
+                },
+            
+                'ESP': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/spain/',
+                },
+            
+                'LKA': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/sri-lanka/',
+                },
+            
+                'KNA': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/st-kitts-and-nevis/',
+                },
+            
+                'SVT': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/st-vincent-and-grenadines/',
+                },
+            
+                'SDN': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/sudan/',
+                },
+            
+                'SUR': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/suriname/',
+                },
+            
+                'SWE': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/sweden/',
+                },
+            
+                'CHE': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/switzerland/',
+                },
+            
+                'SYR': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/syria/',
+                },
+            
+                'TWN': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/taiwan/',
+                },
+            
+                'TJK': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/tajikistan/',
+                },
+            
+                'TZA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/tanzania/',
+                },
+            
+                'THA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/thailand/',
+                },
+            
+                'TLS': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/timor-leste/',
+                },
+            
+                'TGO': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/togo/',
+                },
+            
+                'TON': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/tonga/',
+                },
+            
+                'TTO': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/trinidad-and-tobago/',
+                },
+            
+                'TUN': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/tunisia/',
+                },
+            
+                'TUR': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/turkey/',
+                },
+            
+                'TKM': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/turkmenistan/',
+                },
+            
+                'TUV': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/tuvalu/',
+                },
+            
+                'UGA': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/uganda/',
+                },
+            
+                'UKR': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/ukraine/',
+                },
+            
+                'ARE': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/united-arab-emirates/',
+                },
+            
+                'GBR': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/united-kingdom/',
+                },
+            
+                'USA': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/united-states-america/',
+                },
+            
+                'URY': {
+                    
+                        fillKey: '5',
+                    
+                    slug: 'https://monitor.civicus.org/country/uruguay/',
+                },
+            
+                'UZB': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/uzbekistan/',
+                },
+            
+                'VUT': {
+                    
+                        fillKey: '4',
+                    
+                    slug: 'https://monitor.civicus.org/country/vanuatu/',
+                },
+            
+                'VEN': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/venezuela/',
+                },
+            
+                'VNM': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/vietnam/',
+                },
+            
+                'YEM': {
+                    
+                        fillKey: '1',
+                    
+                    slug: 'https://monitor.civicus.org/country/yemen/',
+                },
+            
+                'ZMB': {
+                    
+                        fillKey: '3',
+                    
+                    slug: 'https://monitor.civicus.org/country/zambia/',
+                },
+            
+                'ZWE': {
+                    
+                        fillKey: '2',
+                    
+                    slug: 'https://monitor.civicus.org/country/zimbabwe/',
+                },
+            
+        }
+        var WORLD_TOPO_JSON = "/static/js/apps/core/world.topo.f9077452a75d.json";
+    </script>
+    <script src="/static/js/d3.min.81897cbac849.js"></script>
+    <script src="/static/js/d3.geo.projection.v0.min.8562c1969d34.js"></script>
+    <script src="/static/js/topojson.min.88b35c871a8b.js"></script>
+    <script src="/static/js/datamaps.zoom.e86e5a3e2b7a.js"></script>
+    <script src="/static/js/datamaps.world.min.176d7d9197c7.js"></script>
+    <script src="/static/js/apps/core/map.e7456bc4ee1e.js"></script>
+    <script src="/static/js/libs/flickity/flickity.pkgd.min.523ebdb53ed4.js"></script>
+    <script src="/static/js/timeline.79f351774f77.js"></script>
+    <script src="/static/js/isotope.pkgd.77dc24f3870d.js"></script>
+    <script src="/static/js/homepage.f8ea6697191a.js"></script>
+    <script src="/static/js/apps/widgets/wembed.8759d31a2a13.js"></script>
+
+
+        <div id="lightbox">
+            <div id="lightbox_backdrop"></div>
+            <a href="#" id="lightbox_close">&times;</a>
+            <div id="lightbox_content"></div>
+        </div>
+    </body>
+</html>

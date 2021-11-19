@@ -4,9 +4,6 @@
 .RData
 .Ruserdata
 
-# Data (temporarily?)
-data/*
-
 # Site output
 analysis/_site/*
 analysis/site_libs/*

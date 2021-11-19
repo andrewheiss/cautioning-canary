@@ -143,9 +143,29 @@ list(
                                            un_pop, un_gdp)),
   # THIS is the final 2014-less data
   tar_target(panel, trim_data(panel_with_2014)),
+  tar_target(panel_csv, {
+    filename <- here_rel("data", "derived_data", "panel.csv")
+    readr::write_csv(panel, filename)
+    filename
+  }, format = "file"),
+  tar_target(panel_rds, {
+    filename <- here_rel("data", "derived_data", "panel.rds")
+    saveRDS(panel, filename)
+    filename
+  }, format = "file"),
 
   # Lagging/leading
   tar_target(panel_lagged, trim_data(lag_data(panel_with_2014))),
+  tar_target(panel_lagged_csv, {
+    filename <- here_rel("data", "derived_data", "panel_lagged.csv")
+    readr::write_csv(panel_lagged, filename)
+    filename
+  }, format = "file"),
+  tar_target(panel_lagged_rds, {
+    filename <- here_rel("data", "derived_data", "panel_lagged.rds")
+    saveRDS(panel_lagged, filename)
+    filename
+  }, format = "file"),
 
   # Training/testing
   tar_target(panel_training_lagged, create_training(panel_lagged)),
