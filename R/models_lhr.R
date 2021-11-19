@@ -8,6 +8,7 @@ lhr_setup <- function() {
   ITER <- 2000
   WARMUP <- 1000
   BAYES_SEED <- 4045  # From random.org
+  threads <- getOption("mc.threads")
 
   # Priors
   priors_vague <- c(set_prior("normal(0, 10)", class = "Intercept"),
@@ -15,7 +16,7 @@ lhr_setup <- function() {
                     set_prior("cauchy(0, 1)", class = "sd"))
 
   return(list(chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
-              priors_vague = priors_vague))
+              threads = threads, priors_vague = priors_vague))
 }
 
 
@@ -38,6 +39,7 @@ f_lhr_baseline <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -62,6 +64,7 @@ f_lhr_total <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -86,6 +89,7 @@ f_lhr_total_new <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -110,6 +114,7 @@ f_lhr_advocacy <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -134,6 +139,7 @@ f_lhr_entry <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -158,6 +164,7 @@ f_lhr_funding <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 
@@ -180,6 +187,7 @@ f_lhr_v2csreprss <- function(dat) {
     prior = lhr_settings$priors_vague,
     control = list(adapt_delta = 0.9),
     data = dat,
+    threads = threading(lhr_settings$threads),
     chains = lhr_settings$chains, iter = lhr_settings$iter,
     warmup = lhr_settings$warmup, seed = lhr_settings$seed)
 

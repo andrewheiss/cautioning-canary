@@ -10,7 +10,16 @@ bibstyle <- "bibstyle-apa"
 suppressPackageStartupMessages(library(brms))
 
 # Bayes-specific stuff
+# Specify the number of cores and threads
+#
+# If using brms's default rstan backend, set mc.threads to NULL
+#
+#   - If using cmdstanr, you can use within-chain threading
+#   - (https://cran.r-project.org/web/packages/brms/vignettes/brms_threading.html)
+#   - On a four-core computer, use mc.cores = 2 and threads = threading(2)
+#   - On an eight+-core computer, use mc.cores = 4 and threads = threading(2)
 options(mc.cores = 4,
+        mc.threads = 2,
         brms.backend = "cmdstanr")
 
 options(tidyverse.quiet = TRUE,
@@ -36,7 +45,7 @@ options(contrasts = rep("contr.treatment", 2))
 # vs. my 16-core work laptop).
 
 # Pass these options to workers using options(worker_options)
-worker_options <- options()[c("mc.cores", "brms.backend",
+worker_options <- options()[c("mc.cores", "mc.threads", "brms.backend",
                               "contrasts", "tidyverse.quiet",
                               "dplyr.summarise.inform")]
 

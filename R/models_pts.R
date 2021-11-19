@@ -10,14 +10,15 @@ pts_setup <- function() {
   ITER <- 2000
   WARMUP <- 1000
   BAYES_SEED <- 2009  # From random.org
+  threads <- getOption("mc.threads")
 
   # Priors
-  priors_vague <- c(set_prior("normal(0, 10)", class = "Intercept"),
+  priors_vague <- c(set_prior("normal(0, 3)", class = "Intercept"),
                     set_prior("normal(0, 3)", class = "b"),
                     set_prior("cauchy(0, 1)", class = "sd"))
 
   return(list(chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
-              priors_vague = priors_vague))
+              threads = threads, priors_vague = priors_vague))
 }
 
 
@@ -39,6 +40,7 @@ f_pts_baseline <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -62,6 +64,7 @@ f_pts_total <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -85,6 +88,7 @@ f_pts_total_new <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -108,6 +112,7 @@ f_pts_advocacy <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -131,6 +136,7 @@ f_pts_entry <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -154,6 +160,7 @@ f_pts_funding <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
@@ -175,6 +182,7 @@ f_pts_v2csreprss <- function(dat) {
     family = cumulative(),
     prior = pts_settings$priors_vague,
     data = dat,
+    threads = threading(pts_settings$threads),
     chains = pts_settings$chains, iter = pts_settings$iter,
     warmup = pts_settings$warmup, seed = pts_settings$seed)
 
