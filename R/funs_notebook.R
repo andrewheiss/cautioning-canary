@@ -84,3 +84,7 @@ tar_notebook_pages <- function(
     )
   )
 }
+
+copy_notebook_supporting_files <- function(rmd, ...) {
+  rmarkdown::render_site(rmd, encoding = "UTF-8")
+}
