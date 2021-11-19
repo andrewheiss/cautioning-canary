@@ -21,23 +21,23 @@ most subtle means of repression and attract lesser domestic and
 international condemnation compared to the use of violence. Using
 original data on NGO repression, we test whether NGO crackdown is a
 predictor of political terror, and violations of physical integrity
-rights and civil liberties. We find that while formal de jure laws
+rights and civil liberties. We find that while de jure anti-NGO laws
 provide little information in predicting future repression, their
-patterns of implementation, or de facto civil society repression,
-predicts worsening respect for physical integrity rights and civil
-liberties.
+patterns of implementation—or de facto civil society repression—predicts
+worsening respect for physical integrity rights and civil liberties.
 
 ------------------------------------------------------------------------
 
 This repository contains the data and code for our paper:
 
 > Suparna Chaudhry and Andrew Heiss. (2021). *NGO Repression as a
-> Predictor of Worsening Human Rights Abuses*. Accessed July 21, 2021.
+> Predictor of Worsening Human Rights Abuses*. Accessed November 19,
+> 2021.
 
 Our pre-print is online here:
 
 > Authors, (YYYY). *NGO Repression as a Predictor of Worsening Human
-> Rights Abuses*. Name of journal/book, Accessed 21 Jul 2021. Online at
+> Rights Abuses*. Name of journal/book, Accessed 19 Nov 2021. Online at
 > <https://doi.org/xxx/xxx>
 
 ## How to cite
@@ -46,7 +46,7 @@ Please cite this compendium as:
 
 > Suparna Chaudhry and Andrew Heiss. (2021). *Compendium of R code and
 > data for NGO Repression as a Predictor of Worsening Human Rights
-> Abuses*. Accessed July 21, 2021.
+> Abuses*. Accessed November 19, 2021.
 
 ### How to download or install
 
