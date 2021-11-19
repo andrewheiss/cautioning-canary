@@ -59,40 +59,31 @@ withr::with_dir(here::here(), {
   # tar_load(model_df$model)
   
   # This also works but again doesn't register correctly as dependencies
-  # tar_load(starts_with("m_clpriv"))
+  # tar_load(starts_with("m_pts"))
   
   # So we do it this manual way
   tar_load(c(m_pts_baseline, m_pts_total, m_pts_total_new, 
              m_pts_advocacy, m_pts_entry, m_pts_funding, 
              m_pts_v2csreprss, 
-             m_clphy_baseline, m_clphy_total, m_clphy_total_new, 
-             m_clphy_advocacy, m_clphy_entry, m_clphy_funding, 
-             m_clphy_v2csreprss, 
-             m_clpriv_baseline, m_clpriv_total, m_clpriv_total_new, 
-             m_clpriv_advocacy, m_clpriv_entry, m_clpriv_funding, 
-             m_clpriv_v2csreprss, 
              m_lhr_baseline, m_lhr_total, m_lhr_total_new, 
              m_lhr_advocacy, m_lhr_entry, m_lhr_funding, 
              m_lhr_v2csreprss, 
              m_pts_baseline_train, m_pts_total_train, 
              m_pts_advocacy_train, m_pts_entry_train, m_pts_funding_train, 
-             m_pts_v2csreprss_train, 
-             m_clphy_baseline_train, m_clphy_total_train, 
-             m_clphy_advocacy_train, m_clphy_entry_train, m_clphy_funding_train, 
-             m_clphy_v2csreprss_train, 
-             m_clpriv_baseline_train, m_clpriv_total_train, 
-             m_clpriv_advocacy_train, m_clpriv_entry_train, m_clpriv_funding_train, 
-             m_clpriv_v2csreprss_train))
+             m_pts_v2csreprss_train,
+             m_lhr_baseline_train, m_lhr_total_train, m_lhr_total_new_train, 
+             m_lhr_advocacy_train, m_lhr_entry_train, m_lhr_funding_train, 
+             m_lhr_v2csreprss_train))
 })
 ```
 
 ```{r set-computer-details}
-computer <- "Work"
+computer <- "Personal"
 
 if (computer == "Work") {
   computer_details <- "2019 MacBook Pro with 16 cores and 32 GB of RAM, using Stan through brms through cmdstanr"
 } else {
-  computer_details <- "2016 MacBook Pro with 4 cores and 16 GB of RAM, using Stan through brms through cmdstanr"
+  computer_details <- "2021 MacBook Pro M1 Max with 10 cores and 32 GB of RAM, using Stan through brms through cmdstanr"
 }
 ```
 
@@ -102,7 +93,7 @@ We ran these models on a `r computer_details`.
 
 # Model run times
 
-## Models for E~1~ (civil society laws)
+## Models for E~1~ (de jure civil society laws)
 
 ### Full data
 
@@ -170,7 +161,7 @@ model_time_e1 %>%
 ```
 
 
-## Models for E~2~ (civil society environment)
+## Models for E~2~ (de facto civil society environment)
 
 ### Full data
 
@@ -245,8 +236,6 @@ model_time_e2 %>%
 All the models are run with a **`targets`** pipeline with dataset-specific functions that live in these files:
 
 - `R/models_pts.R` (for PTS-based models)
-- `R/models_clphy.R` (for V-Dem physical violence-based models)
-- `R/models_clpriv.R` (for V-Dem private civil liberties-based models)
 - `R/models_lhr.R` (for latent human rights-based models)
 
 To keep the analysis relatively self contained here in the analysis notebook, and to make it so there's no need to hunt through the GitHub repository to find the actual code, here's that code:
@@ -254,16 +243,6 @@ To keep the analysis relatively self contained here in the analysis notebook, an
 #### `R/models_pts.R`
 
 ```{r, code=xfun::read_utf8(here::here("R", "models_pts.R")), eval=FALSE, class.source="fold-hide"}
-```
-
-#### `R/models_clphy.R`
-
-```{r, code=xfun::read_utf8(here::here("R", "models_clphy.R")), eval=FALSE, class.source="fold-hide"}
-```
-
-#### `R/models_clpriv.R`
-
-```{r, code=xfun::read_utf8(here::here("R", "models_clpriv.R")), eval=FALSE, class.source="fold-hide"}
 ```
 
 #### `R/models_lhr.R`

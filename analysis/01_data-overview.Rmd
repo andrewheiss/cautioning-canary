@@ -52,7 +52,6 @@ withr::with_dir(here::here(), {
   tar_load(chaudhry_clean)
   tar_load(pts_clean)
   tar_load(latent_hr_clean)
-  tar_load(killings_all)
   tar_load(vdem_clean)
   tar_load(wdi_clean)
   tar_load(un_pop)
@@ -147,14 +146,6 @@ latent_hr_clean %>%
 
 ```{r glimpse-lhr}
 glimpse(latent_hr_clean)
-```
-
-## Gohdes and Carey journalist deaths
-
-We use data from [Gohdes and Carey (2017)](https://doi.org/10.1177/0022343316680859) for the number of journalists murdered between 2002 and 2014. They provide two `.Rdata` files in their replication materials—one is a list of all journalist deaths, and one is a TSCS dataset they use in their main analysis, with summary values of journalist deaths for each country/year. Their panel data does not include 2002 for some reason, so we ignore the panel data and recreate the summary values by hand here.
-
-```{r glimpse-gh-journalists}
-glimpse(killings_all)
 ```
 
 ## Varieties of Democracy (V-Dem)

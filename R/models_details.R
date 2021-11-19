@@ -10,24 +10,6 @@ create_model_df <- function() {
     "m_pts_funding", "Political terror", "Barriers to funding",
     "m_pts_v2csreprss", "Political terror", "Civil society repression",
 
-    # Models for physical violence (v2x_clphy)
-    "m_clphy_baseline", "Physical violence", "Baseline",
-    "m_clphy_total", "Physical violence", "Total legal barriers",
-    "m_clphy_total_new", "Physical violence", "New legal barriers",
-    "m_clphy_advocacy", "Physical violence", "Barriers to advocacy",
-    "m_clphy_entry", "Physical violence", "Barriers to entry",
-    "m_clphy_funding", "Physical violence", "Barriers to funding",
-    "m_clphy_v2csreprss", "Physical violence", "Civil society repression",
-
-    # Models for private civil liberties (v2x_clpriv)
-    "m_clpriv_baseline", "Private civil liberties", "Baseline",
-    "m_clpriv_total", "Private civil liberties", "Total legal barriers",
-    "m_clpriv_total_new", "Private civil liberties", "New legal barriers",
-    "m_clpriv_advocacy", "Private civil liberties", "Barriers to advocacy",
-    "m_clpriv_entry", "Private civil liberties", "Barriers to entry",
-    "m_clpriv_funding", "Private civil liberties", "Barriers to funding",
-    "m_clpriv_v2csreprss", "Private civil liberties", "Civil society repression",
-
     # Models for latent human rights (latent_hr_mean)
     "m_lhr_baseline", "Latent human rights", "Baseline",
     "m_lhr_total", "Latent human rights", "Total legal barriers",
@@ -45,21 +27,14 @@ create_model_df <- function() {
     "m_pts_funding_train", "Political terror", "Barriers to funding",
     "m_pts_v2csreprss_train", "Political terror", "Civil society repression",
 
-    ## Models for physical violence using training data
-    "m_clphy_baseline_train", "Physical violence", "Baseline",
-    "m_clphy_total_train", "Physical violence", "Total legal barriers",
-    "m_clphy_advocacy_train", "Physical violence", "Barriers to advocacy",
-    "m_clphy_entry_train", "Physical violence", "Barriers to entry",
-    "m_clphy_funding_train", "Physical violence", "Barriers to funding",
-    "m_clphy_v2csreprss_train", "Physical violence", "Civil society repression",
-
-    ## Models for private civil liberties using training data
-    "m_clpriv_baseline_train", "Private civil liberties", "Baseline",
-    "m_clpriv_total_train", "Private civil liberties", "Total legal barriers",
-    "m_clpriv_advocacy_train", "Private civil liberties", "Barriers to advocacy",
-    "m_clpriv_entry_train", "Private civil liberties", "Barriers to entry",
-    "m_clpriv_funding_train", "Private civil liberties", "Barriers to funding",
-    "m_clpriv_v2csreprss_train", "Private civil liberties", "Civil society repression"
+    # Models for latent human rights using training data
+    "m_lhr_baseline_train", "Latent human rights", "Baseline",
+    "m_lhr_total_train", "Latent human rights", "Total legal barriers",
+    "m_lhr_total_new_train", "Latent human rights", "New legal barriers",
+    "m_lhr_advocacy_train", "Latent human rights", "Barriers to advocacy",
+    "m_lhr_entry_train", "Latent human rights", "Barriers to entry",
+    "m_lhr_funding_train", "Latent human rights", "Barriers to funding",
+    "m_lhr_v2csreprss_train", "Latent human rights", "Civil society repression"
   ) %>%
     mutate(family = ifelse(str_detect(model, "_pts"), "Ordered logit", "OLS"),
            training = ifelse(str_detect(model, "_train"), "Training", "Full data"))
@@ -78,9 +53,9 @@ create_model_df <- function() {
 # like an output-agnostic ur-model.
 
 build_modelsummary <- function(models) {
-  msl <- modelsummary(models,
-                      output = "modelsummary_list",
-                      statistic = "[{conf.low}, {conf.high}]")
+  msl <- modelsummary::modelsummary(models,
+                                    output = "modelsummary_list",
+                                    statistic = "[{conf.low}, {conf.high}]")
   return(msl)
 }
 
@@ -103,8 +78,6 @@ build_coef_list <- function() {
     "b_PTS_factorLevel3" = "PTS = 3",
     "b_PTS_factorLevel4" = "PTS = 4",
     "b_PTS_factorLevel5" = "PTS = 5",
-    "b_v2x_clphy" = "Physical violence index (t)",
-    "b_v2x_clpriv" = "Private civil liberties index (t)",
     "b_latent_hr_mean" = "Latent human rights (t)",
     "b_v2x_polyarchy" = "Polyarchy index",
     "b_gdpcap_log" = "Log GDP per capita",

@@ -55,12 +55,6 @@ withr::with_dir(here::here(), {
   tar_load(c(m_pts_baseline_train, m_pts_v2csreprss_train,
              m_pts_total_train, m_pts_advocacy_train, 
              m_pts_entry_train, m_pts_funding_train,
-             m_clphy_baseline_train, m_clphy_v2csreprss_train, 
-             m_clphy_total_train, m_clphy_advocacy_train, 
-             m_clphy_entry_train, m_clphy_funding_train,
-             m_clpriv_baseline_train, m_clpriv_v2csreprss_train,
-             m_clpriv_total_train, m_clpriv_advocacy_train, 
-             m_clpriv_entry_train, m_clpriv_funding_train,
              m_lhr_baseline_train, m_lhr_v2csreprss_train,
              m_lhr_total_train, m_lhr_advocacy_train, 
              m_lhr_entry_train, m_lhr_funding_train))
@@ -170,7 +164,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -216,7 +210,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -260,7 +254,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -304,7 +298,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -348,7 +342,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -481,541 +475,7 @@ pts_pred_table %>%
 
 \ 
 
-# E~1b~: NGO laws and physical violence
-
-```{r e1b-predictions, warning=FALSE}
-seed_clphy_prediction <- 7285  # From random.org
-
-set.seed(seed_clphy_prediction)
-pred_clphy_baseline <- predict(m_clphy_baseline_train, 
-                               newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                               allow_new_levels = TRUE)
-
-set.seed(seed_clphy_prediction)
-pred_clphy_total <- predict(m_clphy_total_train, 
-                            newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                            allow_new_levels = TRUE)
-
-set.seed(seed_clphy_prediction)
-pred_clphy_advocacy <- predict(m_clphy_advocacy_train, 
-                               newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                               allow_new_levels = TRUE)
-
-set.seed(seed_clphy_prediction)
-pred_clphy_entry <- predict(m_clphy_entry_train, 
-                            newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                            allow_new_levels = TRUE)
-
-set.seed(seed_clphy_prediction)
-pred_clphy_funding <- predict(m_clphy_funding_train, 
-                              newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                              allow_new_levels = TRUE)
-
-pred_clphy_baseline_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_baseline)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-
-pred_clphy_total_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_total)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-
-pred_clphy_advocacy_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_advocacy)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-
-pred_clphy_entry_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_entry)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-
-pred_clphy_funding_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_funding)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-```
-
-## Improvement from baseline models
-
-```{r e1b-pred-plots, warning=FALSE}
-plot_baseline <- ggplot(pred_clphy_baseline_test, 
-                        aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Baseline",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_total <- ggplot(pred_clphy_total_test, 
-                     aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Total legal barriers",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_advocacy <- ggplot(pred_clphy_advocacy_test, 
-                        aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to advocacy",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_entry <- ggplot(pred_clphy_entry_test, 
-                     aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to entry",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_funding <- ggplot(pred_clphy_funding_test, 
-                       aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to funding",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-(plot_baseline | plot_total) / (plot_advocacy | plot_entry | plot_funding)
-```
-
-```{r e1b-metrics}
-lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
-
-bind_rows(lotsa_metrics(pred_clphy_baseline_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Baseline"),
-          lotsa_metrics(pred_clphy_total_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Total legal barriers"),
-          lotsa_metrics(pred_clphy_advocacy_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to advocacy"),
-          lotsa_metrics(pred_clphy_entry_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to entry"),
-          lotsa_metrics(pred_clphy_funding_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to funding")) %>% 
-  select(Model, .metric, .estimate) %>% 
-  pivot_wider(names_from = ".metric", values_from = ".estimate")
-```
-
-## Most improved countries
-
-### Total legal barriers
-
-```{r e1b-most-improved-total}
-most_improved_clphy_total <- bind_cols(
-  pred_clphy_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clphy_lead1) %>% 
-    select(country, gwcode, year, v2x_clphy_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clphy_total_test %>% 
-    mutate(error_total = Estimate - v2x_clphy_lead1) %>% 
-    select(estimate_total = Estimate, error_total)
-) %>% 
-  mutate(improved = error_total < 0 & abs(error_total) < abs(error_baseline)) %>% 
-  mutate(diff = error_total - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clphy_total)
-
-most_improved_clphy_total %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_total,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to advocacy
-
-```{r e1b-most-improved-advocacy}
-most_improved_clphy_advocacy <- bind_cols(
-  pred_clphy_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clphy_lead1) %>% 
-    select(country, gwcode, year, v2x_clphy_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clphy_advocacy_test %>% 
-    mutate(error_advocacy = Estimate - v2x_clphy_lead1) %>% 
-    select(estimate_advocacy = Estimate, error_advocacy)
-) %>% 
-  mutate(improved = error_advocacy < 0 & abs(error_advocacy) < abs(error_baseline)) %>% 
-  mutate(diff = error_advocacy - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clphy_advocacy)
-
-most_improved_clphy_advocacy %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_advocacy,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to entry
-
-```{r e1b-most-improved-entry}
-most_improved_clphy_entry <- bind_cols(
-  pred_clphy_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clphy_lead1) %>% 
-    select(country, gwcode, year, v2x_clphy_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clphy_entry_test %>% 
-    mutate(error_entry = Estimate - v2x_clphy_lead1) %>% 
-    select(estimate_entry = Estimate, error_entry)
-) %>% 
-  mutate(improved = error_entry < 0 & abs(error_entry) < abs(error_baseline)) %>% 
-  mutate(diff = error_entry - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clphy_entry)
-
-most_improved_clphy_entry %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_entry,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to funding
-
-```{r e1b-most-improved-funding}
-most_improved_clphy_funding <- bind_cols(
-  pred_clphy_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clphy_lead1) %>% 
-    select(country, gwcode, year, v2x_clphy_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clphy_funding_test %>% 
-    mutate(error_funding = Estimate - v2x_clphy_lead1) %>% 
-    select(estimate_funding = Estimate, error_funding)
-) %>% 
-  mutate(improved = error_funding < 0 & abs(error_funding) < abs(error_baseline)) %>% 
-  mutate(diff = error_funding - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clphy_funding)
-
-most_improved_clphy_funding %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_funding,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-\ 
-
-# E~1c~: NGO laws and civil liberties
-
-```{r e1c-predictions, warning=FALSE}
-seed_clpriv_prediction <- 6670  # From random.org
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_baseline <- predict(m_clpriv_baseline_train, 
-                                newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                                allow_new_levels = TRUE)
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_total <- predict(m_clpriv_total_train, 
-                             newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                             allow_new_levels = TRUE)
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_advocacy <- predict(m_clpriv_advocacy_train, 
-                                newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                                allow_new_levels = TRUE)
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_entry <- predict(m_clpriv_entry_train, 
-                             newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                             allow_new_levels = TRUE)
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_funding <- predict(m_clpriv_funding_train, 
-                               newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                               allow_new_levels = TRUE)
-
-pred_clpriv_baseline_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_baseline)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-
-pred_clpriv_total_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_total)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-
-pred_clpriv_advocacy_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_advocacy)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-
-pred_clpriv_entry_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_entry)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-
-pred_clpriv_funding_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_funding)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-```
-
-## Improvement from baseline models
-
-```{r e1c-pred-plots, warning=FALSE}
-plot_baseline <- ggplot(pred_clpriv_baseline_test, 
-                        aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Baseline",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_total <- ggplot(pred_clpriv_total_test, 
-                     aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Total legal barriers",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_advocacy <- ggplot(pred_clpriv_advocacy_test, 
-                        aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to advocacy",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_entry <- ggplot(pred_clpriv_entry_test, 
-                     aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to entry",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_funding <- ggplot(pred_clpriv_funding_test, 
-                       aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Barriers to funding",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-(plot_baseline | plot_total) / (plot_advocacy | plot_entry | plot_funding)
-```
-
-```{r e1c-metrics}
-lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
-
-bind_rows(lotsa_metrics(pred_clpriv_baseline_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Baseline"),
-          lotsa_metrics(pred_clpriv_total_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Total legal barriers"),
-          lotsa_metrics(pred_clpriv_advocacy_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to advocacy"),
-          lotsa_metrics(pred_clpriv_entry_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to entry"),
-          lotsa_metrics(pred_clpriv_funding_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Barriers to funding")) %>% 
-  select(Model, .metric, .estimate) %>% 
-  pivot_wider(names_from = ".metric", values_from = ".estimate")
-```
-
-## Most improved countries
-
-### Total legal barriers
-
-```{r e1c-most-improved-total}
-most_improved_clpriv_total <- bind_cols(
-  pred_clpriv_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clpriv_lead1) %>% 
-    select(country, gwcode, year, v2x_clpriv_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clpriv_total_test %>% 
-    mutate(error_total = Estimate - v2x_clpriv_lead1) %>% 
-    select(estimate_total = Estimate, error_total)
-) %>% 
-  mutate(improved = error_total < 0 & abs(error_total) < abs(error_baseline)) %>% 
-  mutate(diff = error_total - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clpriv_total)
-
-most_improved_clpriv_total %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_total,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to advocacy
-
-```{r e1c-most-improved-advocacy}
-most_improved_clpriv_advocacy <- bind_cols(
-  pred_clpriv_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clpriv_lead1) %>% 
-    select(country, gwcode, year, v2x_clpriv_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clpriv_advocacy_test %>% 
-    mutate(error_advocacy = Estimate - v2x_clpriv_lead1) %>% 
-    select(estimate_advocacy = Estimate, error_advocacy)
-) %>% 
-  mutate(improved = error_advocacy < 0 & abs(error_advocacy) < abs(error_baseline)) %>% 
-  mutate(diff = error_advocacy - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clpriv_advocacy)
-
-most_improved_clpriv_advocacy %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_advocacy,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to entry
-
-```{r e1c-most-improved-entry}
-most_improved_clpriv_entry <- bind_cols(
-  pred_clpriv_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clpriv_lead1) %>% 
-    select(country, gwcode, year, v2x_clpriv_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clpriv_entry_test %>% 
-    mutate(error_entry = Estimate - v2x_clpriv_lead1) %>% 
-    select(estimate_entry = Estimate, error_entry)
-) %>% 
-  mutate(improved = error_entry < 0 & abs(error_entry) < abs(error_baseline)) %>% 
-  mutate(diff = error_entry - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clpriv_entry)
-
-most_improved_clpriv_entry %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_entry,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-### Barriers to funding
-
-```{r e1c-most-improved-funding}
-most_improved_clpriv_funding <- bind_cols(
-  pred_clpriv_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clpriv_lead1) %>% 
-    select(country, gwcode, year, v2x_clpriv_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clpriv_funding_test %>% 
-    mutate(error_funding = Estimate - v2x_clpriv_lead1) %>% 
-    select(estimate_funding = Estimate, error_funding)
-) %>% 
-  mutate(improved = error_funding < 0 & abs(error_funding) < abs(error_baseline)) %>% 
-  mutate(diff = error_funding - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clpriv_funding)
-
-most_improved_clpriv_funding %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clpriv_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_funding,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-\ 
-
-# E~1d~: NGO laws and latent human rights
+# E~1b~: NGO laws and latent human rights
 
 ```{r e1d-predictions, warning=FALSE}
 seed_lhr_prediction <- 3207  # From random.org
@@ -1352,7 +812,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -1395,7 +855,7 @@ ggplot(plot_data_condensed) +
   geom_line(aes(x = index, y = fitted), size = 0.3) +
   geom_point(data = markers, aes(x = marker, y = -0.05), shape = 17, size = 3) + 
   scale_fill_manual(values = c("grey90", "#2ECC40")) +
-  guides(fill = FALSE) +
+  guides(fill = "none") +
   facet_wrap(vars(plot_level), ncol = 1, scales = "free_x") +
   theme_void(base_family = "Inter Bold")
 ```
@@ -1464,217 +924,9 @@ pts_pred_table %>%
 
 \ 
 
-# E~2b~: Civil society environment and physical violence
+# E~2b~: Civil society environment and latent human rights
 
 ```{r e2b-predictions, warning=FALSE}
-seed_clphy_prediction <- 7285  # From random.org
-
-set.seed(seed_clphy_prediction)
-pred_clphy_baseline <- predict(m_clphy_baseline_train, 
-                          newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                          allow_new_levels = TRUE)
-
-set.seed(seed_clphy_prediction)
-pred_clphy_v2csreprss <- predict(m_clphy_v2csreprss_train, 
-                 newdata = select(canary_testing_lagged, -v2x_clphy_lead1),
-                 allow_new_levels = TRUE)
-
-pred_clphy_baseline_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_baseline)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-
-pred_clphy_v2csreprss_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clphy_lead1) %>% 
-  bind_cols(as_tibble(pred_clphy_v2csreprss)) %>% 
-  filter(!is.na(v2x_clphy_lead1))
-```
-
-## Improvement from baseline models
-
-```{r e2b-pred-plots, warning=FALSE}
-plot_baseline <- ggplot(pred_clphy_baseline_test, 
-                        aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Baseline",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_v2csreprss <- ggplot(pred_clphy_v2csreprss_test, 
-                          aes(x = v2x_clphy_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Added predictor",
-       x = "Actual physical violence index (t + 1)",
-       y = "Predicted physical violence index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_baseline | plot_v2csreprss
-```
-
-```{r e2b-metrics}
-lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
-
-bind_rows(lotsa_metrics(pred_clphy_baseline_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Baseline"),
-          lotsa_metrics(pred_clphy_v2csreprss_test, 
-                        truth = v2x_clphy_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Added predictor")) %>% 
-  select(Model, .metric, .estimate) %>% 
-  pivot_wider(names_from = ".metric", values_from = ".estimate")
-```
-
-## Most improved countries
-
-```{r e2b-most-improved}
-most_improved_clphy <- bind_cols(
-  pred_clphy_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clphy_lead1) %>% 
-    select(country, gwcode, year, v2x_clphy_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clphy_v2csreprss_test %>% 
-    mutate(error_v2csreprss = Estimate - v2x_clphy_lead1) %>% 
-    select(estimate_v2csreprss = Estimate, error_v2csreprss)
-) %>% 
-  # mutate(across(starts_with("error"), ~round(., 4))) %>% 
-  mutate(improved = error_v2csreprss < 0 & abs(error_v2csreprss) < abs(error_baseline)) %>% 
-  mutate(diff = error_v2csreprss - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clphy)
-
-most_improved_clphy %>% 
-  select(Country = country, Year = year, 
-         `Actual physical violence index (t + 1)` = v2x_clphy_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_v2csreprss,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-\ 
-
-# E~2c~: Civil society environment and civil liberties
-
-```{r e2c-predictions, warning=FALSE}
-seed_clpriv_prediction <- 6670  # From random.org
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_baseline <- predict(m_clpriv_baseline_train, 
-                                newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                                allow_new_levels = TRUE)
-
-set.seed(seed_clpriv_prediction)
-pred_clpriv_v2csreprss <- predict(m_clpriv_v2csreprss_train, 
-                                  newdata = select(canary_testing_lagged, -v2x_clpriv_lead1),
-                                  allow_new_levels = TRUE)
-
-pred_clpriv_baseline_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_baseline)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-
-pred_clpriv_v2csreprss_test <- canary_testing_lagged %>% 
-  select(country, gwcode, year, v2x_clpriv_lead1) %>% 
-  bind_cols(as_tibble(pred_clpriv_v2csreprss)) %>% 
-  filter(!is.na(v2x_clpriv_lead1))
-```
-
-## Improvement from baseline models
-
-```{r e2c-pred-plots, warning=FALSE}
-plot_baseline <- ggplot(pred_clpriv_baseline_test, 
-                        aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Baseline",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_v2csreprss <- ggplot(pred_clpriv_v2csreprss_test, 
-                          aes(x = v2x_clpriv_lead1, y = Estimate)) +
-  geom_abline(lty = 2) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Added predictor",
-       x = "Actual private civil liberties index (t + 1)",
-       y = "Predicted private civil liberties index (t + 1)") +
-  coord_equal() +
-  theme_ngo()
-
-plot_baseline | plot_v2csreprss
-```
-
-```{r e2c-metrics}
-lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
-
-bind_rows(lotsa_metrics(pred_clpriv_baseline_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Baseline"),
-          lotsa_metrics(pred_clpriv_v2csreprss_test, 
-                        truth = v2x_clpriv_lead1, 
-                        estimate = Estimate) %>% 
-            mutate(Model = "Added predictor")) %>% 
-  select(Model, .metric, .estimate) %>% 
-  pivot_wider(names_from = ".metric", values_from = ".estimate")
-```
-
-Hey! This one has a somewhat better change in MSE! 
-
-```{r}
-percent_format(accuracy = 0.01)((0.0332 - 0.0339) / 0.0339)
-```
-
-## Most improved countries
-
-```{r e2c-most-improved}
-most_improved_clpriv <- bind_cols(
-  pred_clpriv_baseline_test %>% 
-    mutate(error_baseline = Estimate - v2x_clpriv_lead1) %>% 
-    select(country, gwcode, year, v2x_clpriv_lead1, 
-           estimate_baseline = Estimate, error_baseline),
-  pred_clpriv_v2csreprss_test %>% 
-    mutate(error_v2csreprss = Estimate - v2x_clpriv_lead1) %>% 
-    select(estimate_v2csreprss = Estimate, error_v2csreprss)
-) %>% 
-  # mutate(across(starts_with("error"), ~round(., 4))) %>% 
-  mutate(improved = error_v2csreprss < 0 & abs(error_v2csreprss) < abs(error_baseline)) %>% 
-  mutate(diff = error_v2csreprss - error_baseline) %>% 
-  mutate(abs_diff = abs(diff)) %>% 
-  filter(improved) %>% 
-  arrange(desc(abs_diff))
-
-nrow(most_improved_clpriv)
-
-most_improved_clpriv %>% 
-  select(Country = country, Year = year, 
-         `Actual private civil liberties index (t + 1)` = v2x_clpriv_lead1,
-         `Predicted (baseline)` = estimate_baseline,
-         `Predicted (CS repression)` = estimate_v2csreprss,
-         `|CS repression − baseline|` = abs_diff) %>% 
-  head(5) %>% 
-  kbl(digits = 3, align = "lccccc") %>% 
-  kable_styling()
-```
-
-\ 
-
-# E~2d~: Civil society environment and latent human rights
-
-```{r e2d-predictions, warning=FALSE}
 seed_lhr_prediction <- 3207  # From random.org
 
 set.seed(seed_lhr_prediction)
@@ -1700,7 +952,7 @@ pred_lhr_v2csreprss_test <- canary_testing_lagged %>%
 
 ## Improvement from baseline models
 
-```{r e2d-pred-plots, warning=FALSE}
+```{r e2b-pred-plots, warning=FALSE}
 plot_baseline <- ggplot(pred_lhr_baseline_test, 
                         aes(x = latent_hr_mean_lead1, y = Estimate)) +
   geom_abline(lty = 2) +
@@ -1724,7 +976,7 @@ plot_v2csreprss <- ggplot(pred_lhr_v2csreprss_test,
 plot_baseline | plot_v2csreprss
 ```
 
-```{r e2d-metrics}
+```{r e2b-metrics}
 lotsa_metrics <- metric_set(rmse, rsq, mae, ccc)
 
 bind_rows(lotsa_metrics(pred_lhr_baseline_test, 
@@ -1741,7 +993,7 @@ bind_rows(lotsa_metrics(pred_lhr_baseline_test,
 
 ## Most improved countries
 
-```{r e2d-most-improved}
+```{r e2b-most-improved}
 most_improved_lhr <- bind_cols(
   pred_lhr_baseline_test %>% 
     mutate(error_baseline = Estimate - latent_hr_mean_lead1) %>% 

@@ -162,8 +162,7 @@ diff_cs_pts <- brm(
     set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
     set_prior("exponential(1.0/29)", class = "nu")
   ),
-  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
-  file = here("analysis", "cache", "diff_cs_pts")
+  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED
 )
 ```
 
@@ -182,25 +181,25 @@ diff_cs_pts_draws <- diff_cs_pts %>%
 diff_cs_pts_posterior <- canary %>% 
   filter(year == 2010) %>% 
   modelr::data_grid(PTS_factor) %>% 
-  add_predicted_draws(diff_cs_pts, seed = BAYES_SEED)
+  add_epred_draws(diff_cs_pts, seed = BAYES_SEED)
 ```
 
 ```{r plot-draws-pts-cs}
 ggplot(diff_cs_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
   stat_halfeye() +
   scale_x_reverse() +
-  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = "none") +
   labs(x = "Civil society repression", y = "Political Terror Scale (PTS)") +
   theme_ngo()
 ```
 
 ```{r plot-posterior-preds-pts-cs, warning=FALSE, message=FALSE}
-ggplot(diff_cs_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
+ggplot(diff_cs_pts_posterior, aes(x = .epred, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
   stat_dots(quantiles = 100, shape = 19) +
   stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
                          interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
   scale_x_reverse() +
-  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
+  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = "none") +
   labs(x = "Civil society repression", y = "Political Terror Scale (PTS)",
        caption = "Each • represents an equally likely outcome from the posterior distribution") +
   theme_ngo()
@@ -224,122 +223,5 @@ ggplot(canary_barriers, aes(x = count, y = v2csreprss)) +
   labs(x = "Number of restrictive NGO laws", 
        y = "V-Dem's civil society repression score") +
   facet_wrap(vars(barrier), scales = "free_x") +
-  theme_ngo()
-```
-
-## Chaudhry NGO regulations and the PTS
-
-```{r model-pts-restrictions, message=FALSE, warning=FALSE, results="hide"}
-diff_ngo_pts <- brm(
-  bf(barriers_total ~ 0 + PTS_factor, sigma ~ 0 + PTS_factor),
-  family = student,
-  data = select(canary, barriers_total, PTS_factor),
-  prior = c(
-    # Set group mean prior
-    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
-    # Set group variance priors. We keep the less informative cauchy(0, 1).
-    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
-    set_prior("exponential(1.0/29)", class = "nu")
-  ),
-  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
-  file = here("analysis", "cache", "diff_ngo_pts")
-)
-```
-
-```{r draws-pts-ngo}
-diff_ngo_pts_summary <- diff_ngo_pts %>%
-  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
-  median_hdci(.width = 0.95) %>% 
-  to_broom_names()
-
-diff_ngo_pts_draws <- diff_ngo_pts %>% 
-  gather_draws(`b_PTS.*`, regex = TRUE) %>% 
-  ungroup() %>% 
-  mutate(.variable = str_replace(.variable, "b_PTS_factorLevel", "Level ")) %>% 
-  mutate(pts_level = fct_rev(.variable))
-
-diff_ngo_pts_posterior <- canary %>% 
-  filter(year == 2010) %>% 
-  modelr::data_grid(PTS_factor) %>% 
-  add_predicted_draws(diff_ngo_pts, seed = BAYES_SEED)
-```
-
-```{r plot-draws-pts-ngo}
-ggplot(diff_ngo_pts_draws, aes(y = pts_level, x = .value, fill = pts_level)) + 
-  stat_halfeye() +
-  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
-  labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)") +
-  theme_ngo()
-```
-
-```{r plot-posterior-preds-pts-ngo, warning=FALSE, message=FALSE}
-ggplot(diff_ngo_pts_posterior, aes(x = .prediction, y = fct_rev(PTS_factor), color = fct_rev(PTS_factor))) +
-  stat_dots(quantiles = 100, shape = 19) +
-  stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
-                         interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
-  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
-  labs(x = "Number of restrictive NGO laws", y = "Political Terror Scale (PTS)",
-       caption = "Each • represents an equally likely outcome from the posterior distribution") +
-  theme_ngo()
-```
-
-
-# Conflict and civil society restrictions
-
-```{r model-conflict-cs, message=FALSE, results="hide"}
-diff_cs_conflict <- brm(
-  bf(v2csreprss ~ 0 + armed_conflict, sigma ~ 0 + armed_conflict),
-  family = student,
-  data = select(canary, v2csreprss, armed_conflict),
-  prior = c(
-    # Set group mean prior
-    set_prior("normal(0, 1)", class = "b", lb = -4, ub = 4),
-    # Set group variance priors. We keep the less informative cauchy(0, 1).
-    set_prior("cauchy(0, 1)", class = "b", dpar = "sigma"),
-    set_prior("exponential(1.0/29)", class = "nu")
-  ),
-  chains = CHAINS, iter = ITER, warmup = WARMUP, seed = BAYES_SEED,
-  file = here("analysis", "cache", "diff_cs_conflict")
-)
-```
-
-```{r draws-conflict-cs}
-diff_cs_conflict_summary <- diff_cs_conflict %>%
-  gather_draws(`b_armed.*`, regex = TRUE) %>% 
-  median_hdci(.width = 0.95) %>% 
-  to_broom_names()
-
-diff_cs_conflict_draws <- diff_cs_conflict %>% 
-  gather_draws(`b_armed.*`, regex = TRUE) %>% 
-  ungroup() %>% 
-  mutate(.variable = recode(.variable, `b_armed_conflictFALSE` = "No armed conflict",
-                            `b_armed_conflictTRUE` = "Armed conflict"))
-
-diff_cs_conflict_posterior <- canary %>% 
-  filter(year == 2010) %>% 
-  modelr::data_grid(armed_conflict) %>% 
-  add_predicted_draws(diff_cs_conflict, seed = BAYES_SEED) %>% 
-  ungroup() %>% 
-  mutate(armed_conflict = factor(armed_conflict, labels = c("No armed conflict", "Armed conflict")))
-```
-
-```{r plot-draws-conflict-cs}
-ggplot(diff_cs_conflict_draws, aes(y = .variable, x = .value, fill = .variable)) + 
-  stat_halfeye() +
-  scale_x_reverse() +
-  scale_fill_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
-  labs(x = "Civil society repression", y = "Armed conflict") +
-  theme_ngo()
-```
-
-```{r plot-posterior-preds-conflict-cs, warning=FALSE, message=FALSE}
-ggplot(diff_cs_conflict_posterior, aes(x = .prediction, y = fct_rev(armed_conflict), color = fct_rev(armed_conflict))) +
-  stat_dots(quantiles = 100, shape = 19) +
-  stat_pointinterval(aes(point_colour = after_scale(colorspace::darken(color, 0.65)),
-                         interval_colour = after_scale(colorspace::darken(color, 0.35)))) +
-  scale_x_reverse() +
-  scale_color_viridis_d(option = "inferno", begin = 0.2, end = 0.9, guide = FALSE) +
-  labs(x = "Civil society repression", y = "Armed conflict",
-       caption = "Each • represents an equally likely outcome from the posterior distribution") +
   theme_ngo()
 ```

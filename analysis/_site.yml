@@ -5,7 +5,7 @@ exclude:
   - cache
   - • sandbox
 navbar:
-  title: Canary in the Coal Mine
+  title: NGO Repression and Human Rights
   right:
   - text: Process and merge data
     icon: fas fa-table

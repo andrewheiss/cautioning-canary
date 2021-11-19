@@ -10,13 +10,13 @@ author:
   affiliation: Georgia State University
   email: aheiss@gsu.edu
   url: https://www.andrewheiss.com/
-date: "November 15, 2021"
+date: "November 19, 2021"
 published: "Conditionally accepted at the *Journal of Human Rights*"
 code-repo: "Access the code and full analysis notebook at <https://stats.andrewheiss.com/canary-ngos/>"
 abstract: >-
   An increasing number of countries have recently cracked down on non-governmental organizations (NGOs). Much of this crackdown is sanctioned by law and represents a bureaucratic form of repression that could indicate more severe human rights abuses in the future. This is especially the case for democracies, which unlike autocracies, may not aggressively attack civic space. We explore if crackdowns on NGOs predict broader human rights repression. Anti-NGO laws are among the most subtle means of repression and attract lesser domestic and international condemnation compared to the use of violence. Using original data on NGO repression, we test whether NGO crackdown is a predictor of political terror, and violations of physical integrity rights and civil liberties. We find that while de jure anti-NGO laws provide little information in predicting future repression, their patterns of implementation—or de facto civil society repression—predicts worsening respect for physical integrity rights and civil liberties.
 # keywords: civil society, NGOs, repression, human rights, political terror, civil liberties
-word-count: "8,007"
+word-count: "8,343"
 thanks: >-
   We would like to thank participants of the 2021 International Studies Association (ISA) convention, and the "Human Rights on the Edge: The Future of International Human Rights Law and Practice" workshop hosted by the Global Human Rights Hub at Arizona State University for their comments and feedback.
 reference-section-title: References
@@ -93,26 +93,25 @@ library(brms)
 library(emmeans)
 library(broom.mixed)
 
+if (is_docx) {
+  library(huxtable)
+}
+
 withr::with_dir(here::here(), {
   source(tar_read(plot_funs))
   
+  # Load general data
   canary <- tar_read(panel)
   tar_load(vdem_clean)
-  tar_load(civicus_map_data)
-  tar_load(civicus_clean)
+
+  # Load Civicus stuff
+  tar_load(c(civicus_map_data, civicus_clean))
   
-  tar_load(c(m_pts_total, m_pts_advocacy, m_pts_entry, m_pts_funding,
-             m_lhr_total, m_lhr_advocacy, m_lhr_entry, m_lhr_funding,
-             m_pts_v2csreprss, m_lhr_v2csreprss))
-  
-  # Model tables
-  tar_load(c(models_paper_pts, models_paper_lhr))
-  
-  # Load lookup list for coefficients in regression tables
-  tar_load(coef_list)
+  # Load models
+  tar_load(c(m_lhr_total, m_lhr_advocacy, m_lhr_v2csreprss))
   
   # Load marginal effects
-  tar_load(c(mfx_e1a_pts, mfx_e1d_lhr, mfx_e2a_pts, mfx_e2d_lhr))
+  tar_load(c(mfx_e1a_pts, mfx_e1b_lhr, mfx_e2a_pts, mfx_e2b_lhr))
 })
 ```
 
@@ -130,7 +129,7 @@ Over the last few decades, governments across the globe have been increasingly c
 
 [^open]: Following CIVICUS, open civic space in a country indicates that the state enables and safeguards citizens' freedom to form associations, authorities are tolerant of criticism from CSOs, and that laws governing freedom of peaceful assembly adhere to international laws and standards. 
 
-```{r civicus-map, fig.cap="2020 CIVICUS Monitor civic space ratings", fig.pos="h"}
+```{r civicus-map, fig.width=6.5, fig.height=3.1, fig.asp=NULL, fig.cap="2020 CIVICUS Monitor civic space ratings", fig.pos="h"}
 ggplot() +
   geom_sf(data = civicus_map_data, aes(fill = fct_rev(category)), size = 0.15, color = "black") +
   coord_sf(crs = st_crs("ESRI:54030"), datum = NA) +  # Robinson
@@ -172,7 +171,7 @@ These anti-NGO laws can provide convenient avenues for more violent repression a
 
 In exploring the impact of state crackdown on NGOs on subsequent human rights conditions, we look at both *de jure* measures—or formal legislation that seeks to repress NGOs—as well as the *de facto* implementation of these measures. This distinction is important—while states may pass anti-NGO laws, these laws can also lie dormant until governments feel the need to enforce them. For instance, Russia passed its 2015 Undesirable Organizations Law with the purpose of targeting and eliminating specific foreign-connected NGOs it deemed dangerous. One of the law's sponsors, Aleksandr Tarnavsky, described the law as a preventive measure that would not affect the majority of NGOs working in Russia. Rather, the law would be a "weapon hanging on the wall that never fires" and stand as a warning to potentially uncooperative NGOs [@Kozenko:2015].
 
-Simply noting the passage of (or counting) these laws may therefore miss the effect of their de facto implementation. Some governments may even pass laws to create a chilling effect on these organizations. By providing a legal threat, they could compel these organizations to self-censor without even needing to implement these laws in any systematic or meaningful capacity. These laws, especially during moments or crises or contention, "highlight to the wider NGO community-and citizenry-that the government is willing and capable of using the law to repress dissent" [@Brechenmacher:2017, 94]. 
+Simply counting these laws may therefore miss the effect of their de facto implementation. Some governments may even pass laws to create a chilling effect on these organizations. By providing a legal threat, they could compel these organizations to self-censor without even needing to implement these laws in any systematic or meaningful capacity. These laws, especially during moments or crises or contention, "highlight to the wider NGO community-and citizenry-that the government is willing and capable of using the law to repress dissent" [@Brechenmacher:2017, 94]. 
 
 Moreover, the implementation of these laws may not be limited to their legal character. The government may also engage in harassment of NGOs and activists to dissuade NGOs from carrying out their operations. This may include measures such as detentions, short-term incarceration, as well as destruction of valuable property. Finally, counting official laws can also underestimate levels of NGO repression because governments can repress these organizations without relying on formal laws. As prior research in Egypt, Ethiopia, and Russia points out, "rather than systematically enforcing all repressive legal measures-often impossible owing to capacity constraints," governments may choose to use extra-legal means to intimidate, harass or prosecute a few NGOs or activists [@Brechenmacher:2017, 94] These can include arrests, trials, imprisonment, and other violent sanctions against NGO activists such as beatings, threats to families, and attacks on property. As such, de facto crackdown in the form of not just legal harassment but also material and violent sanctions could lead to increases in both physical integrity and civil liberties violations. 
 
@@ -447,7 +446,7 @@ pts_plot <- canary %>%
   scale_color_viridis_d(option = "rocket", end = 0.85, direction = -1) +
   coord_cartesian(xlim = c(1990, 2015)) +
   guides(color = guide_legend(title = NULL)) +
-  labs(y = "Number of countries", x = NULL, caption = "(Higher PTS levels = more repression)") +
+  labs(y = "Number of countries", x = NULL, caption = "(Higher levels = more repression)") +
   theme_ngo() +
   theme(legend.justification = "left",
         legend.key.height = unit(0.7, "lines"),
@@ -508,7 +507,8 @@ In general, when holding all other covariates constant, the passage of an additi
 mfx_e1a_pts %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   # Collapse 3-5 to just one level, since they're all tiny
-  mutate(effect2__ = fct_collapse(effect2__, "3+" = c("3", "4", "5"))) %>% 
+  mutate(effect2__ = fct_collapse(effect2__, "Level 3+" = 
+                                    c("Level 3", "Level 4", "Level 5"))) %>% 
   group_by(x_rounded, effect2__, plot_var_nice) %>% 
   slice(1) %>% 
   # Add up these values for the collapsed 3-5 results
@@ -524,7 +524,7 @@ mfx_e1a_pts %>%
   scale_color_viridis_d(option = "rocket", begin = 0.1, end = 0.85, direction = -1) +
   guides(color = guide_legend(override.aes = list(size = 0.5, linetype = 0))) +
   labs(x = "Count of legal barriers\n",
-       y = "Predicted probability of category",
+       y = "Predicted probability of level",
        color = "Predicted Political Terror Scale", fill = "Predicted Political Terror Scale",
        title = "Political Terror Scale") + 
   facet_wrap(vars(plot_var_nice), scales = "free_x") +
@@ -573,7 +573,7 @@ Figure \@ref(fig:plot-mfx-e1b) shows the marginal effects of additional anti-NGO
 At a marginal level, therefore, adding additional anti-NGO laws in countries with low levels of political terror could signal that higher levels of political repression are more likely in the future. Limited repression remains the most likely possible outcome, but the chance of seeing robust rule of law decreases rapidly as more laws are passed, all else equal. This pattern holds when looking at a more continuous measure of human rights protection—countries with a low count of anti-NGO legal barriers tend to have higher predicted values of latent human rights scores, and average protection against abuses decreases as more laws are added.
 
 ```{r plot-mfx-e1b, fig.width=7.5, fig.height=4, fig.asp=NULL, fig.cap="Marginal effects of increasing anti-NGO legal barriers on latent human rights scoress"}
-out_mfx_e1b <- mfx_e1d_lhr %>% 
+out_mfx_e1b <- mfx_e1b_lhr %>% 
   mutate(x_rounded = floor(effect1__)) %>% 
   group_by(x_rounded, plot_var_nice) %>% 
   slice(1) %>% 
@@ -607,7 +607,8 @@ The effect of de facto civil society repression on predicted values of the PTS m
 
 ```{r plot-mfx-e2ab, fig.width=7, fig.height=4.5, fig.asp=NULL, fig.cap="Marginal effects of changing levels of civil society repression on the probability of specific levels of political terror and predicted latent human rights values"}
 out_mfx_e2a <- mfx_e2a_pts %>% 
-  mutate(effect2__ = fct_collapse(effect2__, "3+" = c("3", "4", "5"))) %>% 
+  mutate(effect2__ = fct_collapse(effect2__, "Level 3+" = 
+                                    c("Level 3", "Level 4", "Level 5"))) %>% 
   group_by(effect1__, effect2__, plot_var_nice) %>% 
   summarize(across(c(estimate__, lower__, upper__), sum)) %>% 
   ungroup() %>% 
@@ -620,14 +621,14 @@ out_mfx_e2a <- mfx_e2a_pts %>%
   scale_color_viridis_d(option = "rocket", begin = 0.1, end = 0.75, direction = -1) +
   scale_fill_viridis_d(option = "rocket", begin = 0.1, end = 0.9, direction = -1) +
   labs(x = "Civil society repression",
-       y = "Predicted probability of category",
-       color = "Political Terror Scale", fill = "Political Terror Scale",
+       y = "Predicted probability of level",
+       color = NULL, fill = NULL,
        caption = "(x-axis reversed; greater repression on the right)") +
   facet_wrap(vars(fake_facet_title)) +
   theme_ngo() +
   theme(legend.box.margin = margin(t = 0.5, unit = "lines"))
 
-out_mfx_e2b <- mfx_e2d_lhr %>% 
+out_mfx_e2b <- mfx_e2b_lhr %>% 
   mutate(fake_facet_title = "Latent human rights values") %>% 
   ggplot(aes(x = effect1__, y = estimate__)) +
   geom_ribbon(aes(ymin = lower__, ymax = upper__), alpha = 0.4, 
@@ -675,8 +676,8 @@ These predicted probabilities and outcomes are conditional on all other model pa
 # https://stats.andrewheiss.com/canary-ngos/04_predictions.html#Prediction_diagnostics
 pts_pred_table <- tribble(
   ~Prediction, ~Baseline, ~total, ~advocacy, ~entry, ~funding, ~repression,
-  "Wrong",     108,       108,    110,       108,    109,      111,
-  "Correct",   377,       377,    375,       377,    376,      374
+  "Wrong",     109,       107,    110,       108,    108,      111,
+  "Correct",   376,       378,    375,       377,    376,      374
 ) %>% 
   rename("Total legal barriers included" = total,
          "Barriers to advocacy included" = advocacy,
@@ -719,15 +720,19 @@ Including civil society restrictions—both de jure and de facto—does very lit
 ```{r tbl-rmse}
 # These numbers also come from the analysis notebook at 
 # https://stats.andrewheiss.com/canary-ngos/04_predictions.html
+baseline_rmse <- 0.1862156
 tbl_rmse <- tribble(
-  ~`Latent human rights values`,  ~RMSE, ~`% change from baseline`,
-                  "Baseline", 0.1861944,                       "—",
-      "Total legal barriers", 0.1872427,                   "0.56%",
-      "Barriers to advocacy", 0.1871498,                   "0.51%",
-         "Barriers to entry", 0.1862244,                   "0.02%",
-       "Barriers to funding", 0.1879829,                   "0.96%",
-  "Civil society repression", 0.1856543,                  "-0.29%"
+  ~`Latent human rights values`, ~RMSE,
+                  "Baseline",    baseline_rmse,
+      "Total legal barriers",    0.1872181,
+      "Barriers to advocacy",    0.1872011,
+         "Barriers to entry",    0.1862635,
+       "Barriers to funding",    0.1879768,
+  "Civil society repression",    0.1857038
 ) %>% 
+  mutate(`% change from baseline` = (RMSE - baseline_rmse) / baseline_rmse,
+         `% change from baseline` = percent(`% change from baseline`, accuracy = 0.01)) %>% 
+  mutate(`% change from baseline` = recode(`% change from baseline`, "0.00%" = "—")) %>% 
   mutate(RMSE = round(RMSE, 4))
 
 tbl_rmse_caption <- "Root mean squared error across models predicting latent human rights"
@@ -758,7 +763,7 @@ if (!is_docx) {
 }
 ```
 
-When looking at the overall latent human rights values in a country, including de jure and de facto repression does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for de facto civil society repression only reduces the RMSE by 0.29% compared to the baseline, while accounting for de jure laws worsen the models' predictive power slightly. While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases.
+When looking at the overall latent human rights values in a country, including de jure and de facto repression does very little to improve predictive accuracy. As Table \@ref(tab:tbl-rmse) shows, accounting for de facto civil society repression only reduces the RMSE by 0.27% compared to the baseline, while accounting for de jure laws worsen the models' predictive power slightly. While these gains in predictive power appear negligible, they are somewhat comparable with the findings of previous work. For instance, in their work on the effect of the murder of journalists on predicting future political terror, @GohdesCarey:2017 find that accounting for violence against the media adds five correctly predicted cases of PTS scores and improves predictions in seven cases.
 
 We thus again find that de facto civil society repression is a stronger predictor of worsening human rights in the future than formal laws on their own. Actual government interference in civil society act as a possible signal of future abuses of civil and human rights better than simply the presence of a law that could potentially be used at some point in the future. 
 

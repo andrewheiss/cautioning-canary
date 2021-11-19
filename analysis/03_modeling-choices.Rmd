@@ -33,23 +33,13 @@ options(dplyr.summarise.inform = FALSE,
 ```{r load-libraries-data, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(targets)
-library(broom)
-library(janitor)
-library(brms)
 library(lme4)
 library(lmtest)  # For log ratio tests
-library(performance)  # For ICCs
-library(scales)
+library(performance)
 library(modelsummary)
+library(scales)
+library(janitor)
 library(here)
-
-CHAINS <- 4
-ITER <- 2000
-WARMUP <- 1000
-BAYES_SEED <- 1234
-
-options(mc.cores = parallel::detectCores(),
-        brms.backend = "cmdstanr")
 
 # Generated via random.org
 set.seed(9936)
@@ -62,16 +52,14 @@ withr::with_dir(here::here(), {
   
   canary <- tar_read(panel_lagged)
 })
+
+# Goodness-of-fit measures to include
+gm <- tribble(
+  ~raw, ~clean, ~fmt,
+  "nobs", "Num.Obs.", 3,
+  "icc", "ICC", 3
+)
 ```
-
-# Interpretation reminders
-
-I always forget how to interpret these dang within/between coefficients in REWB models, so here's a reminder:
-
-- "Within" coefficients show what happens as you move up and down from the average level.
-  - Template = increasing 1 unit of `x` above the average in a typical country is associated with a β change in `y`
-- "Between" coefficients show what happens as you move the whole average up. They're trickier (and less important) to interpret. [This post](https://statisticalhorizons.com/between-within-contextual-effects) explains more, along with [Bell, Fairbrother, and Jones (2018)](https://doi.org/10.1007/s11135-018-0802-x).
-
 
 # Check if multilevel models are warranted
 
@@ -80,31 +68,26 @@ First we can start with a simple null model to see what the effect of country an
 ```{r null-models}
 m0_pts <- lmer(PTS_lead1 ~ (1 | year) + (1 | gwcode),
                REML = FALSE, data = canary)
-m0_clphy <- lmer(v2x_clphy_lead1 ~ (1 | year) + (1 | gwcode),
-               REML = FALSE, data = canary)
-m0_clpriv <- lmer(v2x_clpriv_lead1 ~ (1 | year) + (1 | gwcode),
+m0_lhr <- lmer(latent_hr_mean_lead1 ~ (1 | year) + (1 | gwcode),
                REML = FALSE, data = canary)
 ```
 
 We then calculate the intraclass correlation coefficients (ICC) for year and country:
 
 ```{r icc-models}
-# This shows just the ICC. modelsummary() helpfully includes it.
-# icc(m0_pts)
-
-modelsummary(list(m0_pts, m0_clphy, m0_clpriv),
+modelsummary(list(m0_pts, m0_lhr),
              estimate = "{estimate}", statistic = NULL,
-             gof_map = list(list("raw" = "icc", "clean" = "ICC", "fmt" = 4)))
+             group = group + term ~ model,
+             gof_map = gm)
 ```
 
-These values represent the variation in the outcome variable that can be explained by the country/year structure, which is a *ton*! For the PTS model, for instance, the ICC is `r round(icc(m0_pts)$ICC_adjusted, 4)`, meaning that the random effects structure explains `r percent(icc(m0_pts)$ICC_adjusted)` of the variation in PTS.
+These values represent the variation in the outcome variable that can be explained by the country/year structure, which is a *ton*! For the PTS model, for instance, the ICC is `r round(performance::icc(m0_pts)$ICC_adjusted, 4)`, meaning that the random effects structure explains `r percent(performance::icc(m0_pts)$ICC_adjusted)` of the variation in PTS.
 
 We can also look at how each of the levels are related to the outcome
 
 ```{r icc-models-by-group}
-icc(m0_pts, by_group = TRUE)
-icc(m0_clphy, by_group = TRUE)
-icc(m0_clpriv, by_group = TRUE)
+performance::icc(m0_pts, by_group = TRUE)
+performance::icc(m0_lhr, by_group = TRUE)
 ```
 
 It looks like pretty much all the variability in PTS is explained at a country level and not at a year level, which makes sense, since there's probably a ton of autocorrelation in human rights practices within a country, while global human rights levels probably don't move simultaneously across years.
@@ -121,9 +104,9 @@ Understanding all the different country/year dynamics can get complicated, so [J
 m1 <- lmer(PTS_lead1 ~ v2csreprss + (1 | year) + (1 | gwcode),
            REML = FALSE, data = canary)
 modelsummary(list("Null model" = m1),
-             coef_omit = "sd__")
+             group = group + term ~ model,
+             coef_omit = "sd__", gof_map = gm)
 ```
-
 
 ```{r model-details, include=FALSE}
 m1_out <- broom.mixed::tidy(m1) %>% 
@@ -154,7 +137,8 @@ m2 <- lmer(PTS_lead1 ~ v2csreprss_within + v2csreprss_between +
            REML = FALSE, data = canary)
 
 modelsummary(list("Null model" = m1, "Within/between model" = m2),
-             coef_omit = "sd__")
+             group = group + term ~ model,
+             coef_omit = "sd__", gof_map = gm)
 ```
 
 ```{r m2-details, include=FALSE}
@@ -179,3 +163,13 @@ lrtest(m1, m2) %>% as_tibble()
 So, using a Mundlak within/between split of time-varying covariates is warranted, as is using a country/year random effects structure. Woot.
 
 BUT for the sake of computational efficiency, we omit the within/between split. It takes 30-120 minutes to run one within/between model, and running dozens can take all day. The predictive results are nearly identical to models without the split, and since we're more interested in prediction than in individual coefficient effects, we don't need to wait hours for the same results we'd get with the original non-demeaned values. 
+
+## Interpretation reminders
+
+NB: We ultimately don't use this within/between difference since the random effects within/between models take forever to run and provide no improvement over the more basic models, but I'll keep this here as a reminder to future me in future projects:
+
+I always forget how to interpret these dang within/between coefficients in REWB models, so here's a reminder:
+
+- "Within" coefficients show what happens as you move up and down from the average level.
+  - Template = increasing 1 unit of `x` above the average in a typical country is associated with a β change in `y`
+- "Between" coefficients show what happens as you move the whole average up. They're trickier (and less important) to interpret. [This post](https://statisticalhorizons.com/between-within-contextual-effects) explains more, along with [Bell, Fairbrother, and Jones (2018)](https://doi.org/10.1007/s11135-018-0802-x).

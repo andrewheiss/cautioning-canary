@@ -1,7 +1,14 @@
-# The PTS data and journalist data are saved as .RData files, so they load into
-# R with their original object names. This function lets you load an .RData file
-# directly to a new object instead of bringing in the original name.
-# (via https://stackoverflow.com/a/25455968/120898)
+library(scales)
+library(countrycode)
+library(readxl)
+library(haven)
+library(jsonlite)
+suppressPackageStartupMessages(library(sf))
+
+# The PTS data is saved as an .RData file, so it loads into R with its original
+# object name. This function lets you load an .RData file directly to a new
+# object instead of bringing in the original name. (via
+# https://stackoverflow.com/a/25455968/120898)
 load_rdata <- function(filename) {
   load(filename)
   get(ls()[ls() != "filename"])
@@ -9,6 +16,8 @@ load_rdata <- function(filename) {
 
 
 create_panel_skeleton <- function() {
+  library(states)
+
   microstates <- gwstates %>%
     filter(microstate) %>% distinct(gwcode)
 
@@ -189,43 +198,6 @@ load_clean_pts <- function(path, skeleton) {
 }
 
 
-load_clean_journalists <- function(path) {
-  gh_journalists_raw <- load_rdata(path) %>% as_tibble()
-
-  gh_journalists <- gh_journalists_raw %>%
-    select(year = Year, gwno, country = Country, in_rog, in_cpj, in_ipi, date = Date,
-           perpetrator = Perpetrator, foreigner = Foreigner, perp_cat = perp.cat, pts,
-           intra, inter, international, minor, major, armedconf)
-
-  # Count of perpetrators
-  killings_perp <- gh_journalists %>%
-    mutate(perp_cat = recode(perp_cat, "non-state" = "polgroup")) %>%
-    group_by(year, gwno, perp_cat) %>%
-    summarize(n = n()) %>%
-    pivot_wider(names_from = perp_cat, values_from = n)
-
-  # Count of foreign vs. local journalist
-  killings_foreigner <- gh_journalists %>%
-    mutate(foreigner = recode(foreigner, "no" = "local", "yes" = "foreign")) %>%
-    group_by(year, gwno, foreigner) %>%
-    summarize(n = n()) %>%
-    pivot_wider(names_from = foreigner, values_from = n)
-
-  # Combine everything
-  killings_all <- gh_journalists %>%
-    group_by(year, gwno) %>%
-    summarize(alljourn = n()) %>%
-    left_join(killings_perp, by = c("year", "gwno")) %>%
-    left_join(killings_foreigner, by = c("year", "gwno")) %>%
-    mutate_at(vars(-year, -gwno), ~coalesce(., 0L)) %>%  # Replace all NAs with 0
-    mutate(stateunknown = state + unknown) %>%
-    rename_at(vars(-year, -gwno), ~paste0("gh_", .)) %>%
-    rename(gwcode = gwno)
-
-  return(killings_all)
-}
-
-
 load_clean_ucdp <- function(path) {
   ucdp_prio_raw <- read_csv(path, col_types = cols())
 
@@ -303,6 +275,8 @@ load_clean_vdem <- function(path) {
 
 
 load_clean_wdi <- function(skeleton) {
+  library(WDI)
+
   # World Bank World Development Indicators (WDI)
   # http://data.worldbank.org/data-catalog/world-development-indicators
   wdi_indicators <- c("NY.GDP.PCAP.PP.KD",  # GDP per capita, ppp (constant 2011 international $)
@@ -423,7 +397,7 @@ load_clean_latent_hr <- function(path, skeleton) {
 
 
 combine_data <- function(skeleton, chaudhry_clean,
-                         pts_clean, latent_hr, killings_all, ucdp_prio_clean,
+                         pts_clean, latent_hr, ucdp_prio_clean,
                          vdem_clean, un_pop, un_gdp) {
   # Only look at countries in Suparna's data
   chaudhry_countries <- chaudhry_clean %>% distinct(gwcode)
@@ -452,9 +426,6 @@ combine_data <- function(skeleton, chaudhry_clean,
     )) %>%
     left_join(pts_clean, by = c("gwcode", "year")) %>%
     left_join(latent_hr, by = c("gwcode", "year")) %>%
-    left_join(killings_all, by = c("gwcode", "year")) %>%
-    mutate(across(starts_with("gh"), ~coalesce(., 0L))) %>%
-    mutate(gh_range = year >= 2002) %>%
     left_join(vdem_clean, by = c("gwcode", "year")) %>%
     left_join(ucdp_prio_clean, by = c("gwcode", "year")) %>%
     mutate(armed_conflict = coalesce(armed_conflict, FALSE),
