@@ -12,7 +12,7 @@ Policy Studies • Georgia State University
 
 [![OSF
 DOI](https://img.shields.io/badge/OSF-10.17605%2FOSF.IO%2FMTR6X-blue)](https://dx.doi.org/10.17605/OSF.IO/MTR6X)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4058987.svg)](https://doi.org/10.5281/zenodo.4058987)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5715402.svg)](https://doi.org/10.5281/zenodo.5715402)
 
 > Suparna Chaudhry and Andrew Heiss. 2021. [“NGO Repression as a
 > Predictor of Worsening Human Rights
