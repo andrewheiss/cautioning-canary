@@ -14,7 +14,7 @@ Policy Studies • Georgia State University
 DOI](https://img.shields.io/badge/OSF-10.17605%2FOSF.IO%2FMTR6X-blue)](https://dx.doi.org/10.17605/OSF.IO/MTR6X)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5715402.svg)](https://doi.org/10.5281/zenodo.5715402)
 
-> Suparna Chaudhry and Andrew Heiss. 2021. [“NGO Repression as a
+> Suparna Chaudhry and Andrew Heiss. 2022. [“NGO Repression as a
 > Predictor of Worsening Human Rights
 > Abuses,”](https://doi.org/10.1177/0899764020971045) *Journal of Human
 > Rights* (forthcoming).
@@ -53,9 +53,9 @@ worsening respect for physical integrity rights and civil liberties.
 This repository contains the data and code for our paper. Our pre-print
 is online here:
 
-> Suparna Chaudhry and Andrew Heiss. 2021. “NGO Repression as a
-> Predictor of Worsening Human Rights Abuses”“. Accessed November 19,
-> 2021. Online at <https://dx.doi.org/10.17605/OSF.IO/MTR6X>
+> Suparna Chaudhry and Andrew Heiss. 2022. “NGO Repression as a
+> Predictor of Worsening Human Rights Abuses”“. Accessed January 5,
+> 2022. Online at <https://dx.doi.org/10.17605/OSF.IO/MTR6X>
 
 ## How to download and replicate
 

@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 # Please put your title here to include it in the file below.
 Title <- "NGO Repression as a Predictor of Worsening Human Rights Abuses"
 Authors <- "Suparna Chaudhry and Andrew Heiss"
-Year <- "2021"
+Year <- "2022"
 ```
 
 # `r Title`
